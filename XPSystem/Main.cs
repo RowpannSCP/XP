@@ -12,7 +12,7 @@ namespace XPSystem
     {
         public override string Author { get; } = "Rowpann's Emperium";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; }= new Version(1, 2, 0);
+        public override Version Version { get; } = new Version(1, 2, 0);
         public override Version RequiredExiledVersion { get; } = new Version(5, 2, 0);
         
         public static Main Instance { get; set; }
