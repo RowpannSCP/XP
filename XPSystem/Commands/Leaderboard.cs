@@ -7,13 +7,9 @@ namespace XPSystem
 {
     public class Leaderboard : ICommand
     {
-        public string Command => "leaderboard";
-
-        public static Leaderboard Instance { get; } = new Leaderboard();
-
-        public string[] Aliases => new string[] { "lb" };
-
-        public string Description => "Players, sorted by their LV (Level of Violence). Use: XPSystem leaderboard (amount)";
+        public string Command { get; } =  "leaderboard";
+        public string[] Aliases { get; } =  new string[] { "lb" };
+        public string Description { get; } =  "Players, sorted by their LV (Level of Violence). Use: XPSystem leaderboard (amount)";
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {

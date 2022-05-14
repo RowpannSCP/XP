@@ -32,9 +32,9 @@ namespace XPSystem
                     Main.Players[playerLog.Key] = new PlayerLog(playerLog.Value);
                 }
             }
-            catch (IndexOutOfRangeException)
+            catch (IndexOutOfRangeException e)
             {
-                Log.Info("Json file is empty");
+                Log.Debug("Json file is empty", Main.Instance.Config.ShowDebug);
             }
         }
     }

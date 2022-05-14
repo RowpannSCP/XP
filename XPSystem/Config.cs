@@ -8,10 +8,15 @@ namespace XPSystem
 {
     public class Config : IConfig
     {
+        [Description("Enable plugin?")]
         public bool IsEnabled { get; set; } = true;
+
+        [Description("Show debug messages?")] 
+        public bool ShowDebug { get; set; } = false;
 
         [Description("Hint shown to the players if they have DNT enabled.")]
         public string DNTHint { get; set; } = "We can't track your stats while you have DNT enabled in your game options!";
+        
         [Description("Badge for players with DNT enabled.")]
         public Badge DNTBadge { get; set; } = new Badge
         {
@@ -108,8 +113,10 @@ namespace XPSystem
 
         [Description("The structure of the badge displayed in-game. Variables: %lvl% - the level. %badge% earned badge in specified in LevelsBadge. %oldbadge% - base-game badge, like ones specified in config-remoteadmin, or a global badge. can be null.")]
         public string BadgeStructure { get; set; } = "(LVL %lvl% | %badge%) %oldbadge%";
+        
         [Description("Path files get saved to. Requires change on linux.")]
         public string SavePath { get; set; } = Path.Combine(Paths.Configs, @"Players.json");
+        
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;
     }

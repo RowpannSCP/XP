@@ -8,17 +8,17 @@ namespace XPSystem
     internal class Parent : ParentCommand
     {
         public Parent() => LoadGeneratedCommands();
-        public override string Command => "XPSystem";
+        public override string Command { get; } =  "XPSystem";
 
-        public override string[] Aliases => new string[] { "xps" };
+        public override string[] Aliases { get; } =  new string[] { "xps" };
 
-        public override string Description => "Manipulates with players' XP and LVL values.";
+        public override string Description { get; } =  "Manipulates with players' XP and LVL values.";
 
         public override void LoadGeneratedCommands()
         {
-            RegisterCommand(Leaderboard.Instance);
-            RegisterCommand(Set.Instance);
-            RegisterCommand(Get.Instance);
+            RegisterCommand(new Leaderboard());
+            RegisterCommand(new Set());
+            RegisterCommand(new Get());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)

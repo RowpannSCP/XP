@@ -7,10 +7,10 @@ namespace XPSystem
 
     internal class Set : ICommand
     {
-        public static Set Instance { get; } = new Set();
-        public string Command => "set";
-        public string[] Aliases => Array.Empty<string>();
-        public string Description => $"Set a certain value in player's lvl variable.";
+        public string Command { get; } =  "set";
+        public string[] Aliases { get; } =  Array.Empty<string>();
+        public string Description { get; } =  $"Set a certain value in player's lvl variable.";
+        
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!sender.CheckPermission("xps.set"))

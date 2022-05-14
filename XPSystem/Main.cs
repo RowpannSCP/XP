@@ -10,16 +10,20 @@ namespace XPSystem
 {
     public class Main : Plugin<Config>
     {
-        EventHandlers handlers;
-        readonly Harmony harmony = new Harmony("com.nutmaster.rankchangepatch");
+        public override string Author { get; } = "Rowpann's Emperium";
+        public override string Name { get; } = "XPSystem";
+        public override Version Version { get; }= new Version(1, 2, 0);
+        public override Version RequiredExiledVersion { get; } = new Version(5, 2, 0);
+        
         public static Main Instance { get; set; }
-        public static Dictionary<string, PlayerLog> Players { get; set; } = new Dictionary<string, PlayerLog>();
-        public override Version Version => new Version(1, 2, 0);
-        public override Version RequiredExiledVersion => new Version(5, 0, 0);
+        EventHandlers handlers;
+        readonly Harmony harmony;
 
+        public static Dictionary<string, PlayerLog> Players { get; set; } = new Dictionary<string, PlayerLog>();
+        
         private void Deserialize()
         {
-            if (!File.Exists(Instance.Config.SavePath)) // prevent filenotfound
+            if (!File.Exists(Instance.Config.SavePath))
             {
                 JsonSerialization.Save();
                 return;
@@ -29,13 +33,16 @@ namespace XPSystem
         public override void OnEnabled()
         {
             handlers = new EventHandlers();
+            Instance = this;
+            
             Player.Verified += handlers.OnJoined;
             Player.Dying += handlers.OnKill;
             Server.RoundEnded += handlers.OnRoundEnd;
             Player.Escaping += handlers.OnEscape;
-            Instance = this;
+            
             Deserialize();
             harmony.PatchAll();
+            
             base.OnEnabled();
         }
 
@@ -45,8 +52,10 @@ namespace XPSystem
             Player.Dying -= handlers.OnKill;
             Server.RoundEnded -= handlers.OnRoundEnd;
             Player.Escaping -= handlers.OnEscape;
+            
             handlers = null;
             harmony.UnpatchAll();
+            
             base.OnDisabled();
         }
     }

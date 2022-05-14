@@ -6,13 +6,9 @@ namespace XPSystem
 {
     internal class Get : ICommand
     {
-        public string Command => "get";
-
-        public static Get Instance { get; } = new Get();
-
-        public string[] Aliases => new string[] { };
-
-        public string Description => "Gets the player's XP and LVL values by userid";
+        public string Command { get; } = "get";
+        public string[] Aliases { get; } =  new string[] { };
+        public string Description { get; } =  "Gets the player's XP and LVL values by userid";
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
