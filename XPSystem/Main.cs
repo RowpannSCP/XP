@@ -3,6 +3,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using XPSystem.API.Serialization;
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
 
@@ -17,7 +18,7 @@ namespace XPSystem
         
         public static Main Instance { get; set; }
         EventHandlers handlers;
-        readonly Harmony harmony;
+        private Harmony _harmony;
 
         public static Dictionary<string, PlayerLog> Players { get; set; } = new Dictionary<string, PlayerLog>();
         
@@ -25,15 +26,16 @@ namespace XPSystem
         {
             if (!File.Exists(Instance.Config.SavePath))
             {
-                JsonSerialization.Save();
+                DBUtils.Save();
                 return;
             }
-            JsonSerialization.Read();
+            DBUtils.Read();
         }
         public override void OnEnabled()
         {
             handlers = new EventHandlers();
             Instance = this;
+            _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
             
             Player.Verified += handlers.OnJoined;
             Player.Dying += handlers.OnKill;
@@ -41,7 +43,7 @@ namespace XPSystem
             Player.Escaping += handlers.OnEscape;
             
             Deserialize();
-            harmony.PatchAll();
+            _harmony.PatchAll();
             
             base.OnEnabled();
         }
@@ -53,9 +55,12 @@ namespace XPSystem
             Server.RoundEnded -= handlers.OnRoundEnd;
             Player.Escaping -= handlers.OnEscape;
             
-            handlers = null;
-            harmony.UnpatchAll();
+            _harmony.UnpatchAll(_harmony.Id);
             
+            handlers = null;
+            Instance = null;
+            _harmony = null;
+
             base.OnDisabled();
         }
     }

@@ -1,9 +1,9 @@
-﻿using CommandSystem;
-using Exiled.Permissions.Extensions;
-using System;
+﻿using System;
 using System.Linq;
+using CommandSystem;
+using Exiled.Permissions.Extensions;
 
-namespace XPSystem
+namespace XPSystem.Commands
 {
     public class Leaderboard : ICommand
     {

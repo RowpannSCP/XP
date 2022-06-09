@@ -1,10 +1,9 @@
-﻿using CommandSystem;
+﻿using System;
+using CommandSystem;
 using Exiled.Permissions.Extensions;
-using System;
 
-namespace XPSystem
+namespace XPSystem.Commands
 {
-
     internal class Set : ICommand
     {
         public string Command { get; } =  "set";

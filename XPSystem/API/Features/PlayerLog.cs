@@ -1,4 +1,6 @@
 ﻿using Exiled.API.Features;
+using XPSystem.API.Serialization;
+using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem
 {

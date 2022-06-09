@@ -1,8 +1,8 @@
-﻿using CommandSystem;
+﻿using System;
+using CommandSystem;
 using Exiled.Permissions.Extensions;
-using System;
 
-namespace XPSystem
+namespace XPSystem.Commands
 {
     internal class Get : ICommand
     {
@@ -12,7 +12,7 @@ namespace XPSystem
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!sender.CheckPermission("xps.get"))
+            if (!(sender.CheckPermission("xps.get")))
             {
                 response = "You don't have permission (xps.get) to use this command.";
                 return false;

@@ -3,6 +3,7 @@ using Exiled.API.Interfaces;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem
 {

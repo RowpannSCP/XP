@@ -1,4 +1,4 @@
-﻿namespace XPSystem
+﻿namespace XPSystem.API.Features
 {
     public class Badge
     {

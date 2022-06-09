@@ -2,6 +2,7 @@
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using System.Linq;
+using XPSystem.API.Serialization;
 
 namespace XPSystem
 {
@@ -60,7 +61,7 @@ namespace XPSystem
                     Main.Players[player.UserId].AddXP(Main.Instance.Config.TeamWinXP);
                 }
             }
-            JsonSerialization.Save();
+            DBUtils.Save();
         }
     }
 }
