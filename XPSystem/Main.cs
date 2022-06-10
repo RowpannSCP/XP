@@ -3,6 +3,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using LiteDB;
 using XPSystem.API.Serialization;
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;

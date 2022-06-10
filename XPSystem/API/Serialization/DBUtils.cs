@@ -16,7 +16,7 @@ namespace XPSystem.API.Serialization
             var PlayerLogDict = new Dictionary<string, PlayerLogSerializable>();
             foreach (var playerLogInternal in Main.Players)
             {
-                PlayerLogDict[playerLogInternal.Key] = playerLogInternal.Value;
+                PlayerLogDict.Add(playerLogInternal.Key, playerLogInternal.Value);
             }
             using (LiteDatabase db = new LiteDatabase(SP))
             {
