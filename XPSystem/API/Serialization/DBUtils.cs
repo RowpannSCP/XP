@@ -20,21 +20,20 @@ namespace XPSystem.API.Serialization
             }
             using (LiteDatabase db = new LiteDatabase(SP))
             {
-                var col = db.GetCollection<KeyValuePair<string, PlayerLog>>("players");
-                col.InsertBulk(Main.Players);
-                col.Update(Main.Players);
+                var col = db.GetCollection<KeyValuePair<string, PlayerLogSerializable>>("players");
+                var serilializable = Main.Players.GetLogSerializables();
+                col.InsertBulk(serilializable);
+                col.Update(serilializable);
             }
         }
         public static void Read()
         {
             using (LiteDatabase db = new LiteDatabase(SP))
             {
-                var col = db.GetCollection<KeyValuePair<string, PlayerLog>>("players");
-                col.InsertBulk(Main.Players);
-                col.Update(Main.Players);
+                var col = db.GetCollection<KeyValuePair<string, PlayerLogSerializable>>("players");
                 try
                 {
-                    var PlayerLogDict = db.GetCollection<KeyValuePair<string, PlayerLog>>("players").FindAll();
+                    var PlayerLogDict = db.GetCollection<KeyValuePair<string, PlayerLogSerializable>>("players").FindAll();
                     foreach (var playerLog in PlayerLogDict)
                     {
                         Main.Players[playerLog.Key] = new PlayerLog(playerLog.Value);

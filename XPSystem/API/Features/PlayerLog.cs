@@ -1,4 +1,6 @@
-﻿using Exiled.API.Features;
+﻿using System.Collections.Generic;
+using Exiled.API.Features;
+using Hints;
 using XPSystem.API.Serialization;
 using Badge = XPSystem.API.Features.Badge;
 
@@ -85,6 +87,6 @@ namespace XPSystem
                 biggestLvl = pair.Value;
             }
             return biggestLvl;
-        }        
+        }
     }
 }
