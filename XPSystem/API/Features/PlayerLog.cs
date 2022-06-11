@@ -1,4 +1,6 @@
-﻿using Exiled.API.Features;
+﻿using AdvancedHints;
+using AdvancedHints.Enums;
+using Exiled.API.Features;
 
 namespace XPSystem
 {
@@ -29,14 +31,14 @@ namespace XPSystem
                 XP -= lvlsGained * Main.Instance.Config.XPPerLevel;
                 if (Main.Instance.Config.ShowAddedLVL)
                 {
-                    Player.ShowHint(Main.Instance.Config.AddedLVLHint
-                        .Replace("%level%", LVL.ToString()));
+                    Player.ShowManagedHint(Main.Instance.Config.AddedLVLHint
+                        .Replace("%level%", LVL.ToString()), 3f, true, DisplayLocation.Bottom);
                 }
                 ApplyRank();
             }
             else if (Main.Instance.Config.ShowAddedXP)
             {
-                Player.ShowHint($"+ <color=green>{xp}</color> XP");
+                Player.ShowManagedHint($"+ <color=green>{xp}</color> XP", 3f, true, DisplayLocation.Bottom);
             }
         }
 
