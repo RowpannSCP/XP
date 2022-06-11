@@ -2,6 +2,7 @@
 using System.Linq;
 using CommandSystem;
 using Exiled.Permissions.Extensions;
+using XPSystem.API.Serialization;
 
 namespace XPSystem.Commands
 {
@@ -37,13 +38,13 @@ namespace XPSystem.Commands
 
         private string GetTopPlayers(int amount)
         {
-            var sorted = Main.Players.OrderByDescending(o => o.Value.LVL);
+            var sorted = Main.Instance.db.GetCollection<PlayerLog>("Players").FindAll().OrderByDescending(o => o.LVL);
             var players = sorted.Take(amount);
             string str = "";
             int index = 1;
             foreach (var log in players)
             {
-                str += $"{index}. ({log.Key}) : LVL{log.Value.LVL}, XP: {log.Value.XP}\n";
+                str += $"{index}. ({log.ID}) : LVL{log.LVL}, XP: {log.XP}\n";
                 index++;
             }
             return str;

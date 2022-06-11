@@ -1,23 +1,23 @@
 ﻿using System.Collections.Generic;
+using Exiled.API.Features;
 using XPSystem.API.Serialization;
+using XPSystem.Component;
+using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem.API
 {
     public static class Extensions
     {
-        public static IEnumerable<PlayerLogSerializable> GetLogSerializables(this IEnumerable<PlayerLog> log)
+        public static XPComponent GetXPComponent(this Player ply)
         {
-            return log;
+            if (ply.ReferenceHub.TryGetComponent<XPComponent>(out var comp))
+                return comp;
+            return ply.ReferenceHub.gameObject.AddComponent<XPComponent>();
         }
-        
-        public static IDictionary<string, PlayerLogSerializable> GetLogSerializables(this IDictionary<string, PlayerLog> log)
+
+        public static void AddXP(this XPComponent comp, int amount)
         {
-            var result = new Dictionary<string, PlayerLogSerializable>();
-            foreach (var kvp in log)
-            {
-                result.Add(kvp.Key, kvp.Value);
-            }
-            return result;
+            comp.log.XP += amount;
         }
     }
 }

@@ -2,6 +2,7 @@
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using XPSystem.API;
 
 namespace XPSystem.Commands
 {
@@ -23,18 +24,22 @@ namespace XPSystem.Commands
                 response = "Usage : XPSystem set (UserId | in-game id) (int amount)";
                 return false;
             }
-            PlayerLog log;
+            
             Player ply = Player.Get(arguments.At(0));
-            if (!(Main.Players.TryGetValue(arguments.At(0), out log) || (ply != null && Main.Players.TryGetValue(ply.UserId, out log))))
+            if (!(API.API.TryGetId(arguments.At(0), out var log) || ply != null))
             {
                 response = "incorrect userid";
                 return false;
             }
+
+            if (log == null)
+                log = ply.GetXPComponent().log;
+            
             if (int.TryParse(arguments.At(1), out int lvl) && lvl > 0)
             {
                 log.LVL = lvl;
                 response = $"{arguments.At(0)}'s LVL is now {log.LVL}";
-                log.ApplyRank();
+                ply.RankName = "";
                 return true;
             }
             response = $"Invalid amount of LVLs : {lvl}";

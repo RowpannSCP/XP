@@ -2,6 +2,8 @@
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using XPSystem.API;
+using XPSystem.API.Serialization;
 
 namespace XPSystem.Commands
 {
@@ -23,13 +25,17 @@ namespace XPSystem.Commands
                 response = "Usage : XPSystem get (userid)";
                 return false;
             }
-            PlayerLog log;
+            
             Player ply = Player.Get(arguments.At(0));
-            if (!(Main.Players.TryGetValue(arguments.At(0), out log) || (ply != null && Main.Players.TryGetValue(ply.UserId, out log))))
+            if (!(API.API.TryGetId(arguments.At(0), out var log) || ply != null))
             {
                 response = "incorrect userid";
                 return false;
             }
+
+            if (log == null)
+                log = ply.GetXPComponent().log;
+            
             response = $"LVL: {log.LVL} | XP: {log.XP}";
             return true;
         }

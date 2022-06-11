@@ -20,20 +20,11 @@ namespace XPSystem
         public static Main Instance { get; set; }
         EventHandlers handlers;
         private Harmony _harmony;
-
-        public static Dictionary<string, PlayerLog> Players { get; set; } = new Dictionary<string, PlayerLog>();
+        public LiteDatabase db;
         
-        private void Deserialize()
-        {
-            if (!File.Exists(Instance.Config.SavePath))
-            {
-                DBUtils.Save();
-                return;
-            }
-            DBUtils.Read();
-        }
         public override void OnEnabled()
         {
+            db = new LiteDatabase(Config.SavePath);
             handlers = new EventHandlers();
             Instance = this;
             _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
@@ -42,8 +33,8 @@ namespace XPSystem
             Player.Dying += handlers.OnKill;
             Server.RoundEnded += handlers.OnRoundEnd;
             Player.Escaping += handlers.OnEscape;
+            Player.Destroying += handlers.OnLeaving;
             
-            Deserialize();
             _harmony.PatchAll();
             
             base.OnEnabled();
@@ -55,13 +46,16 @@ namespace XPSystem
             Player.Dying -= handlers.OnKill;
             Server.RoundEnded -= handlers.OnRoundEnd;
             Player.Escaping -= handlers.OnEscape;
+            Player.Destroying -= handlers.OnLeaving;
             
             _harmony.UnpatchAll(_harmony.Id);
             
             handlers = null;
             Instance = null;
             _harmony = null;
-
+            db.Dispose();
+            db = null;
+            
             base.OnDisabled();
         }
     }
