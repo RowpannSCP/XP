@@ -20,7 +20,7 @@
 
   <ItemGroup>
       <Reference Include="AdvancedHints">
-        <HintPath>..\..\..\..\..\coding\dlls\AdvancedHints.dll</HintPath>
+        <HintPath>..\refs\AdvancedHints.dll</HintPath>
       </Reference>
       <Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_References)\Assembly-CSharp-firstpass.dll" Private="false" />
       <Reference Include="Mirror" HintPath="$(EXILED_References)\Mirror.dll" Private="false" />
