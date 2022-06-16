@@ -32,13 +32,13 @@ namespace XPSystem
                 if (Main.Instance.Config.ShowAddedLVL)
                 {
                     Player.ShowManagedHint(Main.Instance.Config.AddedLVLHint
-                        .Replace("%level%", LVL.ToString()), 3f, true, DisplayLocation.Bottom);
+                        .Replace("%level%", LVL.ToString()), 3f, true, DisplayLocation.Top);
                 }
                 ApplyRank();
             }
             else if (Main.Instance.Config.ShowAddedXP)
             {
-                Player.ShowManagedHint($"+ <color=green>{xp}</color> XP", 3f, true, DisplayLocation.Bottom);
+                Player.ShowManagedHint($"+ <color=green>{xp}</color> XP", 3f, true, DisplayLocation.Top);
             }
         }
 
