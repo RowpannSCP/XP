@@ -8,7 +8,6 @@ namespace XPSystem.API.Serialization
     {
         public int LVL { get; set; }
         public int XP { get; set; }
-        public string Name;
         [BsonId]
         public string ID { get; set; }
     }

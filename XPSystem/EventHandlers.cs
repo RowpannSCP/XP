@@ -3,9 +3,9 @@ using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using System.Linq;
+using MEC;
 using XPSystem.API;
 using XPSystem.API.Serialization;
-using XPSystem.Component;
 
 namespace XPSystem
 {
@@ -19,7 +19,6 @@ namespace XPSystem
                 return;
             }
 
-            ev.Player.ReferenceHub.gameObject.AddComponent<XPComponent>();
             ev.Player.RankName = "";
         }
 
@@ -36,13 +35,17 @@ namespace XPSystem
             }
             if (Main.Instance.Config.KillXP.TryGetValue(killer.Role, out var killxpdict) && killxpdict.TryGetValue(ev.Target.Role, out int xp))
             {
-                ev.Killer.GetXPComponent().AddXP(xp);
+                var log = ev.Killer.GetLog();
+                log.AddXP(xp);
+                log.UpdateLog();
             }
         }
 
         public void OnEscape(EscapingEventArgs ev)
         {
-            ev.Player.GetXPComponent().AddXP(Main.Instance.Config.EscapeXP[ev.Player.Role]);
+            var log = ev.Player.GetLog();
+            log.AddXP(Main.Instance.Config.EscapeXP[ev.Player.Role]);
+            log.UpdateLog();
         }
 
         public void OnRoundEnd(RoundEndedEventArgs ev)
@@ -67,7 +70,9 @@ namespace XPSystem
             }
             foreach (var player in Player.Get(team))
             {
-                player.GetXPComponent().AddXP(Main.Instance.Config.TeamWinXP);
+                var log = player.GetLog();
+                log.AddXP(Main.Instance.Config.TeamWinXP);
+                log.UpdateLog();
             }
         }
 

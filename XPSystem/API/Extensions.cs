@@ -1,23 +1,37 @@
 ﻿using System.Collections.Generic;
 using Exiled.API.Features;
 using XPSystem.API.Serialization;
-using XPSystem.Component;
+
 using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem.API
 {
     public static class Extensions
     {
-        public static XPComponent GetXPComponent(this Player ply)
+        public static PlayerLog GetLog(this Player ply)
         {
-            if (ply.ReferenceHub.TryGetComponent<XPComponent>(out var comp))
-                return comp;
-            return ply.ReferenceHub.gameObject.AddComponent<XPComponent>();
+            if (!API.TryGetLog(ply.UserId, out var log))
+            {
+                log = new PlayerLog()
+                {
+                    ID = ply.UserId,
+                    LVL = 0,
+                    XP = 0,
+                };
+                Main.Instance.db.GetCollection<PlayerLog>("Players").Insert(log);
+            }
+            return log;
         }
 
-        public static void AddXP(this XPComponent comp, int amount)
+        public static void UpdateLog(this PlayerLog log)
         {
-            comp.log.XP += amount;
+            Main.Instance.db.GetCollection<PlayerLog>("Players").Update(log);
+        }
+
+        public static void AddXP(this PlayerLog log, int amount)
+        {
+            log.XP += amount;
+            log.UpdateLog();
         }
     }
 }

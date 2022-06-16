@@ -27,14 +27,14 @@ namespace XPSystem.Commands
             }
             
             Player ply = Player.Get(arguments.At(0));
-            if (!(API.API.TryGetId(arguments.At(0), out var log) || ply != null))
+            if (!(API.API.TryGetLog(arguments.At(0), out var log) || ply != null))
             {
                 response = "incorrect userid";
                 return false;
             }
 
             if (log == null)
-                log = ply.GetXPComponent().log;
+                log = ply.GetLog();
             
             response = $"LVL: {log.LVL} | XP: {log.XP}";
             return true;

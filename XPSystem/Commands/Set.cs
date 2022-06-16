@@ -26,18 +26,19 @@ namespace XPSystem.Commands
             }
             
             Player ply = Player.Get(arguments.At(0));
-            if (!(API.API.TryGetId(arguments.At(0), out var log) || ply != null))
+            if (!(API.API.TryGetLog(arguments.At(0), out var log) || ply != null))
             {
                 response = "incorrect userid";
                 return false;
             }
 
             if (log == null)
-                log = ply.GetXPComponent().log;
+                log = ply.GetLog();
             
             if (int.TryParse(arguments.At(1), out int lvl) && lvl > 0)
             {
                 log.LVL = lvl;
+                log.UpdateLog();
                 response = $"{arguments.At(0)}'s LVL is now {log.LVL}";
                 ply.RankName = "";
                 return true;

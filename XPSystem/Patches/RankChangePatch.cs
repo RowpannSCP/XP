@@ -12,41 +12,33 @@ namespace XPSystem.Patches
     [HarmonyPatch(typeof(ServerRoles), nameof(ServerRoles.SetText))]
     public class RankChangePatch
     {
-        internal static bool Prefix(string i, ServerRoles __instance)
+        internal static void Postfix(ServerRoles __instance, string i)
         {
-            // actual method
-            if (i == string.Empty)
-                i = (string) null;
-            if (NetworkServer.active)
-                __instance.Network_myText = i;
-            __instance.MyText = i;
-            ServerRoles.NamedColor namedColor = ((IEnumerable<ServerRoles.NamedColor>) __instance.NamedColors).FirstOrDefault<ServerRoles.NamedColor>((Func<ServerRoles.NamedColor, bool>) (row => row.Name == __instance.MyColor));
-            if (namedColor == null)
-                return false;
-            __instance.CurrentColor = namedColor;
-
             var ply = Player.Get(__instance._hub);
-            var comp = ply.GetXPComponent();
+            var log = ply.GetLog();
             Badge badge = Main.Instance.Config.DNTBadge;
             if(!ply.DoNotTrack)
             {
-                foreach (var kvp in Main.Instance.Config.LevelsBadge)
+                foreach (var kvp in Main.Instance.Config.LevelsBadge.OrderBy(kvp => kvp.Key))
                 {
-                    if (comp.log.LVL > kvp.Key)
+                    if (log.LVL > kvp.Key && Main.Instance.Config.LevelsBadge.OrderByDescending(kvp2 => kvp2.Key).ElementAt(0).Key != kvp.Key)
                         continue;
                     badge = kvp.Value;
+                    break;
                 }
             }
-            string toReturn = Main.Instance.Config.BadgeStructure
-                .Replace("%lvl%", comp.log.LVL.ToString())
+            string rankName = Main.Instance.Config.BadgeStructure
+                .Replace("%lvl%", log.LVL.ToString())
                 .Replace("%badge%", badge.Name)
                 .Replace("%oldbadge%", ply.Group?.BadgeText);
 
             ply.RankColor = Main.Instance.Config.OverrideColor && ply.Group?.BadgeColor != null ?
                 ply.Group?.BadgeColor :
                 badge.Color;
-
-            return false;
+            
+            if (NetworkServer.active)
+                __instance.Network_myText = rankName;
+            __instance.MyText = rankName;
         }
     }
 }
