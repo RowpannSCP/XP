@@ -24,7 +24,7 @@ namespace XPSystem
 
         public void OnKill(DyingEventArgs ev)
         {
-            if (ev.Target == null || ev.Target.DoNotTrack)
+            if (ev.Killer == null || ev.Killer.DoNotTrack)
             {
                 return;
             }

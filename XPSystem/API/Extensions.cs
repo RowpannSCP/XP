@@ -14,13 +14,13 @@ namespace XPSystem.API
         {
             if (!API.TryGetLog(ply.UserId, out var log))
             {
-                log = new PlayerLog()
+                var toInsert = new PlayerLog()
                 {
                     ID = ply.UserId,
                     LVL = 0,
                     XP = 0,
                 };
-                Main.Instance.db.GetCollection<PlayerLog>("Players").Insert(log);
+                Main.Instance.db.GetCollection<PlayerLog>("Players").Insert(toInsert);
             }
             return log;
         }

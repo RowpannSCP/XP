@@ -6,7 +6,7 @@ namespace XPSystem.API
     {
         public static bool TryGetLog(string id, out PlayerLog log)
         {
-            log = Main.Instance.db.GetCollection<PlayerLog>("Players").FindById(id);
+            log = Main.Instance.db.GetCollection<PlayerLog>("Players")?.FindById(id);
             return log != null;
         }
     }
