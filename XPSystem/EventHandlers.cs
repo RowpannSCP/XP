@@ -75,6 +75,8 @@ namespace XPSystem
             foreach (var player in Player.Get(team))
             {
                 var log = player.GetLog();
+                if (log is null)
+                    return;
                 log.AddXP(Main.Instance.Config.TeamWinXP);
                 log.UpdateLog();
             }

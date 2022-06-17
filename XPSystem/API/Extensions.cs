@@ -12,9 +12,10 @@ namespace XPSystem.API
     {
         public static PlayerLog GetLog(this Player ply)
         {
+            PlayerLog toInsert = null;
             if (!API.TryGetLog(ply.UserId, out var log))
             {
-                var toInsert = new PlayerLog()
+                toInsert = new PlayerLog()
                 {
                     ID = ply.UserId,
                     LVL = 0,
@@ -22,6 +23,9 @@ namespace XPSystem.API
                 };
                 Main.Instance.db.GetCollection<PlayerLog>("Players").Insert(toInsert);
             }
+
+            if (log is null)
+                return toInsert;
             return log;
         }
 
