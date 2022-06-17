@@ -19,7 +19,11 @@ namespace XPSystem
                 return;
             }
 
-            ev.Player.RankName = "";
+            ev.Player.GetLog();
+            Timing.CallDelayed(0.5f, () =>
+            {
+                ev.Player.RankName = "";
+            });
         }
 
         public void OnKill(DyingEventArgs ev)
