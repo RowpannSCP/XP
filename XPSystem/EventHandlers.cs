@@ -23,6 +23,7 @@ namespace XPSystem
             Timing.CallDelayed(0.5f, () =>
             {
                 ev.Player.RankName = "";
+                ev.Player.DisplayNickname = ev.Player.Nickname;
             });
         }
 

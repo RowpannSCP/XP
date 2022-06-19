@@ -41,6 +41,7 @@ namespace XPSystem.Commands
                 log.UpdateLog();
                 response = $"{arguments.At(0)}'s LVL is now {log.LVL}";
                 ply.RankName = "";
+                ply.DisplayNickname = ply.Nickname;
                 return true;
             }
             response = $"Invalid amount of LVLs : {lvl}";
