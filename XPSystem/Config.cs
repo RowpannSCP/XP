@@ -3,6 +3,7 @@ using Exiled.API.Interfaces;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem
 {
@@ -115,7 +116,7 @@ namespace XPSystem
         public string BadgeStructure { get; set; } = "(LVL %lvl% | %badge%) %oldbadge%";
         
         [Description("Path files get saved to. Requires change on linux.")]
-        public string SavePath { get; set; } = Path.Combine(Paths.Configs, @"Players.json");
+        public string SavePath { get; set; } = Path.Combine(Paths.Configs, @"Players.db");
         
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;

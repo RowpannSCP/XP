@@ -3,6 +3,8 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using LiteDB;
+using XPSystem.API.Serialization;
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
 
@@ -18,20 +20,11 @@ namespace XPSystem
         public static Main Instance { get; set; }
         EventHandlers handlers;
         private Harmony _harmony;
-
-        public static Dictionary<string, PlayerLog> Players { get; set; } = new Dictionary<string, PlayerLog>();
+        public LiteDatabase db;
         
-        private void Deserialize()
-        {
-            if (!File.Exists(Instance.Config.SavePath))
-            {
-                JsonSerialization.Save();
-                return;
-            }
-            JsonSerialization.Read();
-        }
         public override void OnEnabled()
         {
+            db = new LiteDatabase(Config.SavePath);
             handlers = new EventHandlers();
             Instance = this;
             _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
@@ -40,8 +33,8 @@ namespace XPSystem
             Player.Dying += handlers.OnKill;
             Server.RoundEnded += handlers.OnRoundEnd;
             Player.Escaping += handlers.OnEscape;
+            Player.Destroying += handlers.OnLeaving;
             
-            Deserialize();
             _harmony.PatchAll();
             
             base.OnEnabled();
@@ -53,9 +46,15 @@ namespace XPSystem
             Player.Dying -= handlers.OnKill;
             Server.RoundEnded -= handlers.OnRoundEnd;
             Player.Escaping -= handlers.OnEscape;
+            Player.Destroying -= handlers.OnLeaving;
+            
+            _harmony.UnpatchAll(_harmony.Id);
             
             handlers = null;
-            _harmony.UnpatchAll(_harmony.Id);
+            Instance = null;
+            _harmony = null;
+            db.Dispose();
+            db = null;
             
             base.OnDisabled();
         }

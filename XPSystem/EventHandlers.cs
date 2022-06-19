@@ -1,7 +1,11 @@
-﻿using Exiled.API.Enums;
+﻿using System;
+using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using System.Linq;
+using MEC;
+using XPSystem.API;
+using XPSystem.API.Serialization;
 
 namespace XPSystem
 {
@@ -12,23 +16,19 @@ namespace XPSystem
             if (ev.Player.DoNotTrack)
             {
                 ev.Player.OpenReportWindow(Main.Instance.Config.DNTHint);
-                ev.Player.RankName = Main.Instance.Config.DNTBadge.Name;
-                ev.Player.RankColor = Main.Instance.Config.DNTBadge.Color;
                 return;
             }
-            if (!Main.Players.TryGetValue(ev.Player.UserId, out PlayerLog log))
+
+            ev.Player.GetLog();
+            Timing.CallDelayed(0.5f, () =>
             {
-                log = new PlayerLog(ev.Player);
-                Main.Players[ev.Player.UserId] = log;
-                return;
-            }
-            log.Player = ev.Player;
-            log.ApplyRank();
+                ev.Player.RankName = "";
+            });
         }
 
         public void OnKill(DyingEventArgs ev)
         {
-            if (ev.Target == null || ev.Target.DoNotTrack)
+            if (ev.Killer == null || ev.Killer.DoNotTrack)
             {
                 return;
             }
@@ -39,28 +39,52 @@ namespace XPSystem
             }
             if (Main.Instance.Config.KillXP.TryGetValue(killer.Role, out var killxpdict) && killxpdict.TryGetValue(ev.Target.Role, out int xp))
             {
-                Main.Players[ev.Killer.UserId].AddXP(xp);
+                var log = ev.Killer.GetLog();
+                log.AddXP(xp);
+                log.UpdateLog();
             }
         }
 
         public void OnEscape(EscapingEventArgs ev)
         {
-            if (Main.Players.TryGetValue(ev.Player.UserId, out PlayerLog log))
-            {
-                log.AddXP(Main.Instance.Config.EscapeXP[ev.Player.Role]);
-            }
+            var log = ev.Player.GetLog();
+            log.AddXP(Main.Instance.Config.EscapeXP[ev.Player.Role]);
+            log.UpdateLog();
         }
 
         public void OnRoundEnd(RoundEndedEventArgs ev)
         {
-            foreach (Player player in Player.List)
+            Side team;
+            switch (ev.LeadingTeam)
             {
-                if (player.LeadingTeam == ev.LeadingTeam)
-                {
-                    Main.Players[player.UserId].AddXP(Main.Instance.Config.TeamWinXP);
-                }
+                case LeadingTeam.FacilityForces:
+                    team = Side.Mtf;
+                    break;
+                case LeadingTeam.ChaosInsurgency:
+                    team = Side.ChaosInsurgency;
+                    break;
+                case LeadingTeam.Anomalies:
+                    team = Side.Scp;
+                    break;
+                case LeadingTeam.Draw:
+                    team = Side.None;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            JsonSerialization.Save();
+            foreach (var player in Player.Get(team))
+            {
+                var log = player.GetLog();
+                if (log is null)
+                    return;
+                log.AddXP(Main.Instance.Config.TeamWinXP);
+                log.UpdateLog();
+            }
+        }
+
+        public void OnLeaving(DestroyingEventArgs ev)
+        {
+            
         }
     }
 }

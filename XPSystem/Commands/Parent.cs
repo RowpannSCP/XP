@@ -1,7 +1,7 @@
-﻿using CommandSystem;
-using System;
+﻿using System;
+using CommandSystem;
 
-namespace XPSystem
+namespace XPSystem.Commands
 {
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
     [CommandHandler(typeof(GameConsoleCommandHandler))]

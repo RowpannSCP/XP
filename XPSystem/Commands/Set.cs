@@ -1,10 +1,11 @@
-﻿using CommandSystem;
+﻿using System;
+using CommandSystem;
+using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
-using System;
+using XPSystem.API;
 
-namespace XPSystem
+namespace XPSystem.Commands
 {
-
     internal class Set : ICommand
     {
         public string Command { get; } =  "set";
@@ -23,17 +24,23 @@ namespace XPSystem
                 response = "Usage : XPSystem set (UserId | in-game id) (int amount)";
                 return false;
             }
-            PlayerLog log;
-            if (!Main.Players.TryGetValue(arguments.At(0), out log))
+            
+            Player ply = Player.Get(arguments.At(0));
+            if (!(API.API.TryGetLog(arguments.At(0), out var log) || ply != null))
             {
                 response = "incorrect userid";
                 return false;
             }
+
+            if (log == null)
+                log = ply.GetLog();
+            
             if (int.TryParse(arguments.At(1), out int lvl) && lvl > 0)
             {
                 log.LVL = lvl;
+                log.UpdateLog();
                 response = $"{arguments.At(0)}'s LVL is now {log.LVL}";
-                log.ApplyRank();
+                ply.RankName = "";
                 return true;
             }
             response = $"Invalid amount of LVLs : {lvl}";
