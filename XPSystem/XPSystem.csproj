@@ -17,11 +17,12 @@
         <PlatformTarget>AnyCPU</PlatformTarget>
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
-        <Optimize>false</Optimize>
+        <Optimize>true</Optimize>
         <OutputPath>bin\Debug\</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,12 +32,13 @@
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EXILED" Version="5.2.1" />
-        <PackageReference Include="Lib.Harmony" Version="2.2.1" />
-        <PackageReference Include="LiteDB" Version="5.0.11" />
+        <PackageReference Include="EXILED" Version="5.3.0-beta.4" />
+        <PackageReference Include="Lib.Harmony" Version="2.2.2" />
+        <PackageReference Include="LiteDB" Version="5.0.12" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta1" />
         <PackageReference Include="YamlDotNet" Version="11.2.1" />
     </ItemGroup>
@@ -46,7 +48,7 @@
             <HintPath>..\refs\AdvancedHints.dll</HintPath>
         </Reference>
         <Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_References)\Assembly-CSharp-firstpass.dll" Private="false" />
-        <Reference Include="Mirror" HintPath="$(EXILED_References)\Mirror.dll" Private="false" />
+        <Reference Include="Mirror" HintPath="$(EXILED_References)\Mirror-Publicized.dll" Private="false" />
         <Reference Include="UnityEngine.CoreModule" HintPath="$(EXILED_References)\UnityEngine.CoreModule.dll" Private="false" />
         <Reference Include="UnityEngine.PhysicsModule" HintPath="$(EXILED_References)\UnityEngine.PhysicsModule.dll" Private="false" />
     </ItemGroup>
@@ -59,6 +61,7 @@
         <Compile Include="Commands\Get.cs" />
         <Compile Include="Commands\Leaderboard.cs" />
         <Compile Include="Commands\Parent.cs" />
+        <Compile Include="Commands\RefreshNicks.cs" />
         <Compile Include="Commands\Set.cs" />
         <Compile Include="Config.cs" />
         <Compile Include="EventHandlers.cs" />

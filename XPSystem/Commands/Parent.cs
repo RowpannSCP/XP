@@ -19,11 +19,12 @@ namespace XPSystem.Commands
             RegisterCommand(new Leaderboard());
             RegisterCommand(new Set());
             RegisterCommand(new Get());
+            RegisterCommand(new RefreshNicks());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            response = "Use: .xps (leaderboard | set | get)";
+            response = "Use: .xps (leaderboard | set | get | refresh)";
             return false;
         }
     }

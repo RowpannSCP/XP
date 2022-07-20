@@ -9,10 +9,12 @@ using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem.Patches
 {
+    using LiteNetLib4Mirror.Open.Nat;
+
     [HarmonyPatch(typeof(ServerRoles), nameof(ServerRoles.SetText))]
     public class RankChangePatch
     {
-        internal static void Postfix(ServerRoles __instance, string i)
+        internal static bool Prefix(ServerRoles __instance, string i)
         {
             var ply = Player.Get(__instance._hub);
             var log = ply.GetLog();
@@ -27,18 +29,43 @@ namespace XPSystem.Patches
                     break;
                 }
             }
-            string rankName = Main.Instance.Config.BadgeStructure
-                .Replace("%lvl%", log.LVL.ToString())
-                .Replace("%badge%", badge.Name)
-                .Replace("%oldbadge%", ply.Group?.BadgeText);
 
-            ply.RankColor = Main.Instance.Config.OverrideColor && ply.Group?.BadgeColor != null ?
-                ply.Group?.BadgeColor :
-                badge.Color;
+            string newValue;
+            if (!i.ContainsIgnoreCase("\n"))
+            {
+                newValue = Main.Instance.Config.BadgeStructure
+                    .Replace("%lvl%", log.LVL.ToString())
+                    .Replace("%badge%", badge.Name)
+                    .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.Group?.BadgeText : i);
+                newValue += "\n";
+            }
+            else
+            {
+                newValue = i;
+            }
             
+
+            Log.Debug(i);
+            Log.Debug(newValue);
+            Log.Debug($"Override color : {Main.Instance.Config.OverrideColor}");
+            Log.Debug("Group color : " + ply.Group?.BadgeColor);
+            Log.Debug("Badge color : " + badge.Color);
             if (NetworkServer.active)
-                __instance.Network_myText = rankName;
-            __instance.MyText = rankName;
+                __instance.Network_myText = newValue;
+            __instance.MyText = newValue;
+
+            if (Main.Instance.Config.OverrideColor)
+            {
+                ply.RankColor = badge.Color;
+                return false;
+            }
+            ServerRoles.NamedColor namedColor = __instance.NamedColors.FirstOrDefault(row => row.Name == __instance.MyColor);
+            if (namedColor == null)
+                return false;
+            __instance.CurrentColor = namedColor;
+            
+            return false;
+
         }
     }
 }
