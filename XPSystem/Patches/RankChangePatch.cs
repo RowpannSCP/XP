@@ -44,12 +44,6 @@ namespace XPSystem.Patches
                 newValue = i;
             }
             
-
-            Log.Debug(i);
-            Log.Debug(newValue);
-            Log.Debug($"Override color : {Main.Instance.Config.OverrideColor}");
-            Log.Debug("Group color : " + ply.Group?.BadgeColor);
-            Log.Debug("Badge color : " + badge.Color);
             if (NetworkServer.active)
                 __instance.Network_myText = newValue;
             __instance.MyText = newValue;

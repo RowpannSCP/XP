@@ -7,6 +7,8 @@ using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem
 {
+    using AdvancedHints.Enums;
+
     public class Config : IConfig
     {
         [Description("Enable plugin?")]
@@ -123,5 +125,23 @@ namespace XPSystem
         
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;
+
+        [Description("Displayer location of hints.")] 
+        public DisplayLocation HintLocation { get; set; } = DisplayLocation.Top;
+        
+        [Description("Size of hints.")]
+        public byte HintSize { get; set; } = 100;
+        
+        [Description("Spacing of the in (horizontal offset)")]
+        public short HintSpace { get; set; } = 0;
+        
+        [Description("Vertical offset of hints.")]
+        public byte VOffest { get; set; } = 0;
+        
+        [Description("Duration of hints.")]
+        public float HintDuration { get; set; } = 3;
+        
+        [Description("Should hints override the AdvancedHints quene?")]
+        public bool OverrideQuene { get; set; } = true;
     }
 }

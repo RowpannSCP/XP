@@ -10,6 +10,7 @@ namespace XPSystem.API
 {
     public static class Extensions
     {
+        private static Config _cfg = Main.Instance.Config;
         public static PlayerLog GetLog(this Player ply)
         {
             PlayerLog toInsert = null;
@@ -45,17 +46,22 @@ namespace XPSystem.API
                 log.XP -= lvlsGained * Main.Instance.Config.XPPerLevel;
                 if (Main.Instance.Config.ShowAddedLVL && ply != null)
                 {
-                    ply.ShowManagedHint(Main.Instance.Config.AddedLVLHint
-                        .Replace("%level%", log.LVL.ToString()), 3f, true, DisplayLocation.Top);
+                    ply.ShowCustomHint(Main.Instance.Config.AddedLVLHint
+                        .Replace("%level%", log.LVL.ToString()));
                 }
 
                 ply.RankName = "";
             }
             else if (Main.Instance.Config.ShowAddedXP && ply != null)
             {
-                ply.ShowManagedHint($"+ <color=green>{amount}</color> XP", 3f, true, DisplayLocation.Top);
+                ply.ShowCustomHint($"+ <color=green>{amount}</color> XP");
             }
             log.UpdateLog();
+        }
+
+        public static void ShowCustomHint(this Player ply, string text)
+        {
+            ply.ShowManagedHint($"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{text}</size></voffset></voffset>", _cfg.HintDuration, _cfg.OverrideQuene, _cfg.HintLocation);
         }
     }
 }

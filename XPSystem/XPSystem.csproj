@@ -63,6 +63,7 @@
         <Compile Include="Commands\Parent.cs" />
         <Compile Include="Commands\RefreshNicks.cs" />
         <Compile Include="Commands\Set.cs" />
+        <Compile Include="Commands\ShowHint.cs" />
         <Compile Include="Config.cs" />
         <Compile Include="EventHandlers.cs" />
         <Compile Include="Main.cs" />
