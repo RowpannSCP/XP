@@ -1,7 +1,7 @@
 # XPSystem
  A basic, customisable XP and LVL system for SCP: SL.
 ## Config
-```
+
 ## Emporium Config:
 
 ``` ## Kill XP Config:
