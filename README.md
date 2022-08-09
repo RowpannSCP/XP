@@ -239,9 +239,9 @@
       NtfSergeant: 250
       NtfCaptain: 300
       NtfSpecialist: 250 
-
-## Commands
 ```
+## Commands
+
 XPSystem (or xps) - parent command, always use before others. 
 leaderboards (or lb) <optional, amount of players> - displays top amount of players by level. defaults to 10. Permission: xps.get
 set <UserId or in-game id> <level> - sets the level for chosen player. Permission: xps.set
