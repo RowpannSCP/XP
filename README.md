@@ -4,18 +4,7 @@
 ```
 ## Emporium Config:
 
-``` x_p_system:
-# Enable plugin?
-  is_enabled: true
-  # Show debug messages?
-  show_debug: false
-  # Hint shown to the players if they have DNT enabled.
-  d_n_t_hint: We can't track your stats while you have DNT enabled in your game options!
-  # Badge for players with DNT enabled.
-  d_n_t_badge:
-    name: (DNT) anonymous man????
-    color: nickel
-  # (You may add your own entries) Role1: Role2: XP player with Role1 gets for killing a person with Role2 
+``` ## Kill XP Config:
   kill_x_p:
     ClassD:
       Scientist: 200
@@ -249,58 +238,7 @@
       NtfPrivate: 200
       NtfSergeant: 250
       NtfCaptain: 300
-      NtfSpecialist: 250
-  # How many XP should a player get if their team wins.
-  team_win_x_p: 250
-  # How many XP is required to advance a level.
-  x_p_per_level: 5000
-  # Show a mini-hint if a player gets XP
-  show_added_x_p: true
-  # Show a hint to the player if he advances a level.
-  show_added_l_v_l: true
-  # What hint to show if player advances a level. (if ShowAddedLVL = false, this is irrelevant)
-  added_l_v_l_hint: Level Up! You are now level %level%
-  # (You may add your own entries) How many XP a player gets for escaping
-  escape_x_p:
-    ClassD: 500
-    Scientist: 300
-  # (You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.
-  levels_badge:
-    0:
-      name: Visitor
-      color: cyan
-    1:
-      name: Junior
-      color: orange
-    5:
-      name: Senior
-      color: yellow
-    10:
-      name: Veteran
-      color: red
-    50:
-      name: Nerd
-      color: lime
-  # The structure of the player nick. Variables: %lvl% - the level. %name% - the players nickname/name
-  nick_structure: LVL %lvl% | %name%
-  # The structure of the badge displayed in-game. Variables: %lvl% - the level. %badge% earned badge in specified in LevelsBadge. %oldbadge% - base-game badge, like ones specified in config-remoteadmin, or a global badge. can be null.
-  badge_structure: '%oldbadge%'
-  # Path files get saved to. Requires change on linux.
-  save_path: /home/container/.config/EXILED/Configs/Players.db
-  # Override colors for people who already have a rank
-  override_color: false
-  # Displayer location of hints.
-  hint_location: Top
-  # Size of hints.
-  hint_size: 100
-  # Spacing of the in (horizontal offset)
-  hint_space: -25
-  # Vertical offset of hints.
-  v_offest: 7
-  # Duration of hints.
-  hint_duration: 3
-  # Should hints override the AdvancedHints quene?
-  override_quene: true ```
+      NtfSpecialist: 250 
 
 ## Commands
 ```
