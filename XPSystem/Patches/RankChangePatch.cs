@@ -31,7 +31,7 @@ namespace XPSystem.Patches
             }
 
             string newValue;
-            if (!i.ContainsIgnoreCase("\n"))
+            if (i == null || !i.ContainsIgnoreCase("\n"))
             {
                 newValue = Main.Instance.Config.BadgeStructure
                     .Replace("%lvl%", log.LVL.ToString())
