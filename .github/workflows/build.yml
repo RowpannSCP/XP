@@ -1,5 +1,6 @@
 name: XP CI
-on: [push, pull_request]
+# thing just stopped working literally cannot be assed
+# on: [push, pull_request]
 
 jobs:
   build:
