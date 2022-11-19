@@ -18,7 +18,7 @@ namespace XPSystem
         public override Version RequiredExiledVersion { get; } = new Version(5, 2, 0);
         
         public static Main Instance { get; set; }
-        EventHandlers handlers;
+        public EventHandlers handlers;
         private Harmony _harmony;
         public LiteDatabase db;
         

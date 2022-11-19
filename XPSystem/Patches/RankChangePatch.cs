@@ -18,6 +18,7 @@ namespace XPSystem.Patches
         {
             var ply = Player.Get(__instance._hub);
             var log = ply.GetLog();
+            bool hasGroup = ply.Group == Main.Instance.handlers.UserGroup;
             Badge badge = Main.Instance.Config.DNTBadge;
             if(!ply.DoNotTrack)
             {
@@ -33,26 +34,40 @@ namespace XPSystem.Patches
             string newValue;
             if (i == null || !i.ContainsIgnoreCase("\n"))
             {
-                newValue = Main.Instance.Config.BadgeStructure
-                    .Replace("%lvl%", log.LVL.ToString())
-                    .Replace("%badge%", badge.Name)
-                    .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.Group?.BadgeText : i);
+                newValue = !hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)
+                    ? Main.Instance.Config.BadgeStructure
+                        .Replace("%lvl%", log.LVL.ToString())
+                        .Replace("%badge%", badge.Name)
+                        .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.Group?.BadgeText : i)
+                    : Main.Instance.Config.BadgeStructureNoBadge
+                        .Replace("%lvl%", log.LVL.ToString())
+                        .Replace("%badge%", badge.Name);
                 newValue += "\n";
             }
             else
             {
                 newValue = i;
             }
+
+            bool returnEarly = false;
+            if (hasGroup)
+            {
+                ply.RankColor = badge.Color;
+                returnEarly = true;
+            }
+            else if (Main.Instance.Config.OverrideColor)
+            {
+                ply.RankColor = badge.Color;
+                returnEarly = true;
+            }
             
             if (NetworkServer.active)
                 __instance.Network_myText = newValue;
             __instance.MyText = newValue;
 
-            if (Main.Instance.Config.OverrideColor)
-            {
-                ply.RankColor = badge.Color;
+            if (returnEarly)
                 return false;
-            }
+            
             ServerRoles.NamedColor namedColor = __instance.NamedColors.FirstOrDefault(row => row.Name == __instance.MyColor);
             if (namedColor == null)
                 return false;

@@ -9,8 +9,10 @@ using XPSystem.API.Serialization;
 
 namespace XPSystem
 {
-    class EventHandlers
+    public class EventHandlers
     {
+        public UserGroup UserGroup = new UserGroup();
+        
         public void OnJoined(VerifiedEventArgs ev)
         {
             if (ev.Player.DoNotTrack)
@@ -22,14 +24,17 @@ namespace XPSystem
             ev.Player.GetLog();
             Timing.CallDelayed(0.5f, () =>
             {
-                ev.Player.RankName = "";
+                if (ev.Player.Group == null)
+                    ev.Player.Group = UserGroup;
+                else
+                    ev.Player.RankName = "";
                 ev.Player.DisplayNickname = ev.Player.Nickname;
             });
         }
 
         public void OnKill(DyingEventArgs ev)
         {
-            if (ev.Killer == null || ev.Killer.DoNotTrack)
+            if (ev.Killer == null || ev.Target == null || ev.Killer.DoNotTrack)
             {
                 return;
             }
