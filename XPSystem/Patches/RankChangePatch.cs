@@ -16,7 +16,7 @@ namespace XPSystem.Patches
     [HarmonyPatch(typeof(ServerRoles), nameof(ServerRoles.SetText))]
     public class RankChangePatch
     {
-        internal static bool Prefix(ServerRoles __instance, string i)
+        internal static void Prefix(ServerRoles __instance, string i)
         {
             if (!i.Contains("\n"))
             {
@@ -25,23 +25,6 @@ namespace XPSystem.Patches
                     API.UpdateBadge(Player.Get(__instance._hub), i);
                 });
             }
-            if (i == string.Empty)
-            {
-                i = null;
-            }
-            if (NetworkServer.active)
-            {
-                __instance.Network_myText = i;
-            }
-            __instance.MyText = i;
-            global::ServerRoles.NamedColor namedColor = __instance.NamedColors.FirstOrDefault(row => row.Name == __instance.MyColor);
-            if (namedColor == null)
-            {
-                return false;
-            }
-            __instance.CurrentColor = namedColor;
-
-            return false;
         }
     }
 }
