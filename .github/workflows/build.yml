@@ -1,6 +1,6 @@
 name: XP CI
 # thing just stopped working literally cannot be assed
-# on: [push, pull_request]
+on: []
 
 jobs:
   build:
