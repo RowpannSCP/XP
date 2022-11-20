@@ -24,10 +24,7 @@ namespace XPSystem
             ev.Player.GetLog();
             Timing.CallDelayed(0.5f, () =>
             {
-                if (ev.Player.Group == null)
-                    ev.Player.Group = UserGroup;
-                else
-                    ev.Player.RankName = "";
+                API.API.UpdateBadge(ev.Player, ev.Player.Group?.BadgeText);
                 ev.Player.DisplayNickname = ev.Player.Nickname;
             });
         }
