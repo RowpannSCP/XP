@@ -18,7 +18,7 @@ namespace XPSystem.Patches
     {
         internal static void Prefix(ServerRoles __instance, string i)
         {
-            if (!i.Contains("\n"))
+            if (i != null && !i.Contains("\n"))
             {
                 Timing.CallDelayed(1f, () =>
                 {
