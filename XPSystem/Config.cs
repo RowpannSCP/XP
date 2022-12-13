@@ -8,6 +8,7 @@ using Badge = XPSystem.API.Features.Badge;
 namespace XPSystem
 {
     using AdvancedHints.Enums;
+    using Exiled.API.Enums;
 
     public class Config : IConfig
     {
@@ -83,6 +84,32 @@ namespace XPSystem
             [RoleType.ClassD] = 500,
             [RoleType.Scientist] = 300
         };
+
+        [Description("(You may add your own entries) How much xp a player gets for upgrading a item category")]
+        public Dictionary<ItemCategory, int> UpgradeXP { get; set; } = new Dictionary<ItemCategory, int>()
+        {
+            [ItemCategory.Ammo] = 10,
+            [ItemCategory.Armor] = 10,
+            [ItemCategory.Firearm] = 10,
+            [ItemCategory.Grenade] = 10,
+            [ItemCategory.Keycard] = 10,
+            [ItemCategory.Medical] = 10,
+            [ItemCategory.Radio] = 10,
+            [ItemCategory.MicroHID] = 10,
+            [ItemCategory.SCPItem] = 10
+        };
+
+        [Description("Whether or not the xp for upgrading can only be gotten once per round")]
+        public bool UpgradeXPOneTime { get; set; } = true;
+
+        [Description("(You may add your own entries) How much xp a player gets for interacting with a door")]
+        public Dictionary<DoorType, int> DoorInteractXP { get; set; } = new Dictionary<DoorType, int>()
+        {
+            [DoorType.Intercom] = 10,
+        };
+        
+        [Description("Whether or not the xp for using doors can only be gotten once per round")]
+        public bool DoorXPOneTime { get; set; } = true;
 
         [Description("(You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.")]
         public Dictionary<int, Badge> LevelsBadge { get; set; } = new Dictionary<int, Badge>()

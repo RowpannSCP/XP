@@ -10,6 +10,8 @@ using Server = Exiled.Events.Handlers.Server;
 
 namespace XPSystem
 {
+    using Exiled.Events.Handlers;
+
     public class Main : Plugin<Config>
     {
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
@@ -34,7 +36,10 @@ namespace XPSystem
             Server.RoundEnded += handlers.OnRoundEnd;
             Player.Escaping += handlers.OnEscape;
             Player.Destroying += handlers.OnLeaving;
-            
+            Player.InteractingDoor += handlers.OnInteractingDoor;
+            Scp914.UpgradingItem += handlers.OnScp914UpgradingItem;
+            Scp914.UpgradingInventoryItem += handlers.OnScp914UpgradingInventory;
+
             _harmony.PatchAll();
             
             base.OnEnabled();
@@ -47,6 +52,9 @@ namespace XPSystem
             Server.RoundEnded -= handlers.OnRoundEnd;
             Player.Escaping -= handlers.OnEscape;
             Player.Destroying -= handlers.OnLeaving;
+            Player.InteractingDoor -= handlers.OnInteractingDoor;
+            Scp914.UpgradingItem -= handlers.OnScp914UpgradingItem;
+            Scp914.UpgradingInventoryItem -= handlers.OnScp914UpgradingInventory;
             
             _harmony.UnpatchAll(_harmony.Id);
             

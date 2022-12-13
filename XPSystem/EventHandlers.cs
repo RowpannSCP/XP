@@ -9,10 +9,14 @@ using XPSystem.API.Serialization;
 
 namespace XPSystem
 {
+    using System.Collections.Generic;
+    using Exiled.API.Extensions;
+
     public class EventHandlers
     {
-        public UserGroup UserGroup = new UserGroup();
-        
+        public Dictionary<Player, List<DoorType>> AlreadyGainedPlayers = new Dictionary<Player, List<DoorType>>();
+        public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers2 = new Dictionary<Player, List<ItemCategory>>();
+
         public void OnJoined(VerifiedEventArgs ev)
         {
             if (ev.Player.DoNotTrack)
@@ -83,11 +87,91 @@ namespace XPSystem
                 log.AddXP(Main.Instance.Config.TeamWinXP);
                 log.UpdateLog();
             }
+            AlreadyGainedPlayers.Clear();
+            AlreadyGainedPlayers2.Clear();
         }
 
         public void OnLeaving(DestroyingEventArgs ev)
         {
             
+        }
+
+
+        public void OnInteractingDoor(InteractingDoorEventArgs ev)
+        {
+            if (!ev.IsAllowed)
+                return;
+            if (Main.Instance.Config.DoorInteractXP.ContainsKey(ev.Door.Type) && Main.Instance.Config.DoorInteractXP[ev.Door.Type] != 0)
+            {
+                if(!AlreadyGainedPlayers.TryGetValue(ev.Player, out var value))
+                    AlreadyGainedPlayers.Add(ev.Player, new List<DoorType>());
+                if (!Main.Instance.Config.DoorXPOneTime || !value.Contains(ev.Door.Type))
+                {
+                    value.Add(ev.Door.Type);
+                    var log = ev.Player.GetLog();
+                    log.AddXP(Main.Instance.Config.DoorInteractXP[ev.Door.Type]);
+                }
+            }
+        }
+
+        public void OnScp914UpgradingItem(UpgradingItemEventArgs ev)
+        {
+            if (!ev.IsAllowed)
+                return;
+            if (ev.Item == null || ev.Item.PreviousOwner == null)
+                return;
+            OnUpgradingItem(ev.Item.PreviousOwner, GetCategory(ev.Item.Type));
+        }
+
+        public void OnScp914UpgradingInventory(UpgradingInventoryItemEventArgs ev)
+        {
+            if (!ev.IsAllowed)
+                return;
+            if(ev.Item == null || ev.Player == null)
+                return;
+            OnUpgradingItem(ev.Player, ev.Item.Category);
+        }
+
+        public void OnUpgradingItem(Player ply, ItemCategory type)
+        {
+            if (Main.Instance.Config.UpgradeXP.ContainsKey(type) && Main.Instance.Config.UpgradeXP[type] != 0)
+            {
+                if(!AlreadyGainedPlayers2.TryGetValue(ply, out var value))
+                    AlreadyGainedPlayers2.Add(ply, new List<ItemCategory>());
+                if (!Main.Instance.Config.UpgradeXPOneTime || !value.Contains(type))
+                {
+                    value.Add(type);
+                    var log = ply.GetLog();
+                    log.AddXP(Main.Instance.Config.UpgradeXP[type]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// If there is an exiled/basegame method for this ping me.
+        /// </summary>
+        /// <param name="type">type</param>
+        private ItemCategory GetCategory(ItemType type)
+        {
+            if (type.IsAmmo())
+                return ItemCategory.Ammo;
+            if (type.IsArmor())
+                return ItemCategory.Armor;
+            if (type.IsKeycard())
+                return ItemCategory.Keycard;
+            if (type.IsMedical())
+                return ItemCategory.Medical;
+            if (type.IsScp())
+                return ItemCategory.SCPItem;
+            if (type.IsWeapon())
+                return ItemCategory.Firearm;
+            if (type.IsThrowable())
+                return ItemCategory.Grenade;
+            if (type == ItemType.ParticleDisruptor)
+                return ItemCategory.MicroHID;
+            if (type == ItemType.Radio)
+                return ItemCategory.Radio;
+            return ItemCategory.None;
         }
     }
 }
