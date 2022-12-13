@@ -104,7 +104,10 @@ namespace XPSystem
             if (Main.Instance.Config.DoorInteractXP.ContainsKey(ev.Door.Type) && Main.Instance.Config.DoorInteractXP[ev.Door.Type] != 0)
             {
                 if(!AlreadyGainedPlayers.TryGetValue(ev.Player, out var value))
+                {
                     AlreadyGainedPlayers.Add(ev.Player, new List<DoorType>());
+                    value = AlreadyGainedPlayers[ev.Player];
+                }
                 if (!Main.Instance.Config.DoorXPOneTime || !value.Contains(ev.Door.Type))
                 {
                     value.Add(ev.Door.Type);
@@ -137,7 +140,10 @@ namespace XPSystem
             if (Main.Instance.Config.UpgradeXP.ContainsKey(type) && Main.Instance.Config.UpgradeXP[type] != 0)
             {
                 if(!AlreadyGainedPlayers2.TryGetValue(ply, out var value))
+                {
                     AlreadyGainedPlayers2.Add(ply, new List<ItemCategory>());
+                    value = AlreadyGainedPlayers2[ply];
+                }
                 if (!Main.Instance.Config.UpgradeXPOneTime || !value.Contains(type))
                 {
                     value.Add(type);
