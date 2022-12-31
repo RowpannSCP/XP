@@ -115,10 +115,27 @@ namespace XPSystem
                 {
                     value.Add(ev.Door.Type);
                     var log = ev.Player.GetLog();
-                    log.AddXP(Main.Instance.Config.DoorInteractXP[ev.Door.Type], Main.GetTranslation("door"));
+                    bool hid = ev.Door.Room.Type == RoomType.HczHid;
+                    log.AddXP(Main.Instance.Config.DoorInteractXP[ev.Door.Type], hid ? "doorhid" : Main.GetTranslation(GetDoorKey(ev.Door.Type)));
                 }
             }
         }
+
+        private string GetDoorKey(DoorType type) => type switch
+        {
+            DoorType.Intercom => "doorintercom",
+            DoorType.Scp914Gate => "door914",
+            DoorType.Scp173Gate => "door173",
+            DoorType.GateA => "doorgatea",
+            DoorType.GateB => "doorgateb",
+            DoorType.Scp049Gate => "door049",
+            DoorType.Scp330 => "door330",
+            DoorType.CheckpointLczA => "doorcheckpointlcza",
+            DoorType.CheckpointLczB => "doorcheckpointlczb",
+            DoorType.CheckpointEzHczA => "doorcheckpointhcza",
+            DoorType.CheckpointEzHczB => "doorcheckpointhczb",
+            _ => "door"
+        };
 
         public void OnScp914UpgradingItem(UpgradingPickupEventArgs ev)
         {
@@ -151,7 +168,7 @@ namespace XPSystem
                 {
                     value.Add(type);
                     var log = ply.GetLog();
-                    log.AddXP(Main.Instance.Config.UpgradeXP[type], Main.GetTranslation("upgrading914"));
+                    log.AddXP(Main.Instance.Config.UpgradeXP[type], Main.GetTranslation($"upgrading914{type.ToString()}"));
                 }
             }
         }

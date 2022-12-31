@@ -4,11 +4,23 @@
 
 ### In xp-translations.txt (config folder) you con customize messages.
 ### Keys:
-upgrading914 <br>
+upgrading914{itemcategory} <br>
 door <br>
 teamwin <br>
 escape <br>
 kill <br>
+hid <br>
+doorintercom <br>
+door914 <br>
+door173 <br> 
+doorgatea <br>
+doorgateb <br>
+door049 <br>
+door330 <br>
+doorcheckpointlcza <br>
+doorcheckpointlczb <br>
+doorcheckpointhcza <br>
+doorcheckpointhczb <br>
 
 ## Emporium Config:
 

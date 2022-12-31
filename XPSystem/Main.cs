@@ -15,7 +15,7 @@
     {
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(1, 5, 0);
+        public override Version Version { get; } = new Version(1, 6, 0);
         public override Version RequiredExiledVersion { get; } = new Version(6, 0, 0);
         
         public static Main Instance { get; set; }
@@ -25,7 +25,8 @@
         
         public Dictionary<string, string> Translations = new Dictionary<string, string>()
         {
-            ["ExampleKey"] = "ExampleValue"
+            ["ExampleKey"] = "ExampleValue",
+            ["ExampleKey2"] = "ExampleValue",
         };
 
         public override void OnEnabled()
