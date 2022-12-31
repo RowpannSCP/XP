@@ -9,6 +9,7 @@ namespace XPSystem
 {
     using AdvancedHints.Enums;
     using Exiled.API.Enums;
+    using PlayerRoles;
 
     public class Config : IConfig
     {
@@ -16,7 +17,7 @@ namespace XPSystem
         public bool IsEnabled { get; set; } = true;
 
         [Description("Show debug messages?")] 
-        public bool ShowDebug { get; set; } = false;
+        public bool Debug { get; set; } = false;
 
         [Description("Hint shown to the players if they have DNT enabled.")]
         public string DNTHint { get; set; } = "We can't track your stats while you have DNT enabled in your game options!";
@@ -29,37 +30,35 @@ namespace XPSystem
         };
 
         [Description("(You may add your own entries) Role1: Role2: XP player with Role1 gets for killing a person with Role2 ")]
-        public Dictionary<RoleType, Dictionary<RoleType, int>> KillXP { get; set; } = new Dictionary<RoleType, Dictionary<RoleType, int>>()
+        public Dictionary<RoleTypeId, Dictionary<RoleTypeId, int>> KillXP { get; set; } = new Dictionary<RoleTypeId, Dictionary<RoleTypeId, int>>()
         {
-            [RoleType.ClassD] = new Dictionary<RoleType, int>()
+            [RoleTypeId.ClassD] = new Dictionary<RoleTypeId, int>()
             {
-                [RoleType.Scientist] = 200,
-                [RoleType.FacilityGuard] = 150,
-                [RoleType.NtfPrivate] = 200,
-                [RoleType.NtfSergeant] = 250,
-                [RoleType.NtfCaptain] = 300,
-                [RoleType.Scp049] = 500,
-                [RoleType.Scp0492] = 100,
-                [RoleType.Scp106] = 500,
-                [RoleType.Scp173] = 500,
-                [RoleType.Scp096] = 500,
-                [RoleType.Scp93953] = 500,
-                [RoleType.Scp93989] = 500,
+                [RoleTypeId.Scientist] = 200,
+                [RoleTypeId.FacilityGuard] = 150,
+                [RoleTypeId.NtfPrivate] = 200,
+                [RoleTypeId.NtfSergeant] = 250,
+                [RoleTypeId.NtfCaptain] = 300,
+                [RoleTypeId.Scp049] = 500,
+                [RoleTypeId.Scp0492] = 100,
+                [RoleTypeId.Scp106] = 500,
+                [RoleTypeId.Scp173] = 500,
+                [RoleTypeId.Scp096] = 500,
+                [RoleTypeId.Scp939] = 500,
             },
-            [RoleType.Scientist] = new Dictionary<RoleType, int>()
+            [RoleTypeId.Scientist] = new Dictionary<RoleTypeId, int>()
             {
-                [RoleType.ClassD] = 50,
-                [RoleType.ChaosConscript] = 200,
-                [RoleType.ChaosRifleman] = 200,
-                [RoleType.ChaosRepressor] = 250,
-                [RoleType.ChaosMarauder] = 300,
-                [RoleType.Scp049] = 500,
-                [RoleType.Scp0492] = 100,
-                [RoleType.Scp106] = 500,
-                [RoleType.Scp173] = 500,
-                [RoleType.Scp096] = 500,
-                [RoleType.Scp93953] = 500,
-                [RoleType.Scp93989] = 500,
+                [RoleTypeId.ClassD] = 50,
+                [RoleTypeId.ChaosConscript] = 200,
+                [RoleTypeId.ChaosRifleman] = 200,
+                [RoleTypeId.ChaosRepressor] = 250,
+                [RoleTypeId.ChaosMarauder] = 300,
+                [RoleTypeId.Scp049] = 500,
+                [RoleTypeId.Scp0492] = 100,
+                [RoleTypeId.Scp106] = 500,
+                [RoleTypeId.Scp173] = 500,
+                [RoleTypeId.Scp096] = 500,
+                [RoleTypeId.Scp939] = 500,
             }
         };
 
@@ -79,10 +78,10 @@ namespace XPSystem
         public string AddedLVLHint { get; set; } = "NEW LEVEL: <color=red>%level%</color>";
 
         [Description("(You may add your own entries) How many XP a player gets for escaping")]
-        public Dictionary<RoleType, int> EscapeXP { get; set; } = new Dictionary<RoleType, int>()
+        public Dictionary<RoleTypeId, int> EscapeXP { get; set; } = new Dictionary<RoleTypeId, int>()
         {
-            [RoleType.ClassD] = 500,
-            [RoleType.Scientist] = 300
+            [RoleTypeId.ClassD] = 500,
+            [RoleTypeId.Scientist] = 300
         };
 
         [Description("(You may add your own entries) How much xp a player gets for upgrading a item category")]
@@ -149,8 +148,11 @@ namespace XPSystem
         [Description("See above, just for people who dont have a badge. If empty, badgestructure will be used instead.")]
         public string BadgeStructureNoBadge { get; set; } = "%badge%";
         
-        [Description("Path files get saved to. Requires change on linux.")]
+        [Description("Path the database gets saved to. Requires change on linux.")]
         public string SavePath { get; set; } = Path.Combine(Paths.Configs, @"Players.db");
+
+        [Description("Path the text file for translations get saved to. Requires change on linux.")]
+        public string SavePathTranslations { get; set; } = Path.Combine(Paths.Configs, @"xp-translations.txt");
         
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;

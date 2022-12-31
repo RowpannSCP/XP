@@ -1,16 +1,19 @@
 ﻿using System;
 using Exiled.API.Enums;
 using Exiled.API.Features;
-using Exiled.Events.EventArgs;
 using System.Linq;
 using MEC;
 using XPSystem.API;
-using XPSystem.API.Serialization;
 
 namespace XPSystem
 {
     using System.Collections.Generic;
     using Exiled.API.Extensions;
+    using Exiled.CustomItems.API.EventArgs;
+    using Exiled.Events.EventArgs.Player;
+    using Exiled.Events.EventArgs.Scp914;
+    using Exiled.Events.EventArgs.Server;
+    using PlayerRoles;
 
     public class EventHandlers
     {
@@ -35,19 +38,19 @@ namespace XPSystem
 
         public void OnKill(DyingEventArgs ev)
         {
-            if (ev.Killer == null || ev.Target == null || ev.Killer.DoNotTrack)
+            if (ev.Attacker == null || ev.Player == null || ev.Attacker.DoNotTrack)
             {
                 return;
             }
-            Player killer = ev.Handler.Type == DamageType.PocketDimension ? Player.Get(RoleType.Scp106).FirstOrDefault() : ev.Killer;
+            Player killer = ev.DamageHandler.Type == DamageType.PocketDimension ? Player.Get(RoleTypeId.Scp106).FirstOrDefault() : ev.Attacker;
             if (killer == null)
             {
                 return;
             }
-            if (Main.Instance.Config.KillXP.TryGetValue(killer.Role, out var killxpdict) && killxpdict.TryGetValue(ev.Target.Role, out int xp))
+            if (Main.Instance.Config.KillXP.TryGetValue(killer.Role.Type, out var killxpdict) && killxpdict.TryGetValue(ev.Player.Role, out int xp))
             {
-                var log = ev.Killer.GetLog();
-                log.AddXP(xp);
+                var log = ev.Attacker.GetLog();
+                log.AddXP(xp, Main.GetTranslation("kill"));
                 log.UpdateLog();
             }
         }
@@ -55,7 +58,7 @@ namespace XPSystem
         public void OnEscape(EscapingEventArgs ev)
         {
             var log = ev.Player.GetLog();
-            log.AddXP(Main.Instance.Config.EscapeXP[ev.Player.Role]);
+            log.AddXP(Main.Instance.Config.EscapeXP[ev.Player.Role], "escape");
             log.UpdateLog();
         }
 
@@ -84,7 +87,7 @@ namespace XPSystem
                 var log = player.GetLog();
                 if (log is null)
                     return;
-                log.AddXP(Main.Instance.Config.TeamWinXP);
+                log.AddXP(Main.Instance.Config.TeamWinXP, Main.GetTranslation("teamwin"));
                 log.UpdateLog();
             }
             AlreadyGainedPlayers.Clear();
@@ -112,18 +115,18 @@ namespace XPSystem
                 {
                     value.Add(ev.Door.Type);
                     var log = ev.Player.GetLog();
-                    log.AddXP(Main.Instance.Config.DoorInteractXP[ev.Door.Type]);
+                    log.AddXP(Main.Instance.Config.DoorInteractXP[ev.Door.Type], Main.GetTranslation("door"));
                 }
             }
         }
 
-        public void OnScp914UpgradingItem(UpgradingItemEventArgs ev)
+        public void OnScp914UpgradingItem(UpgradingPickupEventArgs ev)
         {
             if (!ev.IsAllowed)
                 return;
-            if (ev.Item == null || ev.Item.PreviousOwner == null)
+            if (ev.Pickup == null || ev.Pickup.PreviousOwner == null)
                 return;
-            OnUpgradingItem(ev.Item.PreviousOwner, GetCategory(ev.Item.Type));
+            OnUpgradingItem(ev.Pickup.PreviousOwner, GetCategory(ev.Pickup.Type));
         }
 
         public void OnScp914UpgradingInventory(UpgradingInventoryItemEventArgs ev)
@@ -148,7 +151,7 @@ namespace XPSystem
                 {
                     value.Add(type);
                     var log = ply.GetLog();
-                    log.AddXP(Main.Instance.Config.UpgradeXP[type]);
+                    log.AddXP(Main.Instance.Config.UpgradeXP[type], Main.GetTranslation("upgrading914"));
                 }
             }
         }

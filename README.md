@@ -2,6 +2,14 @@
  A basic, customisable XP and LVL system for SCP: SL.
 ## Config
 
+### In xp-translations.txt (config folder) you con customize messages.
+### Keys:
+upgrading914 <br>
+door <br>
+teamwin <br>
+escape <br>
+kill <br>
+
 ## Emporium Config:
 
 ``` ## Kill XP Config:

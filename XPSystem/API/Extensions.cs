@@ -35,7 +35,7 @@ namespace XPSystem.API
             Main.Instance.db.GetCollection<PlayerLog>("Players").Update(log);
         }
 
-        public static void AddXP(this PlayerLog log, int amount)
+        public static void AddXP(this PlayerLog log, int amount, string message = null)
         {
             log.XP += amount;
             Player ply = Player.Get(log.ID);
@@ -54,7 +54,7 @@ namespace XPSystem.API
             }
             else if (Main.Instance.Config.ShowAddedXP && ply != null)
             {
-                ply.ShowCustomHint($"+ <color=green>{amount}</color> XP");
+                ply.ShowCustomHint( message == null ? $"+ <color=green>{amount}</color> XP" : message.Replace("%amount%", amount.ToString()));
             }
             log.UpdateLog();
         }
