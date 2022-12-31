@@ -199,5 +199,13 @@ namespace XPSystem
                 return ItemCategory.Radio;
             return ItemCategory.None;
         }
+
+        public void OnSpawning(SpawnedEventArgs ev)
+        {
+            if (ev.Player == null)
+                return;
+            var log = ev.Player.GetLog();
+            log.AddXP(Main.Instance.Config.SpawnXP[ev.Player.Role.Type], Main.GetTranslation($"spawned{ev.Player.Role.Type.ToString()}"));
+        }
     }
 }

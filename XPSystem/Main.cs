@@ -44,6 +44,7 @@
             Player.InteractingDoor += handlers.OnInteractingDoor;
             Scp914.UpgradingPickup += handlers.OnScp914UpgradingItem;
             Scp914.UpgradingInventoryItem += handlers.OnScp914UpgradingInventory;
+            Player.Spawned += handlers.OnSpawning;
             
             LoadTranslations();
 
@@ -62,6 +63,7 @@
             Player.InteractingDoor -= handlers.OnInteractingDoor;
             Scp914.UpgradingPickup -= handlers.OnScp914UpgradingItem;
             Scp914.UpgradingInventoryItem -= handlers.OnScp914UpgradingInventory;
+            Player.Spawned -= handlers.OnSpawning;
             
             _harmony.UnpatchAll(_harmony.Id);
             

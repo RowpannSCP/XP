@@ -109,6 +109,12 @@ namespace XPSystem
         
         [Description("Whether or not the xp for using doors can only be gotten once per round")]
         public bool DoorXPOneTime { get; set; } = true;
+        
+        [Description("(You may add your own entries) How much xp a player gets for spawning")]
+        public Dictionary<RoleTypeId, int> SpawnXP { get; set; } = new Dictionary<RoleTypeId, int>()
+        {
+            [RoleTypeId.ClassD] = 10,
+        };
 
         [Description("(You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.")]
         public Dictionary<int, Badge> LevelsBadge { get; set; } = new Dictionary<int, Badge>()
