@@ -76,8 +76,15 @@
             base.OnDisabled();
         }
 
-        public static string GetTranslation(string key) =>
-            Instance.Translations.ContainsKey(key) ? Instance.Translations[key] : null;
+        public static string GetTranslation(string key)
+        {
+            if (Instance.Config.Debug)
+            {
+                Log.Debug("looking for key: " + key);
+                Log.Debug($"Found key: {Instance.Translations.ContainsKey(key)}");
+            }
+            return Instance.Translations.ContainsKey(key) ? Instance.Translations[key] : null;
+        }
 
         private void LoadTranslations()
         {
@@ -88,7 +95,7 @@
                     File.Create(Config.SavePathTranslations).Close();
                     using (TextWriter sr = new StreamWriter(Config.SavePathTranslations))
                     {
-                        sr.Write(JsonConvert.SerializeObject(Translations));
+                        sr.Write(JsonConvert.SerializeObject(Translations, Formatting.Indented));
                     }
 
                     return;

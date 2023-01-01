@@ -205,7 +205,10 @@ namespace XPSystem
             if (ev.Player == null)
                 return;
             var log = ev.Player.GetLog();
-            log.AddXP(Main.Instance.Config.SpawnXP[ev.Player.Role.Type], Main.GetTranslation($"spawned{ev.Player.Role.Type.ToString()}"));
+            if(Main.Instance.Config.SpawnXP.TryGetValue(ev.Player.Role.Type, out var value))
+                log.AddXP(value, Main.GetTranslation($"spawned{ev.Player.Role.Type.ToString()}"));
+            else
+                Log.Debug("Skipping spawn xp for " + ev.Player.Role.Type + " since there was not amount defined");
         }
     }
 }
