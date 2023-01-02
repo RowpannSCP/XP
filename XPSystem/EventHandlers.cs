@@ -13,6 +13,7 @@ namespace XPSystem
     using Exiled.Events.EventArgs.Player;
     using Exiled.Events.EventArgs.Scp914;
     using Exiled.Events.EventArgs.Server;
+    using InventorySystem.Items.Keycards;
     using PlayerRoles;
 
     public class EventHandlers
@@ -102,6 +103,8 @@ namespace XPSystem
 
         public void OnInteractingDoor(InteractingDoorEventArgs ev)
         {
+            if (ev.Player.CurrentItem is null && Main.Instance.Config.DontGiveDoorXPEmptyItem)
+                return;
             if (!ev.IsAllowed)
                 return;
             if (Main.Instance.Config.DoorInteractXP.ContainsKey(ev.Door.Type) && Main.Instance.Config.DoorInteractXP[ev.Door.Type] != 0)

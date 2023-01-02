@@ -109,6 +109,9 @@ namespace XPSystem
         
         [Description("Whether or not the xp for using doors can only be gotten once per round")]
         public bool DoorXPOneTime { get; set; } = true;
+
+        [Description("Only useful if youre using remotekeycard")] 
+        public bool DontGiveDoorXPEmptyItem { get; set; } = true;
         
         [Description("(You may add your own entries) How much xp a player gets for spawning")]
         public Dictionary<RoleTypeId, int> SpawnXP { get; set; } = new Dictionary<RoleTypeId, int>()
