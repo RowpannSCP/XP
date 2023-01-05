@@ -112,7 +112,18 @@ namespace XPSystem
 
         [Description("Only useful if youre using remotekeycard")] 
         public bool DontGiveDoorXPEmptyItem { get; set; } = true;
-        
+
+        [Description("(You may add your own entries) How much xp a player gets for picking up an item")]
+        public Dictionary<ItemCategory, int> PickupXP { get; set; } = new Dictionary<ItemCategory, int>()
+        {
+            [ItemCategory.Ammo] = 10,
+        };
+
+        [Description("Whether or not the xp for picking up items can only be gotten once per round, per category")]
+        public bool PickupXPOneTimeCategory { get; set; } = true;
+        [Description("Whether or not the xp for picking up items can only be gotten once per round, per item. Will be ignore if PickupXPOneTimeCategory is true")]
+        public bool PickupXPOneTime { get; set; } = true;
+
         [Description("(You may add your own entries) How much xp a player gets for spawning")]
         public Dictionary<RoleTypeId, int> SpawnXP { get; set; } = new Dictionary<RoleTypeId, int>()
         {

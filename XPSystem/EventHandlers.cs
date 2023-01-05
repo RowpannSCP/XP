@@ -20,6 +20,8 @@ namespace XPSystem
     {
         public Dictionary<Player, List<DoorType>> AlreadyGainedPlayers = new Dictionary<Player, List<DoorType>>();
         public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers2 = new Dictionary<Player, List<ItemCategory>>();
+        public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers3 = new Dictionary<Player, List<ItemType>>();
+        public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers4 = new Dictionary<Player, List<ItemCategory>>();
 
         public void OnJoined(VerifiedEventArgs ev)
         {
@@ -51,7 +53,7 @@ namespace XPSystem
             if (Main.Instance.Config.KillXP.TryGetValue(killer.Role.Type, out var killxpdict) && killxpdict.TryGetValue(ev.Player.Role, out int xp))
             {
                 var log = ev.Attacker.GetLog();
-                log.AddXP(xp, Main.GetTranslation("kill"));
+                log.AddXP(xp, Main.GetTranslation($"kill{ev.Player.Role.Type.ToString()}"));
                 log.UpdateLog();
             }
         }
@@ -93,6 +95,8 @@ namespace XPSystem
             }
             AlreadyGainedPlayers.Clear();
             AlreadyGainedPlayers2.Clear();
+            AlreadyGainedPlayers3.Clear();
+            AlreadyGainedPlayers4.Clear();
         }
 
         public void OnLeaving(DestroyingEventArgs ev)
@@ -212,6 +216,52 @@ namespace XPSystem
                 log.AddXP(value, Main.GetTranslation($"spawned{ev.Player.Role.Type.ToString()}"));
             else
                 Log.Debug("Skipping spawn xp for " + ev.Player.Role.Type + " since there was not amount defined");
+        }
+
+        public void OnPickingUpItem(PickingUpItemEventArgs ev)
+        {
+            if(ev.Player == null || ev.Pickup == null)
+                return;
+            if (Main.Instance.Config.PickupXPOneTimeCategory)
+            {
+                if(!AlreadyGainedPlayers4.ContainsKey(ev.Player))
+                    AlreadyGainedPlayers4.Add(ev.Player, new List<ItemCategory>());
+                if (AlreadyGainedPlayers4.TryGetValue(ev.Player, out var list))
+                {
+                    var cat = GetCategory(ev.Pickup.Type);
+                    if (!list.Contains(cat))
+                    {
+                        list.Add(cat);
+                        HandlePickup(ev);
+                    }
+                }
+                return;
+            }
+
+            if (Main.Instance.Config.PickupXPOneTime)
+            {
+                if(!AlreadyGainedPlayers3.ContainsKey(ev.Player))
+                    AlreadyGainedPlayers3.Add(ev.Player, new List<ItemType>());
+                if (AlreadyGainedPlayers3.TryGetValue(ev.Player, out var list))
+                {
+                    if (!list.Contains(ev.Pickup.Type))
+                    {
+                        list.Add(ev.Pickup.Type);
+                        HandlePickup(ev);
+                    }
+                }
+                return;
+            }
+            
+            HandlePickup(ev);
+        }
+
+        void HandlePickup(PickingUpItemEventArgs ev)
+        {
+            var log = ev.Player.GetLog();
+            var cat = GetCategory(ev.Pickup.Type);
+            if(Main.Instance.Config.PickupXP.TryGetValue(cat, out var value))
+                log.AddXP(value, Main.GetTranslation($"pickup{cat.ToString()}"));
         }
     }
 }

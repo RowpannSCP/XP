@@ -8,7 +8,7 @@ upgrading914{itemcategory} <br>
 door <br>
 teamwin <br>
 escape <br>
-kill <br>
+kill{roletype} <br>
 hid <br>
 doorintercom <br>
 door914 <br>
@@ -21,6 +21,7 @@ doorcheckpointlcza <br>
 doorcheckpointlczb <br>
 doorcheckpointhcza <br>
 doorcheckpointhczb <br>
+pickup{itemcategory} <br>
 
 ## Emporium Config:
 
