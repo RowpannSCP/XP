@@ -18,6 +18,11 @@ namespace XPSystem.API
         {
             if(i != null && i.Contains("\n"))
                 return;
+            if (ply == null || ply.UserId == null)
+            {
+                Log.Warn("Not updating role: player null");
+                return;
+            }
             var log = ply.GetLog();
             Badge badge = Main.Instance.Config.DNTBadge;
             if(!ply.DoNotTrack)
