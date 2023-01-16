@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Exiled.API.Features;
-using HarmonyLib;
-using Mirror;
-using XPSystem.API;
-using Badge = XPSystem.API.Features.Badge;
-
-namespace XPSystem.Patches
+﻿namespace XPSystem.Patches
 {
-    using LiteNetLib4Mirror.Open.Nat;
+    using Exiled.API.Features;
+    using HarmonyLib;
     using MEC;
     using API = API.API;
 
