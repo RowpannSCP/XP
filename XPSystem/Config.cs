@@ -121,7 +121,7 @@ namespace XPSystem
 
         [Description("Whether or not the xp for picking up items can only be gotten once per round, per item")]
         public bool PickupXPOneTimeItem { get; set; } = true;
-        [Description("Whether or not the xp for picking up items can only be gotten once per round, per item. Will be ignore if PickupXPOneTimeCategory is true")]
+        [Description("Whether or not the xp for picking up items can only be gotten once per round, per item. Will be ignore if PickupXPOneTimeItem is true")]
         public bool PickupXPOneTime { get; set; } = true;
 
         [Description("(You may add your own entries) How much xp a player gets for spawning")]
@@ -141,6 +141,8 @@ namespace XPSystem
         {
             [ItemType.Adrenaline] = 10,
         };
+        [Description("Whether or not the xp for drop up items can only be gotten once per round, per item.")]
+        public bool DropXPOneTime { get; set; } = true;
 
         [Description("(You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.")]
         public Dictionary<int, Badge> LevelsBadge { get; set; } = new Dictionary<int, Badge>()

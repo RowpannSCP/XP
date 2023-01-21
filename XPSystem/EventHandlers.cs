@@ -22,6 +22,7 @@ namespace XPSystem
         public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers2 = new Dictionary<Player, List<ItemCategory>>();
         public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers3 = new Dictionary<Player, List<ItemType>>();
         public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers4 = new Dictionary<Player, List<ItemCategory>>();
+        public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers5 = new Dictionary<Player, List<ItemType>>();
 
         public void OnJoined(VerifiedEventArgs ev)
         {
@@ -273,8 +274,23 @@ namespace XPSystem
         public void OnDroppingItem(DroppingItemEventArgs ev)
         {
             var log = ev.Player.GetLog();
-            if(Main.Instance.Config.DropXP.TryGetValue(ev.Item.Type, out var value))
-                log.AddXP(value, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
+            if (Main.Instance.Config.DropXPOneTime)
+            {
+                if(!AlreadyGainedPlayers5.ContainsKey(ev.Player))
+                    AlreadyGainedPlayers5.Add(ev.Player, new List<ItemType>());
+                if (AlreadyGainedPlayers5.TryGetValue(ev.Player, out var list))
+                {
+                    if (!list.Contains(ev.Item.Type))
+                    {
+                        list.Add(ev.Item.Type);
+                        if(Main.Instance.Config.DropXP.TryGetValue(ev.Item.Type, out var value))
+                            log.AddXP(value, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
+                    }
+                }
+                return;
+            }
+            if(Main.Instance.Config.DropXP.TryGetValue(ev.Item.Type, out var value2))
+                log.AddXP(value2, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
         }
     }
 }
