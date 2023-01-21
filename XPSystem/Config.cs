@@ -114,13 +114,13 @@ namespace XPSystem
         public bool DontGiveDoorXPEmptyItem { get; set; } = true;
 
         [Description("(You may add your own entries) How much xp a player gets for picking up an item")]
-        public Dictionary<ItemCategory, int> PickupXP { get; set; } = new Dictionary<ItemCategory, int>()
+        public Dictionary<ItemType, int> PickupXP { get; set; } = new Dictionary<ItemType, int>()
         {
-            [ItemCategory.Ammo] = 10,
+            [ItemType.Adrenaline] = 10,
         };
 
-        [Description("Whether or not the xp for picking up items can only be gotten once per round, per category")]
-        public bool PickupXPOneTimeCategory { get; set; } = true;
+        [Description("Whether or not the xp for picking up items can only be gotten once per round, per item")]
+        public bool PickupXPOneTimeItem { get; set; } = true;
         [Description("Whether or not the xp for picking up items can only be gotten once per round, per item. Will be ignore if PickupXPOneTimeCategory is true")]
         public bool PickupXPOneTime { get; set; } = true;
 
@@ -128,6 +128,18 @@ namespace XPSystem
         public Dictionary<RoleTypeId, int> SpawnXP { get; set; } = new Dictionary<RoleTypeId, int>()
         {
             [RoleTypeId.ClassD] = 10,
+        };
+        
+        [Description("(You may add your own entries) How much xp a player gets for throwing something")]
+        public Dictionary<ProjectileType, int> ThrowXP { get; set; } = new Dictionary<ProjectileType, int>()
+        {
+            [ProjectileType.FragGrenade] = 10,
+        };
+        
+        [Description("(You may add your own entries) How much xp a player gets for dropping something")]
+        public Dictionary<ItemType, int> DropXP { get; set; } = new Dictionary<ItemType, int>()
+        {
+            [ItemType.Adrenaline] = 10,
         };
 
         [Description("(You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.")]

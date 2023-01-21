@@ -21,7 +21,9 @@ doorcheckpointlcza <br>
 doorcheckpointlczb <br>
 doorcheckpointhcza <br>
 doorcheckpointhczb <br>
-pickup{itemcategory} <br>
+pickup{itemtype} <br>
+throw{projectiletype} <br>
+drop{itemtype} <br>
 
 ## Emporium Config:
 

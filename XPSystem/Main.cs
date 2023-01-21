@@ -15,7 +15,7 @@
     {
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(1, 6, 1);
+        public override Version Version { get; } = new Version(1, 6, 3);
         public override Version RequiredExiledVersion { get; } = new Version(6, 0, 0);
         
         public static Main Instance { get; set; }
@@ -46,6 +46,8 @@
             Scp914.UpgradingInventoryItem += handlers.OnScp914UpgradingInventory;
             Player.Spawned += handlers.OnSpawning;
             Player.PickingUpItem += handlers.OnPickingUpItem;
+            Player.ThrownProjectile += handlers.OnThrowingGrenade;
+            Player.DroppingItem += handlers.OnDroppingItem;
             
             LoadTranslations();
 
@@ -66,6 +68,8 @@
             Scp914.UpgradingInventoryItem -= handlers.OnScp914UpgradingInventory;
             Player.Spawned -= handlers.OnSpawning;
             Player.PickingUpItem -= handlers.OnPickingUpItem;
+            Player.ThrownProjectile -= handlers.OnThrowingGrenade;
+            Player.DroppingItem -= handlers.OnDroppingItem;
             
             _harmony.UnpatchAll(_harmony.Id);
             

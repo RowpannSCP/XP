@@ -222,7 +222,7 @@ namespace XPSystem
         {
             if(ev.Player == null || ev.Pickup == null)
                 return;
-            if (Main.Instance.Config.PickupXPOneTimeCategory)
+            if (Main.Instance.Config.PickupXPOneTimeItem)
             {
                 if(!AlreadyGainedPlayers4.ContainsKey(ev.Player))
                     AlreadyGainedPlayers4.Add(ev.Player, new List<ItemCategory>());
@@ -259,9 +259,22 @@ namespace XPSystem
         void HandlePickup(PickingUpItemEventArgs ev)
         {
             var log = ev.Player.GetLog();
-            var cat = GetCategory(ev.Pickup.Type);
-            if(Main.Instance.Config.PickupXP.TryGetValue(cat, out var value))
-                log.AddXP(value, Main.GetTranslation($"pickup{cat.ToString()}"));
+            if(Main.Instance.Config.PickupXP.TryGetValue(ev.Pickup.Type, out var value))
+                log.AddXP(value, Main.GetTranslation($"pickup{ev.Pickup.Type.ToString()}"));
+        }
+
+        public void OnThrowingGrenade(ThrownProjectileEventArgs ev)
+        {
+            var log = ev.Player.GetLog();
+            if(Main.Instance.Config.ThrowXP.TryGetValue(ev.Projectile.ProjectileType, out var value))
+                log.AddXP(value, Main.GetTranslation($"throw{ev.Projectile.ProjectileType.ToString()}"));
+        }
+
+        public void OnDroppingItem(DroppingItemEventArgs ev)
+        {
+            var log = ev.Player.GetLog();
+            if(Main.Instance.Config.DropXP.TryGetValue(ev.Item.Type, out var value))
+                log.AddXP(value, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
         }
     }
 }
