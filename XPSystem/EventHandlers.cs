@@ -68,6 +68,7 @@ namespace XPSystem
 
         public void OnRoundEnd(RoundEndedEventArgs ev)
         {
+            Extensions._hintQueue.Clear();
             Side team;
             switch (ev.LeadingTeam)
             {

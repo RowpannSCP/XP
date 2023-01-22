@@ -8,9 +8,13 @@ using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem.API
 {
+    using System.Linq;
+    using MEC;
+
     public static class Extensions
     {
-        private static Config _cfg = Main.Instance.Config;
+        public static CoroutineHandle? HintCoroutineHandle = null;
+        private static Config _cfg => Main.Instance.Config;
         public static PlayerLog GetLog(this Player ply)
         {
             PlayerLog toInsert = null;
@@ -59,9 +63,60 @@ namespace XPSystem.API
             log.UpdateLog();
         }
 
+        internal static Dictionary<Player, List<(float, string)>> _hintQueue = new Dictionary<Player, List<(float, string)>>();
+        public static IEnumerator<float> HintCoroutine()
+        {
+            for (;;)
+            {
+                for (int i = 0; i < _hintQueue.Count; i++)
+                {
+                    if (_hintQueue.Count == 0 || i >= _hintQueue.Count)
+                    {
+                        break;
+                    }
+                    var kvp = _hintQueue.ElementAt(i);
+                    bool display = true;
+                    string hint = "";
+                    if (kvp.Value.Count == 0)
+                    {
+                        _hintQueue.Remove(kvp.Key);
+                        display = false;
+                    }
+                    for (int index = 0; index < kvp.Value.Count; index++)
+                    {
+                        if (kvp.Value.Count == 0 || index >= kvp.Value.Count)
+                        {
+                            display = false;
+                            break;
+                        }
+                        var itemVar = kvp.Value[index];
+                        hint += itemVar.Item2;
+                        hint += "\n";
+                        itemVar.Item1 -= .1f;
+                        if(itemVar.Item1 <= 0)
+                            _hintQueue[kvp.Key].RemoveAt(index);
+                        else
+                            _hintQueue[kvp.Key][index] = itemVar;
+                    }
+                    if(!display)
+                        continue;
+                    kvp.Key.ShowManagedHint($"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{hint}</size></voffset>", .1f, true, _cfg.HintLocation);
+                }
+                yield return Timing.WaitForSeconds(.1f);
+            }
+        }
+
         public static void ShowCustomHint(this Player ply, string text)
         {
-            ply.ShowManagedHint($"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{text}</size></voffset></voffset>", _cfg.HintDuration, _cfg.OverrideQuene, _cfg.HintLocation);
+            if (_hintQueue.TryGetValue(ply, out var list))
+            {
+                list.Add((_cfg.HintDuration, text));
+                return;
+            }
+            _hintQueue.Add(ply, new List<(float, string)>()
+            {
+                (_cfg.HintDuration, text)
+            });
         }
     }
 }

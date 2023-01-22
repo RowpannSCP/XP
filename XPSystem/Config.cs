@@ -186,7 +186,7 @@ namespace XPSystem
         public string SavePath { get; set; } = Path.Combine(Paths.Configs, @"Players.db");
 
         [Description("Path the text file for translations get saved to. Requires change on linux.")]
-        public string SavePathTranslations { get; set; } = Path.Combine(Paths.Configs, @"xp-translations.txt");
+        public string SavePathTranslations { get; set; } = Path.Combine(Paths.Configs, @"xp-translations.yml");
         
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;
@@ -205,8 +205,5 @@ namespace XPSystem
         
         [Description("Duration of hints.")]
         public float HintDuration { get; set; } = 3;
-        
-        [Description("Should hints override the AdvancedHints quene?")]
-        public bool OverrideQuene { get; set; } = true;
     }
 }

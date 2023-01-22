@@ -6,7 +6,9 @@
     using Exiled.API.Features;
     using HarmonyLib;
     using LiteDB;
-    using Newtonsoft.Json;
+    using MEC;
+    using XPSystem.API;
+    using YamlDotNet.Serialization;
     using Player = Exiled.Events.Handlers.Player;
     using Scp914 = Exiled.Events.Handlers.Scp914;
     using Server = Exiled.Events.Handlers.Server;
@@ -15,7 +17,7 @@
     {
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(1, 6, 3);
+        public override Version Version { get; } = new Version(1, 7, 3);
         public override Version RequiredExiledVersion { get; } = new Version(6, 0, 0);
         
         public static Main Instance { get; set; }
@@ -52,6 +54,8 @@
             LoadTranslations();
 
             _harmony.PatchAll();
+            if(Extensions.HintCoroutineHandle == null || !Extensions.HintCoroutineHandle.Value.IsValid || !Extensions.HintCoroutineHandle.Value.IsRunning)
+                Extensions.HintCoroutineHandle = Timing.RunCoroutine(Extensions.HintCoroutine());
             
             base.OnEnabled();
         }
@@ -96,12 +100,14 @@
         {
             try
             {
+                var serializer = new Serializer();
+                var deserializer = new Deserializer();
                 if (!File.Exists(Config.SavePathTranslations))
                 {
                     File.Create(Config.SavePathTranslations).Close();
                     using (TextWriter sr = new StreamWriter(Config.SavePathTranslations))
                     {
-                        sr.Write(JsonConvert.SerializeObject(Translations, Formatting.Indented));
+                        sr.Write(serializer.Serialize(Translations));
                     }
 
                     return;
@@ -109,7 +115,7 @@
                 
                 using (TextReader sr = new StreamReader(Config.SavePathTranslations))
                 {
-                    Translations = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
+                    Translations = deserializer.Deserialize<Dictionary<string, string>>(sr.ReadToEnd());
                 }
             }
             catch (Exception e)
