@@ -119,9 +119,9 @@ namespace XPSystem
             [ItemType.Adrenaline] = 10,
         };
 
-        [Description("Whether or not the xp for picking up items can only be gotten once per round, per item")]
-        public bool PickupXPOneTimeItem { get; set; } = true;
-        [Description("Whether or not the xp for picking up items can only be gotten once per round, per item. Will be ignore if PickupXPOneTimeItem is true")]
+        //[Description("Whether or not the xp for picking up items can only be gotten once per round, per item")]
+        //public bool PickupXPOneTimeItem { get; set; } = true;
+        [Description("Whether or not the xp for picking up items can only be gotten once per round, per item.")]// Will be ignore if PickupXPOneTimeItem is true")]
         public bool PickupXPOneTime { get; set; } = true;
 
         [Description("(You may add your own entries) How much xp a player gets for spawning")]

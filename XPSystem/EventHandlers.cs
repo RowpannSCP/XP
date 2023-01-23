@@ -21,7 +21,7 @@ namespace XPSystem
         public Dictionary<Player, List<DoorType>> AlreadyGainedPlayers = new Dictionary<Player, List<DoorType>>();
         public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers2 = new Dictionary<Player, List<ItemCategory>>();
         public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers3 = new Dictionary<Player, List<ItemType>>();
-        public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers4 = new Dictionary<Player, List<ItemCategory>>();
+        //public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers4 = new Dictionary<Player, List<ItemCategory>>();
         public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers5 = new Dictionary<Player, List<ItemType>>();
 
         public void OnJoined(VerifiedEventArgs ev)
@@ -98,7 +98,7 @@ namespace XPSystem
             AlreadyGainedPlayers.Clear();
             AlreadyGainedPlayers2.Clear();
             AlreadyGainedPlayers3.Clear();
-            AlreadyGainedPlayers4.Clear();
+            //AlreadyGainedPlayers4.Clear();
         }
 
         public void OnLeaving(DestroyingEventArgs ev)
@@ -224,6 +224,7 @@ namespace XPSystem
         {
             if(ev.Player == null || ev.Pickup == null)
                 return;
+            /*
             if (Main.Instance.Config.PickupXPOneTimeItem)
             {
                 if(!AlreadyGainedPlayers4.ContainsKey(ev.Player))
@@ -239,6 +240,7 @@ namespace XPSystem
                 }
                 return;
             }
+            */
 
             if (Main.Instance.Config.PickupXPOneTime)
             {
