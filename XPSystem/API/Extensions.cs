@@ -100,7 +100,13 @@ namespace XPSystem.API
                     }
                     if(!display)
                         continue;
-                    kvp.Key.ShowManagedHint($"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{hint}</size></voffset>", .1f, true, _cfg.HintLocation);
+                    string hintNew = "";
+                    foreach (var var in hint.Split('\n'))
+                    {
+                        hintNew +=
+                            $"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{var}</size></voffset> \n ";
+                    }
+                    kvp.Key.ShowManagedHint(hintNew, .1f, true, _cfg.HintLocation);
                 }
                 yield return Timing.WaitForSeconds(.1f);
             }
