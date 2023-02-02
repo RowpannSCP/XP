@@ -24,6 +24,7 @@ doorcheckpointhczb <br>
 pickup{itemtype} <br>
 throw{projectiletype} <br>
 drop{itemtype} <br>
+use{itemtype} <br>
 
 ## Emporium Config:
 

@@ -143,6 +143,14 @@ namespace XPSystem
         };
         [Description("Whether or not the xp for drop up items can only be gotten once per round, per item.")]
         public bool DropXPOneTime { get; set; } = true;
+        
+        [Description("(You may add your own entries) How much xp a player gets for dropping something")]
+        public Dictionary<ItemType, int> UseXP { get; set; } = new Dictionary<ItemType, int>()
+        {
+            [ItemType.Adrenaline] = 10,
+        };
+        [Description("Whether or not the xp for drop up items can only be gotten once per round, per item.")]
+        public bool UseXPOneTime { get; set; } = true;
 
         [Description("(You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.")]
         public Dictionary<int, Badge> LevelsBadge { get; set; } = new Dictionary<int, Badge>()

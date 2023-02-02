@@ -23,6 +23,7 @@ namespace XPSystem
         public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers3 = new Dictionary<Player, List<ItemType>>();
         //public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers4 = new Dictionary<Player, List<ItemCategory>>();
         public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers5 = new Dictionary<Player, List<ItemType>>();
+        public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers6 = new Dictionary<Player, List<ItemType>>();
 
         public void OnJoined(VerifiedEventArgs ev)
         {
@@ -99,6 +100,8 @@ namespace XPSystem
             AlreadyGainedPlayers2.Clear();
             AlreadyGainedPlayers3.Clear();
             //AlreadyGainedPlayers4.Clear();
+            AlreadyGainedPlayers5.Clear();
+            AlreadyGainedPlayers6.Clear();
         }
 
         public void OnLeaving(DestroyingEventArgs ev)
@@ -294,6 +297,28 @@ namespace XPSystem
             }
             if(Main.Instance.Config.DropXP.TryGetValue(ev.Item.Type, out var value2))
                 log.AddXP(value2, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
+        }
+
+        public void OnUsingItem(UsingItemEventArgs ev)
+        {
+            var log = ev.Player.GetLog();
+            if (Main.Instance.Config.UseXPOneTime)
+            {
+                if(!AlreadyGainedPlayers6.ContainsKey(ev.Player))
+                    AlreadyGainedPlayers6.Add(ev.Player, new List<ItemType>());
+                if (AlreadyGainedPlayers6.TryGetValue(ev.Player, out var list))
+                {
+                    if (!list.Contains(ev.Item.Type))
+                    {
+                        list.Add(ev.Item.Type);
+                        if(Main.Instance.Config.UseXP.TryGetValue(ev.Item.Type, out var value))
+                            log.AddXP(value, Main.GetTranslation($"use{ev.Item.Type.ToString()}"));
+                    }
+                }
+                return;
+            }
+            if(Main.Instance.Config.UseXP.TryGetValue(ev.Item.Type, out var value2))
+                log.AddXP(value2, Main.GetTranslation($"use{ev.Item.Type.ToString()}"));
         }
     }
 }

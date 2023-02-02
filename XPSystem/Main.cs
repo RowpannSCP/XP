@@ -50,6 +50,7 @@
             Player.PickingUpItem += handlers.OnPickingUpItem;
             Player.ThrownProjectile += handlers.OnThrowingGrenade;
             Player.DroppingItem += handlers.OnDroppingItem;
+            Player.UsingItem += handlers.OnUsingItem;
             
             LoadTranslations();
 
@@ -74,6 +75,7 @@
             Player.PickingUpItem -= handlers.OnPickingUpItem;
             Player.ThrownProjectile -= handlers.OnThrowingGrenade;
             Player.DroppingItem -= handlers.OnDroppingItem;
+            Player.UsingItem -= handlers.OnUsingItem;
             
             _harmony.UnpatchAll(_harmony.Id);
             
