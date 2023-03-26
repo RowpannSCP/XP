@@ -1,4 +1,4 @@
-# XPSystem
+# XPSystem, fork of BruteForceMaestro/XPSystem
  A basic, customisable XP and LVL system for SCP: SL.
 ## Config
 
