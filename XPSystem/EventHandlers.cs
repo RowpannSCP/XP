@@ -62,8 +62,15 @@ namespace XPSystem
 
         public void OnEscape(EscapingEventArgs ev)
         {
+            if (ev.Player.DoNotTrack)
+                return;
+            if (!Main.Instance.Config.EscapeXP.TryGetValue(ev.Player.Role, out int xp))
+            {
+                Log.Warn($"No escape XP for {ev.Player.Role}");
+                return;
+            }
             var log = ev.Player.GetLog();
-            log.AddXP(Main.Instance.Config.EscapeXP[ev.Player.Role], "escape");
+            log.AddXP(xp, Main.GetTranslation("escape"));
             log.UpdateLog();
         }
 
@@ -90,6 +97,8 @@ namespace XPSystem
             }
             foreach (var player in Player.Get(team))
             {
+                if (player.DoNotTrack)
+                    continue;
                 var log = player.GetLog();
                 if (log is null)
                     return;
@@ -112,6 +121,8 @@ namespace XPSystem
 
         public void OnInteractingDoor(InteractingDoorEventArgs ev)
         {
+            if (ev.Player.DoNotTrack)
+                return;
             if (ev.Player.CurrentItem is null && Main.Instance.Config.DontGiveDoorXPEmptyItem)
                 return;
             if (!ev.IsAllowed)
@@ -151,6 +162,7 @@ namespace XPSystem
 
         public void OnScp914UpgradingItem(UpgradingPickupEventArgs ev)
         {
+            
             if (!ev.IsAllowed)
                 return;
             if (ev.Pickup == null || ev.Pickup.PreviousOwner == null)
@@ -169,6 +181,8 @@ namespace XPSystem
 
         public void OnUpgradingItem(Player ply, ItemCategory type)
         {
+            if (ply.DoNotTrack)
+                return;
             if (Main.Instance.Config.UpgradeXP.ContainsKey(type) && Main.Instance.Config.UpgradeXP[type] != 0)
             {
                 if(!AlreadyGainedPlayers2.TryGetValue(ply, out var value))
@@ -299,7 +313,7 @@ namespace XPSystem
                 log.AddXP(value2, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
         }
 
-        public void OnUsingItem(UsingItemEventArgs ev)
+        public void OnUsingItem(UsedItemEventArgs ev)
         {
             var log = ev.Player.GetLog();
             if (Main.Instance.Config.UseXPOneTime)

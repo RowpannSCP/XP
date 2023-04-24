@@ -58,7 +58,7 @@ namespace XPSystem.API
             }
             else if (Main.Instance.Config.ShowAddedXP && ply != null)
             {
-                ply.ShowCustomHint( message == null ? $"+ <color=green>{amount}</color> XP" : message.Replace("%amount%", amount.ToString()));
+                ply.ShowCustomHint(message == null ? $"+ <color=green>{amount}</color> XP" : message.Replace("%amount%", amount.ToString()));
             }
             log.UpdateLog();
         }

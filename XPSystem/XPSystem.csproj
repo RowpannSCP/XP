@@ -36,27 +36,87 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EXILED" Version="6.0.0-beta.23" />
-        <PackageReference Include="Lib.Harmony" Version="2.2.2" />
-        <PackageReference Include="LiteDB" Version="5.0.12" />
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="YamlDotNet" Version="11.2.1" />
-    </ItemGroup>
-
-    <ItemGroup>
+        <Reference Include="0Harmony, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\Lib.Harmony.2.3.0-alpha.5\lib\net48\0Harmony.dll</HintPath>
+        </Reference>
         <Reference Include="AdvancedHints">
             <HintPath>..\refs\AdvancedHints.dll</HintPath>
         </Reference>
-        <Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_References)\Assembly-CSharp-firstpass.dll" Private="false" />
-        <Reference Include="Exiled.CustomItems">
-          <HintPath>C:\Users\admin\.nuget\packages\exiled\6.0.0-beta.17\lib\net48\Exiled.CustomItems.dll</HintPath>
+        <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Assembly-CSharp-Publicized.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.Events">
-          <HintPath>C:\Users\admin\.nuget\packages\exiled\6.0.0-beta.17\lib\net48\Exiled.Events.dll</HintPath>
+        <Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_References)\Assembly-CSharp-firstpass.dll" Private="false" />
+        <Reference Include="CommandSystem.Core, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\CommandSystem.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.API, Version=6.1.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.API.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.CreditTags, Version=6.1.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.CreditTags.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.CustomItems, Version=6.1.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.CustomItems.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.CustomRoles, Version=6.1.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.CustomRoles.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.Events, Version=6.1.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.Events.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.Loader, Version=6.1.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.Loader.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.Permissions, Version=6.1.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.Permissions.dll</HintPath>
+        </Reference>
+        <Reference Include="Exiled.Updater, Version=3.1.2.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\Exiled.Updater.dll</HintPath>
+        </Reference>
+        <Reference Include="LiteDB, Version=5.0.16.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
+          <HintPath>..\packages\LiteDB.5.0.16\lib\net45\LiteDB.dll</HintPath>
         </Reference>
         <Reference Include="Mirror" HintPath="$(EXILED_References)\Mirror-Publicized.dll" Private="false" />
+        <Reference Include="Mono.Cecil, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+          <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.dll</HintPath>
+        </Reference>
+        <Reference Include="Mono.Cecil.Mdb, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+          <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+        </Reference>
+        <Reference Include="Mono.Cecil.Pdb, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+          <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+        </Reference>
+        <Reference Include="Mono.Cecil.Rocks, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+          <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+        </Reference>
+        <Reference Include="MonoMod.Backports, Version=23.3.22.1, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\MonoModReorg.Backports.23.3.22.1\lib\net452\MonoMod.Backports.dll</HintPath>
+        </Reference>
+        <Reference Include="MonoMod.Core, Version=23.3.22.1, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\MonoModReorg.Core.23.3.22.1\lib\net452\MonoMod.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="MonoMod.Iced, Version=1.17.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\MonoModReorg.Core.23.3.22.1\lib\net452\MonoMod.Iced.dll</HintPath>
+        </Reference>
+        <Reference Include="MonoMod.ILHelpers, Version=23.3.22.1, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\MonoModReorg.ILHelpers.23.3.22.1\lib\net452\MonoMod.ILHelpers.dll</HintPath>
+        </Reference>
+        <Reference Include="MonoMod.Utils, Version=23.3.22.1, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\MonoModReorg.Utils.23.3.22.1\lib\net452\MonoMod.Utils.dll</HintPath>
+        </Reference>
+        <Reference Include="mscorlib" />
+        <Reference Include="NorthwoodLib, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\NorthwoodLib.dll</HintPath>
+        </Reference>
+        <Reference Include="PluginAPI, Version=12.0.0.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\EXILED.6.1.0-rc.0-4\lib\net48\PluginAPI.dll</HintPath>
+        </Reference>
+        <Reference Include="System" />
         <Reference Include="UnityEngine.CoreModule" HintPath="$(EXILED_References)\UnityEngine.CoreModule.dll" Private="false" />
         <Reference Include="UnityEngine.PhysicsModule" HintPath="$(EXILED_References)\UnityEngine.PhysicsModule.dll" Private="false" />
+        <Reference Include="YamlDotNet, Version=13.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
+          <HintPath>..\packages\YamlDotNet.13.1.0\lib\net47\YamlDotNet.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
@@ -76,6 +136,11 @@
         <Compile Include="Patches\RankChangePatch.cs" />
         <Compile Include="Patches\SetNickPatch.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="App.config" />
+      <None Include="packages.config" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

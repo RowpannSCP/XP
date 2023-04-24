@@ -17,7 +17,7 @@
     {
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(1, 7, 3);
+        public override Version Version { get; } = new Version(1, 7, 4);
         public override Version RequiredExiledVersion { get; } = new Version(6, 0, 0);
         
         public static Main Instance { get; set; }
@@ -50,7 +50,7 @@
             Player.PickingUpItem += handlers.OnPickingUpItem;
             Player.ThrownProjectile += handlers.OnThrowingGrenade;
             Player.DroppingItem += handlers.OnDroppingItem;
-            Player.UsingItem += handlers.OnUsingItem;
+            Player.UsedItem += handlers.OnUsingItem;
             
             LoadTranslations();
 
@@ -75,7 +75,7 @@
             Player.PickingUpItem -= handlers.OnPickingUpItem;
             Player.ThrownProjectile -= handlers.OnThrowingGrenade;
             Player.DroppingItem -= handlers.OnDroppingItem;
-            Player.UsingItem -= handlers.OnUsingItem;
+            Player.UsedItem -= handlers.OnUsingItem;
             
             _harmony.UnpatchAll(_harmony.Id);
             
@@ -95,7 +95,7 @@
                 Log.Debug("looking for key: " + key);
                 Log.Debug($"Found key: {Instance.Translations.ContainsKey(key)}");
             }
-            return Instance.Translations.ContainsKey(key) ? Instance.Translations[key] : null;
+            return Instance.Translations.TryGetValue(key, out var translation) ? translation : null;
         }
 
         private void LoadTranslations()
