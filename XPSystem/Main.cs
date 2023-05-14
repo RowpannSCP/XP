@@ -17,9 +17,9 @@
     {
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(1, 7, 4);
-        public override Version RequiredExiledVersion { get; } = new Version(6, 0, 0);
-        
+        public override Version Version { get; } = new Version(1, 8, 0);
+        public override Version RequiredExiledVersion { get; } = new Version(7, 0, 0);
+
         public static Main Instance { get; set; }
         public EventHandlers handlers;
         private Harmony _harmony;
