@@ -1,28 +1,25 @@
 ﻿using System.Collections.Generic;
-using AdvancedHints;
-using AdvancedHints.Enums;
-using Exiled.API.Features;
 using XPSystem.API.Serialization;
-
-using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem.API
 {
     using System.Linq;
+    using CommandSystem;
+    using Hints;
     using MEC;
 
     public static class Extensions
     {
         public static CoroutineHandle? HintCoroutineHandle = null;
         private static Config _cfg => Main.Instance.Config;
-        public static PlayerLog GetLog(this Player ply)
+        public static PlayerLog GetLog(this ReferenceHub ply)
         {
             PlayerLog toInsert = null;
-            if (!API.TryGetLog(ply.UserId, out var log))
+            if (!API.TryGetLog(ply.characterClassManager.UserId, out var log))
             {
                 toInsert = new PlayerLog()
                 {
-                    ID = ply.UserId,
+                    ID = ply.characterClassManager.UserId,
                     LVL = 0,
                     XP = 0,
                 };
@@ -42,7 +39,7 @@ namespace XPSystem.API
         public static void AddXP(this PlayerLog log, int amount, string message = null)
         {
             log.XP += amount;
-            Player ply = Player.Get(log.ID);
+            ReferenceHub ply = ReferenceHub.AllHubs.First(x => x.characterClassManager.UserId == log.ID);
             int lvlsGained = log.XP / Main.Instance.Config.XPPerLevel;
             if (lvlsGained > 0)
             {
@@ -54,7 +51,7 @@ namespace XPSystem.API
                         .Replace("%level%", log.LVL.ToString()));
                 }
 
-                ply.RankName = "";
+                ply.serverRoles.SetText(string.Empty);
             }
             else if (Main.Instance.Config.ShowAddedXP && ply != null)
             {
@@ -63,7 +60,7 @@ namespace XPSystem.API
             log.UpdateLog();
         }
 
-        internal static Dictionary<Player, List<(float, string)>> _hintQueue = new Dictionary<Player, List<(float, string)>>();
+        internal static Dictionary<ReferenceHub, List<(float, string)>> _hintQueue = new Dictionary<ReferenceHub, List<(float, string)>>();
         public static IEnumerator<float> HintCoroutine()
         {
             for (;;)
@@ -106,13 +103,20 @@ namespace XPSystem.API
                         hintNew +=
                             $"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{var}</size></voffset> \n ";
                     }
-                    kvp.Key.ShowManagedHint(hintNew, .1f, true, _cfg.HintLocation);
+#if EXILED
+                    AdvancedHints.Extensions.ShowManagedHint(Exiled.API.Features.Player.Get(kvp.Key), hintNew, .1f, true, _cfg.HintLocation);
+#else
+                    kvp.Key.hints.Show(new TextHint(hintNew, new HintParameter[]
+                    {
+                        new StringHintParameter(hintNew)
+                    }, null, .1f));
+#endif
                 }
                 yield return Timing.WaitForSeconds(.1f);
             }
         }
 
-        public static void ShowCustomHint(this Player ply, string text)
+        public static void ShowCustomHint(this ReferenceHub ply, string text)
         {
             if (_hintQueue.TryGetValue(ply, out var list))
             {
@@ -123,6 +127,15 @@ namespace XPSystem.API
             {
                 (_cfg.HintDuration, text)
             });
+        }
+
+        public static bool CheckPermissionInternal(this ICommandSender ply, string perm)
+        {
+#if EXILED
+            return Exiled.Permissions.Extensions.Permissions.CheckPermission(ply, perm);
+#else
+            return NWAPIPermissionSystem.PermissionHandler.CheckPermission(ply, perm);
+#endif
         }
     }
 }

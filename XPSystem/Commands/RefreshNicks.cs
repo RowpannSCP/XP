@@ -2,8 +2,7 @@
 {
     using System;
     using CommandSystem;
-    using Exiled.API.Features;
-    using Exiled.Permissions.Extensions;
+    using XPSystem.API;
 
     public class RefreshNicks : ICommand
     {
@@ -13,15 +12,17 @@
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!sender.CheckPermission("xps.refresh"))
+            if (!sender.CheckPermissionInternal("xps.refresh"))
             {
                 response = "You don't have permission (xps.refresh) to use this command.";
                 return false;
             }
 
-            foreach (var ply in Player.List)
+            foreach (var ply in ReferenceHub.AllHubs)
             {
-                ply.DisplayNickname = ply.Nickname;
+                if (ply == ReferenceHub.HostHub)
+                    continue;
+                ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
             }
 
             response = "Nicks refreshed.";

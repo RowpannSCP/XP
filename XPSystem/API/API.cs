@@ -3,7 +3,6 @@
 namespace XPSystem.API
 {
     using System.Linq;
-    using Exiled.API.Features;
     using Badge = Features.Badge;
 
     public static class API
@@ -14,18 +13,18 @@ namespace XPSystem.API
             return log != null;
         }
 
-        public static void UpdateBadge(Player ply, string i = null)
+        public static void UpdateBadge(ReferenceHub ply, string i = null)
         {
             if(i != null && i.Contains("\n"))
                 return;
-            if (ply == null || ply.UserId == null)
+            if (ply == null || ply.characterClassManager.UserId == null)
             {
-                Log.Warn("Not updating role: player null");
+                Main.LogWarn("Not updating role: player null");
                 return;
             }
             var log = ply.GetLog();
             Badge badge = Main.Instance.Config.DNTBadge;
-            if(!ply.DoNotTrack)
+            if(!ply.serverRoles.DoNotTrack)
             {
                 foreach (var kvp in Main.Instance.Config.LevelsBadge.OrderBy(kvp => kvp.Key))
                 {
@@ -36,9 +35,9 @@ namespace XPSystem.API
                 }
             }
 
-            bool hasGroup = ply.Group == null || string.IsNullOrEmpty(ply.RankName);
-            Log.Debug($"i is null {i == null}");
-            Log.Debug($"Using i: {hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)}");
+            bool hasGroup = ply.serverRoles.Group == null || string.IsNullOrEmpty(ply.serverRoles.Network_myText);
+            Main.LogDebug($"i is null {i == null}");
+            Main.LogDebug($"Using i: {hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)}");
             string text = hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)
                 ? Main.Instance.Config.BadgeStructureNoBadge
                         .Replace("%lvl%", log.LVL.ToString())
@@ -46,17 +45,16 @@ namespace XPSystem.API
                 : Main.Instance.Config.BadgeStructure
                     .Replace("%lvl%", log.LVL.ToString())
                     .Replace("%badge%", badge.Name)
-                    .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.Group?.BadgeText : i);
+                    .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.serverRoles.Group?.BadgeText : i);
             text += "\n";
             string color = badge.Color;
             if (hasGroup || !Main.Instance.Config.OverrideColor)
             {
-                color = ply.Group?.BadgeColor ?? color;
+                color = ply.serverRoles.Group?.BadgeColor ?? color;
             }
 
-
-            ply.RankName = text;
-            ply.RankColor = color;
+            ply.serverRoles.SetText(text);
+            ply.serverRoles.SetColor(color);
         }
     }
 }

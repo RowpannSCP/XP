@@ -1,17 +1,17 @@
-﻿using Exiled.API.Features;
-using Exiled.API.Interfaces;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem
 {
-    using AdvancedHints.Enums;
-    using Exiled.API.Enums;
     using PlayerRoles;
+    using YamlDotNet.Serialization;
 
-    public class Config : IConfig
+    public class Config 
+#if EXILED
+        : Exiled.API.Interfaces.IConfig
+#endif
     {
         [Description("Enable plugin?")]
         public bool IsEnabled { get; set; } = true;
@@ -101,12 +101,6 @@ namespace XPSystem
         [Description("Whether or not the xp for upgrading can only be gotten once per round")]
         public bool UpgradeXPOneTime { get; set; } = true;
 
-        [Description("(You may add your own entries) How much xp a player gets for interacting with a door")]
-        public Dictionary<DoorType, int> DoorInteractXP { get; set; } = new Dictionary<DoorType, int>()
-        {
-            [DoorType.Intercom] = 10,
-        };
-        
         [Description("Whether or not the xp for using doors can only be gotten once per round")]
         public bool DoorXPOneTime { get; set; } = true;
 
@@ -129,13 +123,7 @@ namespace XPSystem
         {
             [RoleTypeId.ClassD] = 10,
         };
-        
-        [Description("(You may add your own entries) How much xp a player gets for throwing something")]
-        public Dictionary<ProjectileType, int> ThrowXP { get; set; } = new Dictionary<ProjectileType, int>()
-        {
-            [ProjectileType.FragGrenade] = 10,
-        };
-        
+
         [Description("(You may add your own entries) How much xp a player gets for dropping something")]
         public Dictionary<ItemType, int> DropXP { get; set; } = new Dictionary<ItemType, int>()
         {
@@ -189,19 +177,10 @@ namespace XPSystem
         public string BadgeStructure { get; set; } = "%badge% | %oldbadge%";
         [Description("See above, just for people who dont have a badge. If empty, badgestructure will be used instead.")]
         public string BadgeStructureNoBadge { get; set; } = "%badge%";
-        
-        [Description("Path the database gets saved to. Requires change on linux.")]
-        public string SavePath { get; set; } = Path.Combine(Paths.Configs, @"Players.db");
 
-        [Description("Path the text file for translations get saved to. Requires change on linux.")]
-        public string SavePathTranslations { get; set; } = Path.Combine(Paths.Configs, @"xp-translations.yml");
-        
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;
 
-        [Description("Displayer location of hints.")] 
-        public DisplayLocation HintLocation { get; set; } = DisplayLocation.Top;
-        
         [Description("Size of hints.")]
         public byte HintSize { get; set; } = 100;
         
@@ -213,5 +192,34 @@ namespace XPSystem
         
         [Description("Duration of hints.")]
         public float HintDuration { get; set; } = 3;
+
+        [Description("Path the database gets saved to. Requires change on linux.")]
+        public string SavePath { get; set; } = Path.Combine(ConfigPath, @"Players.db");
+
+        [Description("Path the text file for translations get saved to. Requires change on linux.")]
+        public string SavePathTranslations { get; set; } = Path.Combine(ConfigPath, @"xp-translations.yml");
+
+        [YamlIgnore]
+        private static string ConfigPath =>
+#if !EXILED
+        PluginAPI.Helpers.Paths.Configs;
+#else
+        Exiled.API.Features.Paths.Configs;
+
+        [Description("(You may add your own entries) How much xp a player gets for interacting with a door")]
+        public Dictionary<Exiled.API.Enums.DoorType, int> DoorInteractXP { get; set; } = new Dictionary<Exiled.API.Enums.DoorType, int>()
+        {
+            [Exiled.API.Enums.DoorType.Intercom] = 10,
+        };
+
+        [Description("(You may add your own entries) How much xp a player gets for throwing something")]
+        public Dictionary<Exiled.API.Enums.ProjectileType, int> ThrowXP { get; set; } = new Dictionary<Exiled.API.Enums.ProjectileType, int>()
+        {
+            [Exiled.API.Enums.ProjectileType.FragGrenade] = 10,
+        };
+
+        [Description("Displayer location of hints.")] 
+        public AdvancedHints.Enums.DisplayLocation HintLocation { get; set; } = AdvancedHints.Enums.DisplayLocation.Top;
+#endif
     }
 }

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Linq;
 using CommandSystem;
-using Exiled.Permissions.Extensions;
 using XPSystem.API.Serialization;
 
 namespace XPSystem.Commands
 {
+    using XPSystem.API;
+
     public class Leaderboard : ICommand
     {
         public string Command { get; } =  "leaderboard";
@@ -14,7 +15,7 @@ namespace XPSystem.Commands
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!sender.CheckPermission("xps.get"))
+            if (!sender.CheckPermissionInternal("xps.get"))
             {
                 response = "You don't have permission (xps.get) to use this command.";
                 return false;

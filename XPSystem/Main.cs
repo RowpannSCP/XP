@@ -3,97 +3,119 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Exiled.API.Features;
     using HarmonyLib;
     using LiteDB;
     using MEC;
     using XPSystem.API;
     using YamlDotNet.Serialization;
-    using Player = Exiled.Events.Handlers.Player;
-    using Scp914 = Exiled.Events.Handlers.Scp914;
-    using Server = Exiled.Events.Handlers.Server;
 
-    public class Main : Plugin<Config>
+    public class Main
+#if EXILED
+        : Exiled.API.Features.Plugin<Config>
+#endif
     {
-        public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
-        public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(1, 8, 0);
-        public override Version RequiredExiledVersion { get; } = new Version(7, 0, 0);
-
         public static Main Instance { get; set; }
         public EventHandlers handlers;
         private Harmony _harmony;
         public LiteDatabase db;
-        
+
         public Dictionary<string, string> Translations = new Dictionary<string, string>()
         {
             ["ExampleKey"] = "ExampleValue",
             ["ExampleKey2"] = "ExampleValue",
         };
 
+#if EXILED
+        public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
+        public override string Name { get; } = "XPSystem";
+        public override Version Version { get; } = new Version(1, 8, 1);
+        public override Version RequiredExiledVersion { get; } = new Version(7, 0, 0);
+#else
+        [PluginAPI.Core.Attributes.PluginConfig]
+        public Config Config;
+#endif
+
+#if EXILED
         public override void OnEnabled()
+#else
+        [PluginAPI.Core.Attributes.PluginEntryPoint("xpsystem", "1.8.1", "xp plugin", "Rowpann's Emperium, original by BrutoForceMaestro")]
+        public void OnEnabled()
+#endif
         {
             db = new LiteDatabase(Config.SavePath);
-            handlers = new EventHandlers();
             Instance = this;
             _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
-            
-            Player.Verified += handlers.OnJoined;
-            Player.Dying += handlers.OnKill;
-            Server.RoundEnded += handlers.OnRoundEnd;
-            Player.Escaping += handlers.OnEscape;
-            Player.Destroying += handlers.OnLeaving;
-            Player.InteractingDoor += handlers.OnInteractingDoor;
-            Scp914.UpgradingPickup += handlers.OnScp914UpgradingItem;
-            Scp914.UpgradingInventoryItem += handlers.OnScp914UpgradingInventory;
-            Player.Spawned += handlers.OnSpawning;
-            Player.PickingUpItem += handlers.OnPickingUpItem;
-            Player.ThrownProjectile += handlers.OnThrowingGrenade;
-            Player.DroppingItem += handlers.OnDroppingItem;
-            Player.UsedItem += handlers.OnUsingItem;
-            
+            _harmony.PatchAll();
+
+#if EXILED
+            handlers = new EventHandlers();
+            Exiled.Events.Handlers.Player.Verified += handlers.OnJoined;
+            Exiled.Events.Handlers.Player.Died += handlers.OnKill;
+            Exiled.Events.Handlers.Server.RoundEnded += handlers.OnRoundEnd;
+            Exiled.Events.Handlers.Player.Escaping += handlers.OnEscape;
+            Exiled.Events.Handlers.Player.InteractingDoor += handlers.OnInteractingDoor;
+            Exiled.Events.Handlers.Scp914.UpgradingPickup += handlers.OnScp914UpgradingItem;
+            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem += handlers.OnScp914UpgradingInventory;
+            Exiled.Events.Handlers.Player.Spawned += handlers.OnSpawning;
+            Exiled.Events.Handlers.Player.PickingUpItem += handlers.OnPickingUpItem;
+            Exiled.Events.Handlers.Player.ThrownProjectile += handlers.OnThrowingGrenade;
+            Exiled.Events.Handlers.Player.DroppingItem += handlers.OnDroppingItem;
+            Exiled.Events.Handlers.Player.UsedItem += handlers.OnUsingItem;
+#else
+            PluginAPI.Events.EventManager.RegisterEvents(this);
+            PluginAPI.Events.EventManager.RegisterEvents<EventHandlers>(this);
+#endif
             LoadTranslations();
 
-            _harmony.PatchAll();
             if(Extensions.HintCoroutineHandle == null || !Extensions.HintCoroutineHandle.Value.IsValid || !Extensions.HintCoroutineHandle.Value.IsRunning)
                 Extensions.HintCoroutineHandle = Timing.RunCoroutine(Extensions.HintCoroutine());
-            
+
+#if EXILED
             base.OnEnabled();
+#endif
         }
 
+#if EXILED
         public override void OnDisabled()
+#else
+        [PluginAPI.Core.Attributes.PluginUnload]
+        public void OnDisabled()
+#endif
         {
-            Player.Verified -= handlers.OnJoined;
-            Player.Dying -= handlers.OnKill;
-            Server.RoundEnded -= handlers.OnRoundEnd;
-            Player.Escaping -= handlers.OnEscape;
-            Player.Destroying -= handlers.OnLeaving;
-            Player.InteractingDoor -= handlers.OnInteractingDoor;
-            Scp914.UpgradingPickup -= handlers.OnScp914UpgradingItem;
-            Scp914.UpgradingInventoryItem -= handlers.OnScp914UpgradingInventory;
-            Player.Spawned -= handlers.OnSpawning;
-            Player.PickingUpItem -= handlers.OnPickingUpItem;
-            Player.ThrownProjectile -= handlers.OnThrowingGrenade;
-            Player.DroppingItem -= handlers.OnDroppingItem;
-            Player.UsedItem -= handlers.OnUsingItem;
-            
-            _harmony.UnpatchAll(_harmony.Id);
-            
+#if EXILED
+            Exiled.Events.Handlers.Player.Verified -= handlers.OnJoined;
+            Exiled.Events.Handlers.Player.Died -= handlers.OnKill;
+            Exiled.Events.Handlers.Server.RoundEnded -= handlers.OnRoundEnd;
+            Exiled.Events.Handlers.Player.Escaping -= handlers.OnEscape;
+            Exiled.Events.Handlers.Player.InteractingDoor -= handlers.OnInteractingDoor;
+            Exiled.Events.Handlers.Scp914.UpgradingPickup -= handlers.OnScp914UpgradingItem;
+            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem -= handlers.OnScp914UpgradingInventory;
+            Exiled.Events.Handlers.Player.Spawned -= handlers.OnSpawning;
+            Exiled.Events.Handlers.Player.PickingUpItem -= handlers.OnPickingUpItem;
+            Exiled.Events.Handlers.Player.ThrownProjectile -= handlers.OnThrowingGrenade;
+            Exiled.Events.Handlers.Player.DroppingItem -= handlers.OnDroppingItem;
+            Exiled.Events.Handlers.Player.UsedItem -= handlers.OnUsingItem;
             handlers = null;
+#endif
+
+            _harmony.UnpatchAll(_harmony.Id);
+
             Instance = null;
             _harmony = null;
             db.Dispose();
             db = null;
-            
+
+#if EXILED
             base.OnDisabled();
+#endif
         }
 
         public static string GetTranslation(string key)
         {
             if (Instance.Config.Debug)
             {
-                Log.Debug("looking for key: " + key);
-                Log.Debug($"Found key: {Instance.Translations.ContainsKey(key)}");
+                LogDebug("looking for key: " + key);
+                LogDebug($"Found key: {Instance.Translations.ContainsKey(key)}");
             }
             return Instance.Translations.TryGetValue(key, out var translation) ? translation : null;
         }
@@ -122,8 +144,35 @@
             }
             catch (Exception e)
             {
-                Log.Error("Could not load translations: " + e);
+                LogError("Could not load translations: " + e);
             }
+        }
+
+        public static void LogDebug(string message)
+        {
+#if EXILED
+            Exiled.API.Features.Log.Debug(message);
+#else
+            PluginAPI.Core.Log.Debug(message);
+#endif
+        }
+
+        public static void LogWarn(string message)
+        {
+#if EXILED
+            Exiled.API.Features.Log.Warn(message);
+#else
+            PluginAPI.Core.Log.Warning(message);
+#endif
+        }
+
+        public static void LogError(string message)
+        {
+#if EXILED
+            Exiled.API.Features.Log.Error(message);
+#else
+            PluginAPI.Core.Log.Error(message);
+#endif
         }
     }
 }

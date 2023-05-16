@@ -1,10 +1,9 @@
 ﻿namespace XPSystem.Commands
 {
     using System;
-    using API;
+    using System.Linq;
     using CommandSystem;
-    using Exiled.API.Features;
-    using Exiled.Permissions.Extensions;
+    using XPSystem.API;
 
     public class ShowHint : ICommand
     {
@@ -14,7 +13,7 @@
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            Player ply = Player.Get(sender);
+            ReferenceHub ply = ReferenceHub.AllHubs.First(x => x.characterClassManager.UserId.Contains(sender.LogName));
             ply.ShowCustomHint("Test");
             response = "Shown hint!";
             return true;

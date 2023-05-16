@@ -1,111 +1,142 @@
-﻿using System;
-using Exiled.API.Enums;
-using Exiled.API.Features;
-using System.Linq;
-using MEC;
+﻿using MEC;
 using XPSystem.API;
 
 namespace XPSystem
 {
+    using System;
     using System.Collections.Generic;
-    using Exiled.API.Extensions;
-    using Exiled.CustomItems.API.EventArgs;
-    using Exiled.Events.EventArgs.Player;
-    using Exiled.Events.EventArgs.Scp914;
-    using Exiled.Events.EventArgs.Server;
-    using InventorySystem.Items.Keycards;
+    using System.Linq;
+    using InventorySystem.Items;
+    using InventorySystem.Items.Pickups;
     using PlayerRoles;
+    using PlayerStatsSystem;
+    using Scp914;
+    using UnityEngine;
 
     public class EventHandlers
     {
-        public Dictionary<Player, List<DoorType>> AlreadyGainedPlayers = new Dictionary<Player, List<DoorType>>();
-        public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers2 = new Dictionary<Player, List<ItemCategory>>();
-        public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers3 = new Dictionary<Player, List<ItemType>>();
+#if EXILED
+        public Dictionary<Exiled.API.Features.Player, List<Exiled.API.Enums.DoorType>> AlreadyGainedPlayers = new Dictionary<Exiled.API.Features.Player, List<Exiled.API.Enums.DoorType>>();
+#endif
+        public Dictionary<ReferenceHub, List<ItemCategory>> AlreadyGainedPlayers2 = new Dictionary<ReferenceHub, List<ItemCategory>>();
+        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers3 = new Dictionary<ReferenceHub, List<ItemType>>();
         //public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers4 = new Dictionary<Player, List<ItemCategory>>();
-        public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers5 = new Dictionary<Player, List<ItemType>>();
-        public Dictionary<Player, List<ItemType>> AlreadyGainedPlayers6 = new Dictionary<Player, List<ItemType>>();
+        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers5 = new Dictionary<ReferenceHub, List<ItemType>>();
+        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers6 = new Dictionary<ReferenceHub, List<ItemType>>();
 
-        public void OnJoined(VerifiedEventArgs ev)
+#if EXILED
+        public void OnJoined(Exiled.Events.EventArgs.Player.VerifiedEventArgs ev)
         {
-            if (ev.Player.DoNotTrack)
+            var hub = ev.Player.ReferenceHub;
+#else
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerJoined)]
+        public void OnJoined(PluginAPI.Core.Player ply)
+        {
+            var hub = ply.ReferenceHub;
+#endif
+            if (hub.serverRoles.DoNotTrack)
             {
-                ev.Player.OpenReportWindow(Main.Instance.Config.DNTHint);
+                hub.characterClassManager.ConsolePrint($"[REPORTING] {Main.Instance.Config.DNTHint}", "white");
                 return;
             }
 
-            ev.Player.GetLog();
+            hub.GetLog();
             Timing.CallDelayed(0.5f, () =>
             {
-                API.API.UpdateBadge(ev.Player, ev.Player.Group?.BadgeText);
-                ev.Player.DisplayNickname = ev.Player.Nickname;
+                API.API.UpdateBadge(hub, hub.serverRoles.Group?.BadgeText);
+                hub.nicknameSync.DisplayName = hub.nicknameSync.Network_myNickSync;
             });
         }
 
-        public void OnKill(DyingEventArgs ev)
+#if EXILED
+        public void OnKill(Exiled.Events.EventArgs.Player.DiedEventArgs ev)
         {
-            if (ev.Attacker == null || ev.Player == null || ev.Attacker.DoNotTrack)
+            var hub = ev.Player?.ReferenceHub;
+            var attackerHub = ev.Attacker?.ReferenceHub;
+            var damageHandler = ev.DamageHandler.Base;
+#else
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerDeath)]
+        public void OnKill(PluginAPI.Core.Player player, PluginAPI.Core.Player attacker, DamageHandlerBase damageHandler)
+        {
+            var hub = player?.ReferenceHub;
+            var attackerHub = attacker?.ReferenceHub;
+#endif
+            if (attackerHub == null || hub == null || attackerHub.serverRoles.DoNotTrack)
             {
                 return;
             }
-            Player killer = ev.DamageHandler.Type == DamageType.PocketDimension ? Player.Get(RoleTypeId.Scp106).FirstOrDefault() : ev.Attacker;
-            if (killer == null)
+
+            if (damageHandler is UniversalDamageHandler universalDamageHandler &&
+                universalDamageHandler.TranslationId == DeathTranslations.PocketDecay.Id)
+                // ReSharper disable once ConstantNullCoalescingCondition
+                attackerHub ??= ReferenceHub.AllHubs.First(x => x.GetRoleId() == RoleTypeId.Scp106);
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (attackerHub == null)
             {
                 return;
             }
-            if (Main.Instance.Config.KillXP.TryGetValue(killer.Role.Type, out var killxpdict) && killxpdict.TryGetValue(ev.Player.Role, out int xp))
+
+            var attackerRoleId = attackerHub.GetRoleId();
+            if (Main.Instance.Config.KillXP.TryGetValue(attackerRoleId, out var killxpdict) && killxpdict.TryGetValue(hub.GetRoleId(), out int xp))
             {
-                var log = ev.Attacker.GetLog();
-                log.AddXP(xp, Main.GetTranslation($"kill{ev.Player.Role.Type.ToString()}"));
+                var log = attackerHub.GetLog();
+                log.AddXP(xp, Main.GetTranslation($"kill{attackerRoleId.ToString()}"));
                 log.UpdateLog();
             }
         }
 
-        public void OnEscape(EscapingEventArgs ev)
+#if EXILED
+        public void OnEscape(Exiled.Events.EventArgs.Player.EscapingEventArgs ev)
         {
-            if (ev.Player.DoNotTrack)
+            var hub = ev.Player.ReferenceHub;
+            var role = ev.NewRole;
+#else
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerEscape)]
+        public void OnEscape(PluginAPI.Core.Player ply, RoleTypeId role)
+        {
+            var hub = ply.ReferenceHub;
+#endif
+            if (hub.serverRoles.DoNotTrack)
                 return;
-            if (!Main.Instance.Config.EscapeXP.TryGetValue(ev.Player.Role, out int xp))
+            if (!Main.Instance.Config.EscapeXP.TryGetValue(hub.GetRoleId(), out int xp))
             {
-                Log.Warn($"No escape XP for {ev.Player.Role}");
+                Main.LogWarn($"No escape XP for {hub.GetRoleId()}");
                 return;
             }
-            var log = ev.Player.GetLog();
+            var log = hub.GetLog();
             log.AddXP(xp, Main.GetTranslation("escape"));
             log.UpdateLog();
         }
 
-        public void OnRoundEnd(RoundEndedEventArgs ev)
+#if EXILED
+        public void OnRoundEnd(Exiled.Events.EventArgs.Server.RoundEndedEventArgs ev)
         {
+            var team = (RoundSummary.LeadingTeam)Enum.Parse(typeof(RoundSummary.LeadingTeam), ev.LeadingTeam.ToString());
+#else
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.RoundEnd)]
+        public void OnRoundEnd(RoundSummary.LeadingTeam team)
+        {
+#endif
             Extensions._hintQueue.Clear();
-            Side team;
-            switch (ev.LeadingTeam)
+            foreach (var hub in ReferenceHub.AllHubs)
             {
-                case LeadingTeam.FacilityForces:
-                    team = Side.Mtf;
-                    break;
-                case LeadingTeam.ChaosInsurgency:
-                    team = Side.ChaosInsurgency;
-                    break;
-                case LeadingTeam.Anomalies:
-                    team = Side.Scp;
-                    break;
-                case LeadingTeam.Draw:
-                    team = Side.None;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            foreach (var player in Player.Get(team))
-            {
-                if (player.DoNotTrack)
+                if(hub == ReferenceHub.HostHub)
                     continue;
-                var log = player.GetLog();
+                if (hub.serverRoles.DoNotTrack)
+                    continue;
+                if (!Winners[team].Contains(hub.GetRoleId()))
+                {
+                    continue;
+                }
+                var log = hub.GetLog();
                 if (log is null)
-                    return;
+                    continue;
                 log.AddXP(Main.Instance.Config.TeamWinXP, Main.GetTranslation("teamwin"));
                 log.UpdateLog();
             }
+#if EXILED
             AlreadyGainedPlayers.Clear();
+#endif
             AlreadyGainedPlayers2.Clear();
             AlreadyGainedPlayers3.Clear();
             //AlreadyGainedPlayers4.Clear();
@@ -113,13 +144,41 @@ namespace XPSystem
             AlreadyGainedPlayers6.Clear();
         }
 
-        public void OnLeaving(DestroyingEventArgs ev)
-        {
-            
-        }
+        private static Dictionary<RoundSummary.LeadingTeam, List<RoleTypeId>> Winners =
+            new Dictionary<RoundSummary.LeadingTeam, List<RoleTypeId>>()
+            {
+                [RoundSummary.LeadingTeam.Anomalies] = new List<RoleTypeId>()
+                {
+                    RoleTypeId.Scp049,
+                    RoleTypeId.Scp079,
+                    RoleTypeId.Scp096,
+                    RoleTypeId.Scp106,
+                    RoleTypeId.Scp173,
+                    RoleTypeId.Scp0492,
+                    RoleTypeId.Scp939,
+                },
+                [RoundSummary.LeadingTeam.ChaosInsurgency] = new List<RoleTypeId>()
+                {
+                    RoleTypeId.ChaosConscript,
+                    RoleTypeId.ChaosMarauder,
+                    RoleTypeId.ChaosRepressor,
+                    RoleTypeId.ChaosRifleman,
+                    RoleTypeId.ClassD
+                },
+                [RoundSummary.LeadingTeam.FacilityForces] = new List<RoleTypeId>()
+                {
+                    RoleTypeId.NtfCaptain,
+                    RoleTypeId.NtfPrivate,
+                    RoleTypeId.NtfSergeant,
+                    RoleTypeId.NtfSpecialist,
+                    RoleTypeId.Scientist,
+                    RoleTypeId.FacilityGuard
+                },
+                [RoundSummary.LeadingTeam.Draw] = new List<RoleTypeId>()
+            };
 
-
-        public void OnInteractingDoor(InteractingDoorEventArgs ev)
+#if EXILED
+        public void OnInteractingDoor(Exiled.Events.EventArgs.Player.InteractingDoorEventArgs ev)
         {
             if (ev.Player.DoNotTrack)
                 return;
@@ -131,57 +190,62 @@ namespace XPSystem
             {
                 if(!AlreadyGainedPlayers.TryGetValue(ev.Player, out var value))
                 {
-                    AlreadyGainedPlayers.Add(ev.Player, new List<DoorType>());
+                    AlreadyGainedPlayers.Add(ev.Player, new List<Exiled.API.Enums.DoorType>());
                     value = AlreadyGainedPlayers[ev.Player];
                 }
                 if (!Main.Instance.Config.DoorXPOneTime || !value.Contains(ev.Door.Type))
                 {
                     value.Add(ev.Door.Type);
-                    var log = ev.Player.GetLog();
-                    bool hid = ev.Door.Room.Type == RoomType.HczHid;
+                    var log = ev.Player.ReferenceHub.GetLog();
+                    bool hid = ev.Door.Room.Type == Exiled.API.Enums.RoomType.HczHid;
                     log.AddXP(Main.Instance.Config.DoorInteractXP[ev.Door.Type], hid ? "doorhid" : Main.GetTranslation(GetDoorKey(ev.Door.Type)));
                 }
             }
         }
 
-        private string GetDoorKey(DoorType type) => type switch
-        {
-            DoorType.Intercom => "doorintercom",
-            DoorType.Scp914Gate => "door914",
-            DoorType.Scp173Gate => "door173",
-            DoorType.GateA => "doorgatea",
-            DoorType.GateB => "doorgateb",
-            DoorType.Scp049Gate => "door049",
-            DoorType.Scp330 => "door330",
-            DoorType.CheckpointLczA => "doorcheckpointlcza",
-            DoorType.CheckpointLczB => "doorcheckpointlczb",
-            DoorType.CheckpointEzHczA => "doorcheckpointhcza",
-            DoorType.CheckpointEzHczB => "doorcheckpointhczb",
-            _ => "door"
-        };
+        private static string GetDoorKey(Exiled.API.Enums.DoorType type) => "door" + type;
+        
+#endif
 
-        public void OnScp914UpgradingItem(UpgradingPickupEventArgs ev)
+#if EXILED
+        public void OnScp914UpgradingItem(Exiled.Events.EventArgs.Scp914.UpgradingPickupEventArgs ev)
         {
-            
             if (!ev.IsAllowed)
                 return;
             if (ev.Pickup == null || ev.Pickup.PreviousOwner == null)
                 return;
-            OnUpgradingItem(ev.Pickup.PreviousOwner, GetCategory(ev.Pickup.Type));
+            OnUpgradingItem(ev.Pickup.PreviousOwner.ReferenceHub, GetCategory(ev.Pickup.Type));
         }
 
-        public void OnScp914UpgradingInventory(UpgradingInventoryItemEventArgs ev)
+        public void OnScp914UpgradingInventory(Exiled.Events.EventArgs.Scp914.UpgradingInventoryItemEventArgs ev)
         {
             if (!ev.IsAllowed)
                 return;
             if(ev.Item == null || ev.Player == null)
                 return;
-            OnUpgradingItem(ev.Player, ev.Item.Category);
+            OnUpgradingItem(ev.Player.ReferenceHub, ev.Item.Category);
+        }
+#else
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.Scp914UpgradePickup)]
+        public void OnScp914UpgradingItem(ItemPickupBase item, Vector3 outPos, Scp914KnobSetting setting)
+        {
+            if (item == null || item.PreviousOwner.Hub == null)
+                return;
+            OnUpgradingItem(item.PreviousOwner.Hub, GetCategory(item.Info.ItemId));
         }
 
-        public void OnUpgradingItem(Player ply, ItemCategory type)
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.Scp914UpgradeInventory)]
+        public void OnScp914UpgradingInventory(PluginAPI.Core.Player player, ItemBase item, Scp914KnobSetting setting)
         {
-            if (ply.DoNotTrack)
+            if(item == null || player == null)
+                return;
+            OnUpgradingItem(player.ReferenceHub, item.Category);
+        }
+#endif
+
+        public void OnUpgradingItem(ReferenceHub ply, ItemCategory type)
+        {
+            if (ply.serverRoles.DoNotTrack)
                 return;
             if (Main.Instance.Config.UpgradeXP.ContainsKey(type) && Main.Instance.Config.UpgradeXP[type] != 0)
             {
@@ -205,41 +269,66 @@ namespace XPSystem
         /// <param name="type">type</param>
         private ItemCategory GetCategory(ItemType type)
         {
-            if (type.IsAmmo())
+            if (type is ItemType.Ammo9x19 or ItemType.Ammo12gauge or ItemType.Ammo44cal or ItemType.Ammo556x45 or ItemType.Ammo762x39)
                 return ItemCategory.Ammo;
-            if (type.IsArmor())
+            if (type is ItemType.ArmorCombat or ItemType.ArmorHeavy or ItemType.ArmorLight)
                 return ItemCategory.Armor;
-            if (type.IsKeycard())
+            if (type is ItemType.KeycardJanitor or ItemType.KeycardScientist or
+                ItemType.KeycardResearchCoordinator or ItemType.KeycardZoneManager or ItemType.KeycardGuard or ItemType.KeycardNTFOfficer or
+                ItemType.KeycardContainmentEngineer or ItemType.KeycardNTFLieutenant or ItemType.KeycardNTFCommander or
+                ItemType.KeycardFacilityManager or ItemType.KeycardChaosInsurgency or ItemType.KeycardO5)
                 return ItemCategory.Keycard;
-            if (type.IsMedical())
+            if (type is ItemType.Painkillers or ItemType.Medkit or ItemType.SCP500 or ItemType.Adrenaline)
                 return ItemCategory.Medical;
-            if (type.IsScp())
+            if (type is ItemType.SCP207 or ItemType.SCP244a or ItemType.SCP244b or ItemType.SCP268 or ItemType.SCP330 or ItemType.SCP1576 or ItemType.SCP1853)
                 return ItemCategory.SCPItem;
-            if (type.IsWeapon())
+            if (type is ItemType.GunCrossvec or ItemType.GunCom45 or ItemType.GunLogicer or ItemType.GunRevolver or ItemType.GunShotgun or ItemType.GunAK
+                or ItemType.GunCOM15 or ItemType.GunCOM18 or ItemType.GunE11SR or ItemType.GunFSP9
+                or ItemType.ParticleDisruptor)
                 return ItemCategory.Firearm;
-            if (type.IsThrowable())
+            if (type is ItemType.SCP018 or ItemType.GrenadeHE or ItemType.GrenadeFlash or ItemType.SCP2176)
                 return ItemCategory.Grenade;
-            if (type == ItemType.ParticleDisruptor)
+            if (type == ItemType.MicroHID)
                 return ItemCategory.MicroHID;
             if (type == ItemType.Radio)
                 return ItemCategory.Radio;
             return ItemCategory.None;
         }
 
-        public void OnSpawning(SpawnedEventArgs ev)
+#if EXILED
+        public void OnSpawning(Exiled.Events.EventArgs.Player.SpawnedEventArgs ev)
         {
-            if (ev.Player == null)
+            var hub = ev.Player?.ReferenceHub;
+            if (hub == null)
                 return;
-            var log = ev.Player.GetLog();
-            if(Main.Instance.Config.SpawnXP.TryGetValue(ev.Player.Role.Type, out var value))
-                log.AddXP(value, Main.GetTranslation($"spawned{ev.Player.Role.Type.ToString()}"));
+            var roleType = ev.Player.Role.Type;
+#else
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerSpawn)]
+        public void Spawned(PluginAPI.Core.Player ply, RoleTypeId roleType)
+        {
+            var hub = ply?.ReferenceHub;
+            if (hub == null)
+                return;
+#endif
+            var log = hub.GetLog();
+            if(Main.Instance.Config.SpawnXP.TryGetValue(roleType, out var value))
+                log.AddXP(value, Main.GetTranslation($"spawned{roleType.ToString()}"));
             else
-                Log.Debug("Skipping spawn xp for " + ev.Player.Role.Type + " since there was not amount defined");
+                Main.LogDebug("Skipping spawn xp for " + roleType + " since there was not amount defined");
         }
 
-        public void OnPickingUpItem(PickingUpItemEventArgs ev)
+#if EXILED
+        public void OnPickingUpItem(Exiled.Events.EventArgs.Player.PickingUpItemEventArgs ev)
         {
-            if(ev.Player == null || ev.Pickup == null)
+            var hub = ev.Player.ReferenceHub;
+            var pickup = ev.Pickup.Base;
+#else
+		[PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerSearchedPickup)]
+		void OnSearchedPickup(PluginAPI.Core.Player ply, ItemPickupBase pickup)
+		{
+            var hub = ply?.ReferenceHub;
+#endif
+            if(pickup == null)
                 return;
             /*
             if (Main.Instance.Config.PickupXPOneTimeItem)
@@ -261,78 +350,100 @@ namespace XPSystem
 
             if (Main.Instance.Config.PickupXPOneTime)
             {
-                if(!AlreadyGainedPlayers3.ContainsKey(ev.Player))
-                    AlreadyGainedPlayers3.Add(ev.Player, new List<ItemType>());
-                if (AlreadyGainedPlayers3.TryGetValue(ev.Player, out var list))
+                if(!AlreadyGainedPlayers3.ContainsKey(hub))
+                    AlreadyGainedPlayers3.Add(hub, new List<ItemType>());
+                if (AlreadyGainedPlayers3.TryGetValue(hub, out var list))
                 {
-                    if (!list.Contains(ev.Pickup.Type))
+                    if (!list.Contains(pickup.Info.ItemId))
                     {
-                        list.Add(ev.Pickup.Type);
-                        HandlePickup(ev);
+                        list.Add(pickup.Info.ItemId);
+                        HandlePickup(hub, pickup);
                     }
                 }
                 return;
             }
-            
-            HandlePickup(ev);
+
+            HandlePickup(hub, pickup);
         }
 
-        void HandlePickup(PickingUpItemEventArgs ev)
+        void HandlePickup(ReferenceHub ply, ItemPickupBase pickupBase)
         {
-            var log = ev.Player.GetLog();
-            if(Main.Instance.Config.PickupXP.TryGetValue(ev.Pickup.Type, out var value))
-                log.AddXP(value, Main.GetTranslation($"pickup{ev.Pickup.Type.ToString()}"));
+            var log = ply.GetLog();
+            if(Main.Instance.Config.PickupXP.TryGetValue(pickupBase.Info.ItemId, out var value))
+                log.AddXP(value, Main.GetTranslation($"pickup{pickupBase.Info.ItemId.ToString()}"));
         }
 
-        public void OnThrowingGrenade(ThrownProjectileEventArgs ev)
+#if EXILED
+        public void OnThrowingGrenade(Exiled.Events.EventArgs.Player.ThrownProjectileEventArgs ev)
         {
-            var log = ev.Player.GetLog();
+            var log = ev.Player.ReferenceHub.GetLog();
             if(Main.Instance.Config.ThrowXP.TryGetValue(ev.Projectile.ProjectileType, out var value))
                 log.AddXP(value, Main.GetTranslation($"throw{ev.Projectile.ProjectileType.ToString()}"));
         }
+#endif
 
-        public void OnDroppingItem(DroppingItemEventArgs ev)
+#if EXILED
+        public void OnDroppingItem(Exiled.Events.EventArgs.Player.DroppingItemEventArgs ev)
         {
-            var log = ev.Player.GetLog();
+            var hub = ev.Player.ReferenceHub;
+            var itemType = ev.Item.Type;
+#else
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerDropItem)]
+		void OnPlayerDroppedItem(PluginAPI.Core.Player ply, ItemBase item)
+		{
+            var hub = ply?.ReferenceHub;
+            var itemType = item.ItemTypeId;
+#endif
+            var log = hub.GetLog();
             if (Main.Instance.Config.DropXPOneTime)
             {
-                if(!AlreadyGainedPlayers5.ContainsKey(ev.Player))
-                    AlreadyGainedPlayers5.Add(ev.Player, new List<ItemType>());
-                if (AlreadyGainedPlayers5.TryGetValue(ev.Player, out var list))
+                if(!AlreadyGainedPlayers5.ContainsKey(hub))
+                    AlreadyGainedPlayers5.Add(hub, new List<ItemType>());
+                if (AlreadyGainedPlayers5.TryGetValue(hub, out var list))
                 {
-                    if (!list.Contains(ev.Item.Type))
+                    if (!list.Contains(itemType))
                     {
-                        list.Add(ev.Item.Type);
-                        if(Main.Instance.Config.DropXP.TryGetValue(ev.Item.Type, out var value))
-                            log.AddXP(value, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
+                        list.Add(itemType);
+                        if(Main.Instance.Config.DropXP.TryGetValue(itemType, out var value))
+                            log.AddXP(value, Main.GetTranslation($"drop{itemType.ToString()}"));
                     }
                 }
                 return;
             }
-            if(Main.Instance.Config.DropXP.TryGetValue(ev.Item.Type, out var value2))
-                log.AddXP(value2, Main.GetTranslation($"drop{ev.Item.Type.ToString()}"));
+            if(Main.Instance.Config.DropXP.TryGetValue(itemType, out var value2))
+                log.AddXP(value2, Main.GetTranslation($"drop{itemType.ToString()}"));
         }
 
-        public void OnUsingItem(UsedItemEventArgs ev)
+#if EXILED
+        public void OnUsingItem(Exiled.Events.EventArgs.Player.UsedItemEventArgs ev)
         {
-            var log = ev.Player.GetLog();
+            var hub = ev.Player.ReferenceHub;
+            var itemType = ev.Item.Type;
+#else
+		[PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerUsedItem)]
+		void OnPlayerUsedItem(PluginAPI.Core.Player ply, ItemBase item)
+		{
+            var hub = ply?.ReferenceHub;
+            var itemType = item.ItemTypeId;
+#endif
+            var log = hub.GetLog();
             if (Main.Instance.Config.UseXPOneTime)
             {
-                if(!AlreadyGainedPlayers6.ContainsKey(ev.Player))
-                    AlreadyGainedPlayers6.Add(ev.Player, new List<ItemType>());
-                if (AlreadyGainedPlayers6.TryGetValue(ev.Player, out var list))
+                if(!AlreadyGainedPlayers6.ContainsKey(hub))
+                    AlreadyGainedPlayers6.Add(hub, new List<ItemType>());
+                if (AlreadyGainedPlayers6.TryGetValue(hub, out var list))
                 {
-                    if (!list.Contains(ev.Item.Type))
+                    if (!list.Contains(itemType))
                     {
-                        list.Add(ev.Item.Type);
-                        if(Main.Instance.Config.UseXP.TryGetValue(ev.Item.Type, out var value))
-                            log.AddXP(value, Main.GetTranslation($"use{ev.Item.Type.ToString()}"));
+                        list.Add(itemType);
+                        if(Main.Instance.Config.UseXP.TryGetValue(itemType, out var value))
+                            log.AddXP(value, Main.GetTranslation($"use{itemType.ToString()}"));
                     }
                 }
                 return;
             }
-            if(Main.Instance.Config.UseXP.TryGetValue(ev.Item.Type, out var value2))
-                log.AddXP(value2, Main.GetTranslation($"use{ev.Item.Type.ToString()}"));
+            if(Main.Instance.Config.UseXP.TryGetValue(itemType, out var value2))
+                log.AddXP(value2, Main.GetTranslation($"use{itemType.ToString()}"));
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿namespace XPSystem.Patches
 {
-    using Exiled.API.Features;
     using HarmonyLib;
     using MEC;
     using API = API.API;
@@ -14,7 +13,7 @@
             {
                 Timing.CallDelayed(1f, () =>
                 {
-                    API.UpdateBadge(Player.Get(__instance._hub), i);
+                    API.UpdateBadge(__instance._hub, i);
                 });
             }
         }

@@ -1,10 +1,5 @@
-﻿using System.Linq;
-using Exiled.API.Features;
-using HarmonyLib;
-using Mirror;
+﻿using HarmonyLib;
 using XPSystem.API;
-using Badge = XPSystem.API.Features.Badge;
-
 namespace XPSystem.Patches
 {
     [HarmonyPatch(typeof(NicknameSync), "set_Network_displayName")]
@@ -12,11 +7,10 @@ namespace XPSystem.Patches
     {
         internal static void Postfix(NicknameSync __instance, string value)
         {
-            var ply = Player.Get(__instance._hub);
-            var log = ply.GetLog();
-            
+            var log = __instance._hub.GetLog();
+
             __instance._displayName = Main.Instance.Config.NickStructure
-                .Replace("%lvl%", ply.DoNotTrack ? "DNT" : log.LVL.ToString())
+                .Replace("%lvl%", __instance._hub.serverRoles.DoNotTrack ? "DNT" : log.LVL.ToString())
                 .Replace("%name%", value)
                 .Replace("$IGNORE$", "");
         }

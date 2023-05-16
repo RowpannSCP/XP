@@ -34,6 +34,25 @@
         <WarningLevel>4</WarningLevel>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug EXILED|AnyCPU' ">
+      <DebugSymbols>true</DebugSymbols>
+      <DebugType>full</DebugType>
+      <Optimize>true</Optimize>
+      <DefineConstants>DEBUG;TRACE;EXILED</DefineConstants>
+      <ErrorReport>prompt</ErrorReport>
+      <WarningLevel>4</WarningLevel>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <OutputPath>bin\Debug EXILED\</OutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release EXILED|AnyCPU' ">
+      <DebugType>pdbonly</DebugType>
+      <Optimize>true</Optimize>
+      <DefineConstants>TRACE;EXILED</DefineConstants>
+      <ErrorReport>prompt</ErrorReport>
+      <WarningLevel>4</WarningLevel>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <OutputPath>bin\Release EXILED\</OutputPath>
+    </PropertyGroup>
 
     <ItemGroup>
         <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -80,6 +99,9 @@
         <Reference Include="mscorlib" />
         <Reference Include="NorthwoodLib, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>..\packages\EXILED.7.0.0-rc.2-1\lib\net48\NorthwoodLib.dll</HintPath>
+        </Reference>
+        <Reference Include="NWAPIPermissionSystem">
+          <HintPath>C:\Users\admin\AppData\Roaming\SCP Secret Laboratory\PluginAPI\NWAPIPermissionSystem.dll</HintPath>
         </Reference>
         <Reference Include="PluginAPI, Version=12.0.0.0, Culture=neutral, processorArchitecture=Amd64">
           <HintPath>..\packages\EXILED.7.0.0-rc.2-1\lib\net48\PluginAPI.dll</HintPath>

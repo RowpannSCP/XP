@@ -1,9 +1,6 @@
 ﻿using System;
 using CommandSystem;
-using Exiled.API.Features;
-using Exiled.Permissions.Extensions;
 using XPSystem.API;
-using XPSystem.API.Serialization;
 
 namespace XPSystem.Commands
 {
@@ -15,7 +12,7 @@ namespace XPSystem.Commands
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!(sender.CheckPermission("xps.get")))
+            if (!sender.CheckPermissionInternal("xps.get"))
             {
                 response = "You don't have permission (xps.get) to use this command.";
                 return false;
@@ -25,16 +22,16 @@ namespace XPSystem.Commands
                 response = "Usage : XPSystem get (userid)";
                 return false;
             }
-            
-            Player ply = Player.Get(arguments.At(0));
+
+            int.TryParse(arguments.At(0), out var usernetid);
+            ReferenceHub ply = ReferenceHub.GetHub(usernetid);
             if (!(API.API.TryGetLog(arguments.At(0), out var log) || ply != null))
             {
                 response = "incorrect userid";
                 return false;
             }
 
-            if (log == null)
-                log = ply.GetLog();
+            log ??= ply.GetLog();
             
             response = $"LVL: {log.LVL} | XP: {log.XP}";
             return true;
