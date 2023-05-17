@@ -15,7 +15,7 @@
         : Exiled.API.Features.Plugin<Config>
 #endif
     {
-        private const string _version = "1.8.2";
+        private const string _version = "1.8.3";
         public static Main Instance { get; set; }
         public EventHandlers handlers;
         private Harmony _harmony;

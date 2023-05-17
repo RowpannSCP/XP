@@ -54,12 +54,16 @@ namespace XPSystem
             var hub = ev.Player?.ReferenceHub;
             var attackerHub = ev.Attacker?.ReferenceHub;
             var damageHandler = ev.DamageHandler.Base;
+            var oldRole = ev.TargetOldRole;
 #else
         [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerDeath)]
         public void OnKill(PluginAPI.Core.Player player, PluginAPI.Core.Player attacker, DamageHandlerBase damageHandler)
         {
             var hub = player?.ReferenceHub;
             var attackerHub = attacker?.ReferenceHub;
+            RoleTypeId oldRole = RoleTypeId.None;
+            if (player != null)
+                oldRole = player.Role;
 #endif
             if (hub == null || (attackerHub != null && attackerHub.serverRoles.DoNotTrack))
             {
@@ -76,12 +80,11 @@ namespace XPSystem
             }
 
             var attackerRoleId = attackerHub.GetRoleId();
-            var roleId = hub.GetRoleId();
             var hasKey = Main.Instance.Config.KillXP.TryGetValue(attackerRoleId, out var killxpdict);
             if (!hasKey)
                 hasKey = Main.Instance.Config.KillXP.TryGetValue(RoleTypeId.None, out killxpdict);
-            Main.DebugProgress($"OnKill, haskey: {hasKey} (attroleid: {attackerRoleId}) (role: {roleId})");
-            if (hasKey && (killxpdict.TryGetValue(roleId, out int xp) || killxpdict.TryGetValue(RoleTypeId.None, out xp)))
+            Main.DebugProgress($"OnKill, haskey: {hasKey} (attroleid: {attackerRoleId}) (role: {oldRole})");
+            if (hasKey && (killxpdict.TryGetValue(oldRole, out int xp) || killxpdict.TryGetValue(RoleTypeId.None, out xp)))
             {
                 var log = attackerHub.GetLog();
                 log.AddXP(xp, Main.GetTranslation($"kill{attackerRoleId.ToString()}"));
