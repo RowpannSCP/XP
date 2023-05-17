@@ -29,9 +29,13 @@ namespace XPSystem
             Color = "nickel"
         };
 
-        [Description("(You may add your own entries) Role1: Role2: XP player with Role1 gets for killing a person with Role2 ")]
+        [Description("(You may add your own entries) Role1: Role2: XP player with Role1 gets for killing a person with Role2. Roletypid none for default")]
         public Dictionary<RoleTypeId, Dictionary<RoleTypeId, int>> KillXP { get; set; } = new Dictionary<RoleTypeId, Dictionary<RoleTypeId, int>>()
         {
+            [RoleTypeId.None] = new Dictionary<RoleTypeId, int>()
+            {
+                [RoleTypeId.None] = 0,
+            },
             [RoleTypeId.ClassD] = new Dictionary<RoleTypeId, int>()
             {
                 [RoleTypeId.Scientist] = 200,
@@ -101,15 +105,10 @@ namespace XPSystem
         [Description("Whether or not the xp for upgrading can only be gotten once per round")]
         public bool UpgradeXPOneTime { get; set; } = true;
 
-        [Description("Whether or not the xp for using doors can only be gotten once per round")]
-        public bool DoorXPOneTime { get; set; } = true;
-
-        [Description("Only useful if youre using remotekeycard")] 
-        public bool DontGiveDoorXPEmptyItem { get; set; } = true;
-
-        [Description("(You may add your own entries) How much xp a player gets for picking up an item")]
+        [Description("(You may add your own entries) How much xp a player gets for picking up an item, itemtype none for default")]
         public Dictionary<ItemType, int> PickupXP { get; set; } = new Dictionary<ItemType, int>()
         {
+            [ItemType.None] = 0,
             [ItemType.Adrenaline] = 10,
         };
 
@@ -118,25 +117,29 @@ namespace XPSystem
         [Description("Whether or not the xp for picking up items can only be gotten once per round, per item.")]// Will be ignore if PickupXPOneTimeItem is true")]
         public bool PickupXPOneTime { get; set; } = true;
 
-        [Description("(You may add your own entries) How much xp a player gets for spawning")]
+        [Description("(You may add your own entries) How much xp a player gets for spawning, roletypeid none for default")]
         public Dictionary<RoleTypeId, int> SpawnXP { get; set; } = new Dictionary<RoleTypeId, int>()
         {
+            [RoleTypeId.None] = 0,
             [RoleTypeId.ClassD] = 10,
         };
 
-        [Description("(You may add your own entries) How much xp a player gets for dropping something")]
+        [Description("(You may add your own entries) How much xp a player gets for dropping something, itemtype none for default")]
         public Dictionary<ItemType, int> DropXP { get; set; } = new Dictionary<ItemType, int>()
         {
+            [ItemType.None] = 0,
             [ItemType.Adrenaline] = 10,
         };
         [Description("Whether or not the xp for drop up items can only be gotten once per round, per item.")]
         public bool DropXPOneTime { get; set; } = true;
         
-        [Description("(You may add your own entries) How much xp a player gets for dropping something")]
+        [Description("(You may add your own entries) How much xp a player gets for dropping something, itemtype none for default")]
         public Dictionary<ItemType, int> UseXP { get; set; } = new Dictionary<ItemType, int>()
         {
+            [ItemType.None] = 0,
             [ItemType.Adrenaline] = 10,
         };
+
         [Description("Whether or not the xp for drop up items can only be gotten once per round, per item.")]
         public bool UseXPOneTime { get; set; } = true;
 
@@ -181,6 +184,15 @@ namespace XPSystem
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;
 
+        [Description("Disable to use single hints at a time, wont break other plugins.")]
+        public bool EnableCustomHintManager { get; set; } = true;
+
+        [Description("Increase for slower hint updates.")]
+        public double HintDelay { get; set; } = 0.1f;
+        
+        [Description("Increase might help reduce flickering.")]
+        public double HintExtraTime { get; set; } = 0.01f;
+
         [Description("Size of hints.")]
         public byte HintSize { get; set; } = 100;
         
@@ -193,16 +205,16 @@ namespace XPSystem
         [Description("Duration of hints.")]
         public float HintDuration { get; set; } = 3;
 
-        [Description("Path the database gets saved to. Requires change on linux.")]
+        [Description("Path the database gets saved to. May require change depending on OS.")]
         public string SavePath { get; set; } = Path.Combine(ConfigPath, @"Players.db");
 
-        [Description("Path the text file for translations get saved to. Requires change on linux.")]
+        [Description("Path the text file for translations get saved to. May require change depending on OS.")]
         public string SavePathTranslations { get; set; } = Path.Combine(ConfigPath, @"xp-translations.yml");
 
         [YamlIgnore]
         private static string ConfigPath =>
 #if !EXILED
-        PluginAPI.Helpers.Paths.Configs;
+        Path.Combine(PluginAPI.Helpers.Paths.LocalPlugins.Plugins, "XPSystem");
 #else
         Exiled.API.Features.Paths.Configs;
 
@@ -211,6 +223,12 @@ namespace XPSystem
         {
             [Exiled.API.Enums.DoorType.Intercom] = 10,
         };
+
+        [Description("Whether or not the xp for using doors can only be gotten once per round")]
+        public bool DoorXPOneTime { get; set; } = true;
+
+        [Description("Only useful if youre using remotekeycard")] 
+        public bool DontGiveDoorXPEmptyItem { get; set; } = true;
 
         [Description("(You may add your own entries) How much xp a player gets for throwing something")]
         public Dictionary<Exiled.API.Enums.ProjectileType, int> ThrowXP { get; set; } = new Dictionary<Exiled.API.Enums.ProjectileType, int>()

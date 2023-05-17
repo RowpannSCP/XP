@@ -61,23 +61,27 @@ namespace XPSystem
             var hub = player?.ReferenceHub;
             var attackerHub = attacker?.ReferenceHub;
 #endif
-            if (attackerHub == null || hub == null || attackerHub.serverRoles.DoNotTrack)
+            if (hub == null || (attackerHub != null && attackerHub.serverRoles.DoNotTrack))
             {
                 return;
             }
+            Main.DebugProgress("OnKillPre");
 
             if (damageHandler is UniversalDamageHandler universalDamageHandler &&
                 universalDamageHandler.TranslationId == DeathTranslations.PocketDecay.Id)
-                // ReSharper disable once ConstantNullCoalescingCondition
-                attackerHub ??= ReferenceHub.AllHubs.First(x => x.GetRoleId() == RoleTypeId.Scp106);
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                attackerHub ??= ReferenceHub.AllHubs.FirstOrDefault(x => x.GetRoleId() == RoleTypeId.Scp106);
             if (attackerHub == null)
             {
                 return;
             }
 
             var attackerRoleId = attackerHub.GetRoleId();
-            if (Main.Instance.Config.KillXP.TryGetValue(attackerRoleId, out var killxpdict) && killxpdict.TryGetValue(hub.GetRoleId(), out int xp))
+            var roleId = hub.GetRoleId();
+            var hasKey = Main.Instance.Config.KillXP.TryGetValue(attackerRoleId, out var killxpdict);
+            if (!hasKey)
+                hasKey = Main.Instance.Config.KillXP.TryGetValue(RoleTypeId.None, out killxpdict);
+            Main.DebugProgress($"OnKill, haskey: {hasKey} (attroleid: {attackerRoleId}) (role: {roleId})");
+            if (hasKey && (killxpdict.TryGetValue(roleId, out int xp) || killxpdict.TryGetValue(RoleTypeId.None, out xp)))
             {
                 var log = attackerHub.GetLog();
                 log.AddXP(xp, Main.GetTranslation($"kill{attackerRoleId.ToString()}"));
@@ -310,11 +314,14 @@ namespace XPSystem
             if (hub == null)
                 return;
 #endif
-            var log = hub.GetLog();
-            if(Main.Instance.Config.SpawnXP.TryGetValue(roleType, out var value))
-                log.AddXP(value, Main.GetTranslation($"spawned{roleType.ToString()}"));
-            else
-                Main.LogDebug("Skipping spawn xp for " + roleType + " since there was not amount defined");
+            Timing.CallDelayed(1f, () =>
+            {
+                var log = hub.GetLog();
+                if (Main.Instance.Config.SpawnXP.TryGetValue(roleType, out var value) || Main.Instance.Config.SpawnXP.TryGetValue(RoleTypeId.None, out value))
+                    log.AddXP(value, Main.GetTranslation($"spawned{roleType.ToString()}"));
+                else if (Main.Instance.Config.Debug)
+                    Main.LogWarn("Skipping spawn xp for " + roleType + " since there was not amount defined");
+            });
         }
 
 #if EXILED
@@ -369,7 +376,7 @@ namespace XPSystem
         void HandlePickup(ReferenceHub ply, ItemPickupBase pickupBase)
         {
             var log = ply.GetLog();
-            if(Main.Instance.Config.PickupXP.TryGetValue(pickupBase.Info.ItemId, out var value))
+            if(Main.Instance.Config.PickupXP.TryGetValue(pickupBase.Info.ItemId, out var value) || Main.Instance.Config.PickupXP.TryGetValue(ItemType.None, out value))
                 log.AddXP(value, Main.GetTranslation($"pickup{pickupBase.Info.ItemId.ToString()}"));
         }
 
@@ -404,13 +411,13 @@ namespace XPSystem
                     if (!list.Contains(itemType))
                     {
                         list.Add(itemType);
-                        if(Main.Instance.Config.DropXP.TryGetValue(itemType, out var value))
+                        if(Main.Instance.Config.DropXP.TryGetValue(itemType, out var value) || Main.Instance.Config.DropXP.TryGetValue(ItemType.None, out value))
                             log.AddXP(value, Main.GetTranslation($"drop{itemType.ToString()}"));
                     }
                 }
                 return;
             }
-            if(Main.Instance.Config.DropXP.TryGetValue(itemType, out var value2))
+            if(Main.Instance.Config.DropXP.TryGetValue(itemType, out var value2) || Main.Instance.Config.DropXP.TryGetValue(ItemType.None, out value2))
                 log.AddXP(value2, Main.GetTranslation($"drop{itemType.ToString()}"));
         }
 
@@ -436,13 +443,13 @@ namespace XPSystem
                     if (!list.Contains(itemType))
                     {
                         list.Add(itemType);
-                        if(Main.Instance.Config.UseXP.TryGetValue(itemType, out var value))
+                        if(Main.Instance.Config.UseXP.TryGetValue(itemType, out var value) || Main.Instance.Config.UseXP.TryGetValue(ItemType.None, out value))
                             log.AddXP(value, Main.GetTranslation($"use{itemType.ToString()}"));
                     }
                 }
                 return;
             }
-            if(Main.Instance.Config.UseXP.TryGetValue(itemType, out var value2))
+            if(Main.Instance.Config.UseXP.TryGetValue(itemType, out var value2) || Main.Instance.Config.UseXP.TryGetValue(ItemType.None, out value2))
                 log.AddXP(value2, Main.GetTranslation($"use{itemType.ToString()}"));
         }
     }

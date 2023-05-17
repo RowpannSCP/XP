@@ -13,7 +13,12 @@
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            ReferenceHub ply = ReferenceHub.AllHubs.First(x => x.characterClassManager.UserId.Contains(sender.LogName));
+            if (sender is not CommandSender sender2)
+            {
+                response = "Sender is not a CommandSender";
+                return false;
+            }
+            ReferenceHub ply = ReferenceHub.AllHubs.First(x => x.characterClassManager.UserId.Contains(sender2.SenderId));
             ply.ShowCustomHint("Test");
             response = "Shown hint!";
             return true;

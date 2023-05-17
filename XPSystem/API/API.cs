@@ -36,8 +36,8 @@ namespace XPSystem.API
             }
 
             bool hasGroup = ply.serverRoles.Group == null || string.IsNullOrEmpty(ply.serverRoles.Network_myText);
-            Main.LogDebug($"i is null {i == null}");
-            Main.LogDebug($"Using i: {hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)}");
+            Main.DebugProgress($"i is null {i == null}");
+            Main.DebugProgress($"Using i: {hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)}");
             string text = hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)
                 ? Main.Instance.Config.BadgeStructureNoBadge
                         .Replace("%lvl%", log.LVL.ToString())

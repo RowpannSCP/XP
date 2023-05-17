@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using HarmonyLib;
     using LiteDB;
     using MEC;
@@ -14,6 +15,7 @@
         : Exiled.API.Features.Plugin<Config>
 #endif
     {
+        private const string _version = "1.8.2";
         public static Main Instance { get; set; }
         public EventHandlers handlers;
         private Harmony _harmony;
@@ -26,9 +28,10 @@
         };
 
 #if EXILED
+        private static int[] split = _version.Split('.').Select(x => Convert.ToInt32(x)).ToArray();
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(1, 8, 1);
+        public override Version Version { get; } = new Version(split[0], split[1], split[2]);
         public override Version RequiredExiledVersion { get; } = new Version(7, 0, 0);
 #else
         [PluginAPI.Core.Attributes.PluginConfig]
@@ -38,7 +41,7 @@
 #if EXILED
         public override void OnEnabled()
 #else
-        [PluginAPI.Core.Attributes.PluginEntryPoint("xpsystem", "1.8.1", "xp plugin", "Rowpann's Emperium, original by BrutoForceMaestro")]
+        [PluginAPI.Core.Attributes.PluginEntryPoint("xpsystem", _version, "xp plugin", "Rowpann's Emperium, original by BrutoForceMaestro")]
         public void OnEnabled()
 #endif
         {
@@ -112,11 +115,8 @@
 
         public static string GetTranslation(string key)
         {
-            if (Instance.Config.Debug)
-            {
-                LogDebug("looking for key: " + key);
-                LogDebug($"Found key: {Instance.Translations.ContainsKey(key)}");
-            }
+            DebugProgress("looking for key: " + key);
+            DebugProgress($"Found key: {Instance.Translations.ContainsKey(key)}");
             return Instance.Translations.TryGetValue(key, out var translation) ? translation : null;
         }
 
@@ -146,6 +146,12 @@
             {
                 LogError("Could not load translations: " + e);
             }
+        }
+
+        public static void DebugProgress(string message)
+        {
+            if (Instance.Config.Debug)
+                LogDebug(message);
         }
 
         public static void LogDebug(string message)
