@@ -44,7 +44,7 @@ namespace XPSystem.API
         {
             if (amount == 0)
             {
-                Main.LogDebug("skipping adding 0 xp");
+                Main.DebugProgress("skipping adding 0 xp");
                 return;
             }
             log.XP += amount;
