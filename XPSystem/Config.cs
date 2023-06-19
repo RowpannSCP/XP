@@ -130,17 +130,17 @@ namespace XPSystem
             [ItemType.None] = 0,
             [ItemType.Adrenaline] = 10,
         };
-        [Description("Whether or not the xp for drop up items can only be gotten once per round, per item.")]
+        [Description("Whether or not the xp for dropping items can only be gotten once per round, per item.")]
         public bool DropXPOneTime { get; set; } = true;
         
-        [Description("(You may add your own entries) How much xp a player gets for dropping something, itemtype none for default")]
+        [Description("(You may add your own entries) How much xp a player gets for using something, itemtype none for default")]
         public Dictionary<ItemType, int> UseXP { get; set; } = new Dictionary<ItemType, int>()
         {
             [ItemType.None] = 0,
             [ItemType.Adrenaline] = 10,
         };
 
-        [Description("Whether or not the xp for drop up items can only be gotten once per round, per item.")]
+        [Description("Whether or not the xp for using items can only be gotten once per round, per item.")]
         public bool UseXPOneTime { get; set; } = true;
 
         [Description("(You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.")]
@@ -210,6 +210,8 @@ namespace XPSystem
 
         [Description("Path the text file for translations get saved to. May require change depending on OS.")]
         public string SavePathTranslations { get; set; } = Path.Combine(ConfigPath, @"xp-translations.yml");
+        [Description("If disabled, will hide the global badge if set that way om the config")]
+        public bool VSRComplaint { get; set; } = true;
 
         [YamlIgnore]
         private static string ConfigPath =>

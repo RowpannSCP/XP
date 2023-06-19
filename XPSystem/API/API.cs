@@ -22,6 +22,11 @@ namespace XPSystem.API
                 Main.LogWarn("Not updating role: player null");
                 return;
             }
+            if (Main.Instance.Config.VSRComplaint && ply.serverRoles.GlobalSet && !Main.Instance.Config.BadgeStructure.Contains("%oldbadge%"))
+            {
+                Main.DebugProgress("Not hiding gbadge");
+                return;
+            }
             var log = ply.GetLog();
             Badge badge = Main.Instance.Config.DNTBadge;
             if(!ply.serverRoles.DoNotTrack)
