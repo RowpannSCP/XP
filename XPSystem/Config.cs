@@ -172,10 +172,14 @@ namespace XPSystem
                 Color = "lime"
             }
         };
-        
+
+        [Description("Whether or not to enable nick changes. This will change the players nickname to the specified structure.")]
+        public bool EnableNickMods { get; set; } = true;
         [Description("The structure of the player nick. Variables: %lvl% - the level. %name% - the players nickname/name")]
         public string NickStructure { get; set; } = "LVL %lvl% | %name%";
 
+        [Description("Whether or not to enable badges. This will change the players badge to the specified structure.")]
+        public bool EnableBadges { get; set; } = true;
         [Description("The structure of the badge displayed in-game. Variables: %lvl% - the level. %badge% earned badge in specified in LevelsBadge. %oldbadge% - base-game badge, like ones specified in config-remoteadmin, or a global badge. can be null.")]
         public string BadgeStructure { get; set; } = "%badge% | %oldbadge%";
         [Description("See above, just for people who dont have a badge. If empty, badgestructure will be used instead.")]

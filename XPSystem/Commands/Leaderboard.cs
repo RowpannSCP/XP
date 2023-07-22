@@ -25,16 +25,15 @@ namespace XPSystem.Commands
                 response = GetTopPlayers(10);
                 return true;
             }
-            else
+
+            if (int.TryParse(arguments.At(0), out var amount) && amount > 0)
             {
-                if (int.TryParse(arguments.At(0), out var amount) && amount > 0)
-                {
-                    response = GetTopPlayers(amount);
-                    return true;
-                }
-                response = "Invalid players amount.";
-                return false;
+                response = GetTopPlayers(amount);
+                return true;
             }
+
+            response = "Invalid players amount.";
+            return false;
         }
 
         private string GetTopPlayers(int amount)

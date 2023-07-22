@@ -7,6 +7,8 @@ namespace XPSystem.Patches
     {
         internal static void Postfix(NicknameSync __instance, string value)
         {
+            if (!Main.EnabledNick)
+                return;
             var log = __instance._hub.GetLog();
 
             __instance._displayName = Main.Instance.Config.NickStructure

@@ -9,6 +9,8 @@
     {
         internal static void Prefix(ServerRoles __instance, string i)
         {
+            if (!Main.EnabledRank)
+                return;
             if (i != null && !i.Contains("\n"))
             {
                 Timing.CallDelayed(1f, () =>

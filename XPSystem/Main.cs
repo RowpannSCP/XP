@@ -15,9 +15,13 @@
         : Exiled.API.Features.Plugin<Config>
 #endif
     {
-        private const string _version = "1.8.4";
+        private const string VersionString = "1.8.5";
+
+        public static bool EnabledNick = false;
+        public static bool EnabledRank = false;
+        public static bool Paused = false;
         public static Main Instance { get; set; }
-        public EventHandlers handlers;
+        public EventHandlers Handlers;
         private Harmony _harmony;
         public LiteDatabase db;
 
@@ -28,7 +32,7 @@
         };
 
 #if EXILED
-        private static int[] split = _version.Split('.').Select(x => Convert.ToInt32(x)).ToArray();
+        private static readonly int[] split = VersionString.Split('.').Select(x => Convert.ToInt32(x)).ToArray();
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
         public override Version Version { get; } = new Version(split[0], split[1], split[2]);
@@ -41,7 +45,7 @@
 #if EXILED
         public override void OnEnabled()
 #else
-        [PluginAPI.Core.Attributes.PluginEntryPoint("xpsystem", _version, "xp plugin", "Rowpann's Emperium, original by BrutoForceMaestro")]
+        [PluginAPI.Core.Attributes.PluginEntryPoint("xpsystem", VersionString, "xp plugin", "Rowpann's Emperium, original by BrutoForceMaestro")]
         public void OnEnabled()
 #endif
         {
@@ -51,27 +55,32 @@
             _harmony.PatchAll();
 
 #if EXILED
-            handlers = new EventHandlers();
-            Exiled.Events.Handlers.Player.Verified += handlers.OnJoined;
-            Exiled.Events.Handlers.Player.Died += handlers.OnKill;
-            Exiled.Events.Handlers.Server.RoundEnded += handlers.OnRoundEnd;
-            Exiled.Events.Handlers.Player.Escaping += handlers.OnEscape;
-            Exiled.Events.Handlers.Player.InteractingDoor += handlers.OnInteractingDoor;
-            Exiled.Events.Handlers.Scp914.UpgradingPickup += handlers.OnScp914UpgradingItem;
-            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem += handlers.OnScp914UpgradingInventory;
-            Exiled.Events.Handlers.Player.Spawned += handlers.OnSpawning;
-            Exiled.Events.Handlers.Player.PickingUpItem += handlers.OnPickingUpItem;
-            Exiled.Events.Handlers.Player.ThrownProjectile += handlers.OnThrowingGrenade;
-            Exiled.Events.Handlers.Player.DroppingItem += handlers.OnDroppingItem;
-            Exiled.Events.Handlers.Player.UsedItem += handlers.OnUsingItem;
+            Handlers = new EventHandlers();
+            Exiled.Events.Handlers.Player.Verified += Handlers.OnJoined;
+            Exiled.Events.Handlers.Player.Died += Handlers.OnKill;
+            Exiled.Events.Handlers.Server.RoundEnded += Handlers.OnRoundEnd;
+            Exiled.Events.Handlers.Player.Escaping += Handlers.OnEscape;
+            Exiled.Events.Handlers.Player.InteractingDoor += Handlers.OnInteractingDoor;
+            Exiled.Events.Handlers.Scp914.UpgradingPickup += Handlers.OnScp914UpgradingItem;
+            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem += Handlers.OnScp914UpgradingInventory;
+            Exiled.Events.Handlers.Player.Spawned += Handlers.OnSpawning;
+            Exiled.Events.Handlers.Player.PickingUpItem += Handlers.OnPickingUpItem;
+            Exiled.Events.Handlers.Player.ThrownProjectile += Handlers.OnThrowingGrenade;
+            Exiled.Events.Handlers.Player.DroppingItem += Handlers.OnDroppingItem;
+            Exiled.Events.Handlers.Player.UsedItem += Handlers.OnUsingItem;
 #else
             PluginAPI.Events.EventManager.RegisterEvents(this);
-            PluginAPI.Events.EventManager.RegisterEvents<EventHandlers>(this);
+            PluginAPI.Events.EventManager.RegisterEvents(this, Handlers = new EventHandlers());
 #endif
             LoadTranslations();
 
             if(Extensions.HintCoroutineHandle == null || !Extensions.HintCoroutineHandle.Value.IsValid || !Extensions.HintCoroutineHandle.Value.IsRunning)
                 Extensions.HintCoroutineHandle = Timing.RunCoroutine(Extensions.HintCoroutine());
+
+            if (Config.EnableNickMods)
+                EnabledNick = true;
+            if (Config.EnableBadges)
+                EnabledRank = true;
 
 #if EXILED
             base.OnEnabled();
@@ -86,19 +95,19 @@
 #endif
         {
 #if EXILED
-            Exiled.Events.Handlers.Player.Verified -= handlers.OnJoined;
-            Exiled.Events.Handlers.Player.Died -= handlers.OnKill;
-            Exiled.Events.Handlers.Server.RoundEnded -= handlers.OnRoundEnd;
-            Exiled.Events.Handlers.Player.Escaping -= handlers.OnEscape;
-            Exiled.Events.Handlers.Player.InteractingDoor -= handlers.OnInteractingDoor;
-            Exiled.Events.Handlers.Scp914.UpgradingPickup -= handlers.OnScp914UpgradingItem;
-            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem -= handlers.OnScp914UpgradingInventory;
-            Exiled.Events.Handlers.Player.Spawned -= handlers.OnSpawning;
-            Exiled.Events.Handlers.Player.PickingUpItem -= handlers.OnPickingUpItem;
-            Exiled.Events.Handlers.Player.ThrownProjectile -= handlers.OnThrowingGrenade;
-            Exiled.Events.Handlers.Player.DroppingItem -= handlers.OnDroppingItem;
-            Exiled.Events.Handlers.Player.UsedItem -= handlers.OnUsingItem;
-            handlers = null;
+            Exiled.Events.Handlers.Player.Verified -= Handlers.OnJoined;
+            Exiled.Events.Handlers.Player.Died -= Handlers.OnKill;
+            Exiled.Events.Handlers.Server.RoundEnded -= Handlers.OnRoundEnd;
+            Exiled.Events.Handlers.Player.Escaping -= Handlers.OnEscape;
+            Exiled.Events.Handlers.Player.InteractingDoor -= Handlers.OnInteractingDoor;
+            Exiled.Events.Handlers.Scp914.UpgradingPickup -= Handlers.OnScp914UpgradingItem;
+            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem -= Handlers.OnScp914UpgradingInventory;
+            Exiled.Events.Handlers.Player.Spawned -= Handlers.OnSpawning;
+            Exiled.Events.Handlers.Player.PickingUpItem -= Handlers.OnPickingUpItem;
+            Exiled.Events.Handlers.Player.ThrownProjectile -= Handlers.OnThrowingGrenade;
+            Exiled.Events.Handlers.Player.DroppingItem -= Handlers.OnDroppingItem;
+            Exiled.Events.Handlers.Player.UsedItem -= Handlers.OnUsingItem;
+            Handlers = null;
 #endif
 
             _harmony.UnpatchAll(_harmony.Id);

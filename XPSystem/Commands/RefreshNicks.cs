@@ -18,11 +18,11 @@
                 return false;
             }
 
-            foreach (var ply in ReferenceHub.AllHubs)
+            foreach (var hub in ReferenceHub.AllHubs)
             {
-                if (ply == ReferenceHub.HostHub)
+                if (hub == ReferenceHub.HostHub)
                     continue;
-                ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
+                hub.nicknameSync.DisplayName = hub.nicknameSync.Network_myNickSync;
             }
 
             response = "Nicks refreshed.";

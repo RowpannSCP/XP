@@ -43,8 +43,10 @@ namespace XPSystem
             hub.GetLog();
             Timing.CallDelayed(0.5f, () =>
             {
-                API.API.UpdateBadge(hub, hub.serverRoles.Group?.BadgeText);
-                hub.nicknameSync.DisplayName = hub.nicknameSync.Network_myNickSync;
+                if (Main.EnabledRank)
+                    API.API.UpdateBadge(hub, hub.serverRoles.Group?.BadgeText);
+                if (Main.EnabledNick)
+                    hub.nicknameSync.DisplayName = hub.nicknameSync.Network_myNickSync;
             });
         }
 
@@ -56,7 +58,7 @@ namespace XPSystem
             var damageHandler = ev.DamageHandler.Base;
             var oldRole = ev.TargetOldRole;
 #else
-        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerDeath)]
+        [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerDying)]
         public void OnKill(PluginAPI.Core.Player player, PluginAPI.Core.Player attacker, DamageHandlerBase damageHandler)
         {
             var hub = player?.ReferenceHub;
@@ -65,6 +67,7 @@ namespace XPSystem
             if (player != null)
                 oldRole = player.Role;
 #endif
+            if (Main.Paused) return;
             if (hub == null || (attackerHub != null && attackerHub.serverRoles.DoNotTrack))
             {
                 return;
@@ -103,6 +106,7 @@ namespace XPSystem
         {
             var hub = ply.ReferenceHub;
 #endif
+            if (Main.Paused) return;
             if (hub.serverRoles.DoNotTrack)
                 return;
             if (!Main.Instance.Config.EscapeXP.TryGetValue(hub.GetRoleId(), out int xp))
@@ -124,6 +128,7 @@ namespace XPSystem
         public void OnRoundEnd(RoundSummary.LeadingTeam team)
         {
 #endif
+            if (Main.Paused) return;
             Extensions._hintQueue.Clear();
             foreach (var hub in ReferenceHub.AllHubs)
             {
@@ -187,6 +192,7 @@ namespace XPSystem
 #if EXILED
         public void OnInteractingDoor(Exiled.Events.EventArgs.Player.InteractingDoorEventArgs ev)
         {
+            if (Main.Paused) return;
             if (ev.Player.DoNotTrack)
                 return;
             if (ev.Player.CurrentItem is null && Main.Instance.Config.DontGiveDoorXPEmptyItem)
@@ -211,10 +217,7 @@ namespace XPSystem
         }
 
         private static string GetDoorKey(Exiled.API.Enums.DoorType type) => "door" + type;
-        
-#endif
 
-#if EXILED
         public void OnScp914UpgradingItem(Exiled.Events.EventArgs.Scp914.UpgradingPickupEventArgs ev)
         {
             if (!ev.IsAllowed)
@@ -252,6 +255,7 @@ namespace XPSystem
 
         public void OnUpgradingItem(ReferenceHub ply, ItemCategory type)
         {
+            if (Main.Paused) return;
             if (ply.serverRoles.DoNotTrack)
                 return;
             if (Main.Instance.Config.UpgradeXP.ContainsKey(type) && Main.Instance.Config.UpgradeXP[type] != 0)
@@ -317,6 +321,7 @@ namespace XPSystem
             if (hub == null)
                 return;
 #endif
+            if (Main.Paused) return;
             Timing.CallDelayed(1f, () =>
             {
                 var log = hub.GetLog();
@@ -338,6 +343,7 @@ namespace XPSystem
 		{
             var hub = ply?.ReferenceHub;
 #endif
+            if (Main.Paused) return;
             if(pickup == null)
                 return;
             /*
@@ -386,6 +392,7 @@ namespace XPSystem
 #if EXILED
         public void OnThrowingGrenade(Exiled.Events.EventArgs.Player.ThrownProjectileEventArgs ev)
         {
+            if (Main.Paused) return;
             var log = ev.Player.ReferenceHub.GetLog();
             if(Main.Instance.Config.ThrowXP.TryGetValue(ev.Projectile.ProjectileType, out var value))
                 log.AddXP(value, Main.GetTranslation($"throw{ev.Projectile.ProjectileType.ToString()}"));
@@ -404,6 +411,7 @@ namespace XPSystem
             var hub = ply?.ReferenceHub;
             var itemType = item.ItemTypeId;
 #endif
+            if (Main.Paused) return;
             var log = hub.GetLog();
             if (Main.Instance.Config.DropXPOneTime)
             {
@@ -436,6 +444,7 @@ namespace XPSystem
             var hub = ply?.ReferenceHub;
             var itemType = item.ItemTypeId;
 #endif
+            if (Main.Paused) return;
             var log = hub.GetLog();
             if (Main.Instance.Config.UseXPOneTime)
             {

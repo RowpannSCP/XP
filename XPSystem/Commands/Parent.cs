@@ -5,7 +5,7 @@ namespace XPSystem.Commands
 {
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
     [CommandHandler(typeof(GameConsoleCommandHandler))]
-    internal class Parent : ParentCommand
+    internal sealed class Parent : ParentCommand
     {
         public Parent() => LoadGeneratedCommands();
         public override string Command { get; } =  "XPSystem";
@@ -21,11 +21,12 @@ namespace XPSystem.Commands
             RegisterCommand(new Get());
             RegisterCommand(new RefreshNicks());
             RegisterCommand(new ShowHint());
+            RegisterCommand(new PauseXPCommand());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            response = "Use: .xps (leaderboard | set | get | refresh | show)";
+            response = "Use: .xps (leaderboard | set | get | refresh | show | pause)";
             return false;
         }
     }
