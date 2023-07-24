@@ -8,7 +8,7 @@ namespace XPSystem.Commands
     {
         public string Command { get; } =  "set";
         public string[] Aliases { get; } =  Array.Empty<string>();
-        public string Description { get; } =  $"Set a certain value in player's lvl variable.";
+        public string Description { get; } =  "Set a certain value in player's lvl variable.";
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
@@ -32,8 +32,9 @@ namespace XPSystem.Commands
             }
 
             log ??= ply.GetLog();
-            
-            if (int.TryParse(arguments.At(1), out int lvl) && lvl > 0)
+
+            var arg = arguments.At(1);
+            if (int.TryParse(arg, out int lvl) && lvl > 0)
             {
                 log.LVL = lvl;
                 log.UpdateLog();
@@ -42,7 +43,7 @@ namespace XPSystem.Commands
                 ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
                 return true;
             }
-            response = $"Invalid amount of LVLs : {lvl}";
+            response = $"Invalid amount of LVLs : {arg}";
             return false;
         }
     }

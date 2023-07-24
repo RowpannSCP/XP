@@ -121,6 +121,7 @@
         <Compile Include="API\Serialization\PlayerLog.cs" />
         <Compile Include="Commands\DeleteEverythingCommand.cs" />
         <Compile Include="Commands\Get.cs" />
+        <Compile Include="Commands\Give.cs" />
         <Compile Include="Commands\Leaderboard.cs" />
         <Compile Include="Commands\Parent.cs" />
         <Compile Include="Commands\PauseXPCommand.cs" />

@@ -9,6 +9,8 @@ namespace XPSystem.Patches
         {
             if (!Main.EnabledNick)
                 return;
+            if (__instance._hub == null)
+                return;
             var log = __instance._hub.GetLog();
 
             __instance._displayName = Main.Instance.Config.NickStructure

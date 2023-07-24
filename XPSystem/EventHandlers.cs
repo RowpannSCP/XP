@@ -91,7 +91,6 @@ namespace XPSystem
             {
                 var log = attackerHub.GetLog();
                 log.AddXP(xp, Main.GetTranslation($"kill{attackerRoleId.ToString()}"));
-                log.UpdateLog();
             }
         }
 
@@ -116,20 +115,19 @@ namespace XPSystem
             }
             var log = hub.GetLog();
             log.AddXP(xp, Main.GetTranslation("escape"));
-            log.UpdateLog();
         }
 
 #if EXILED
         public void OnRoundEnd(Exiled.Events.EventArgs.Server.RoundEndedEventArgs ev)
         {
             var team = (RoundSummary.LeadingTeam)Enum.Parse(typeof(RoundSummary.LeadingTeam), ev.LeadingTeam.ToString());
+            Extensions._hintQueue.Clear();
 #else
         [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.RoundEnd)]
         public void OnRoundEnd(RoundSummary.LeadingTeam team)
         {
 #endif
             if (Main.Paused) return;
-            Extensions._hintQueue.Clear();
             foreach (var hub in ReferenceHub.AllHubs)
             {
                 if(hub == ReferenceHub.HostHub)
@@ -144,7 +142,6 @@ namespace XPSystem
                 if (log is null)
                     continue;
                 log.AddXP(Main.Instance.Config.TeamWinXP, Main.GetTranslation("teamwin"));
-                log.UpdateLog();
             }
 #if EXILED
             AlreadyGainedPlayers.Clear();
@@ -193,11 +190,11 @@ namespace XPSystem
         public void OnInteractingDoor(Exiled.Events.EventArgs.Player.InteractingDoorEventArgs ev)
         {
             if (Main.Paused) return;
+            if (!ev.IsAllowed)
+                return;
             if (ev.Player.DoNotTrack)
                 return;
             if (ev.Player.CurrentItem is null && Main.Instance.Config.DontGiveDoorXPEmptyItem)
-                return;
-            if (!ev.IsAllowed)
                 return;
             if (Main.Instance.Config.DoorInteractXP.ContainsKey(ev.Door.Type) && Main.Instance.Config.DoorInteractXP[ev.Door.Type] != 0)
             {
@@ -335,34 +332,21 @@ namespace XPSystem
 #if EXILED
         public void OnPickingUpItem(Exiled.Events.EventArgs.Player.PickingUpItemEventArgs ev)
         {
+            if (!Main.Instance.CanGetXP(ev.Player, "pickup", ev.Pickup?.Serial ?? 0))
+                return;
             var hub = ev.Player.ReferenceHub;
             var pickup = ev.Pickup.Base;
 #else
 		[PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerSearchedPickup)]
 		void OnSearchedPickup(PluginAPI.Core.Player ply, ItemPickupBase pickup)
 		{
+            if (!Main.Instance.CanGetXP(ply, "pickup", pickup.Info.Serial, pickup.Info.ItemId))
+                return;
             var hub = ply?.ReferenceHub;
 #endif
             if (Main.Paused) return;
             if(pickup == null)
                 return;
-            /*
-            if (Main.Instance.Config.PickupXPOneTimeItem)
-            {
-                if(!AlreadyGainedPlayers4.ContainsKey(ev.Player))
-                    AlreadyGainedPlayers4.Add(ev.Player, new List<ItemCategory>());
-                if (AlreadyGainedPlayers4.TryGetValue(ev.Player, out var list))
-                {
-                    var cat = GetCategory(ev.Pickup.Type);
-                    if (!list.Contains(cat))
-                    {
-                        list.Add(cat);
-                        HandlePickup(ev);
-                    }
-                }
-                return;
-            }
-            */
 
             if (Main.Instance.Config.PickupXPOneTime)
             {
@@ -402,12 +386,16 @@ namespace XPSystem
 #if EXILED
         public void OnDroppingItem(Exiled.Events.EventArgs.Player.DroppingItemEventArgs ev)
         {
+            if (!Main.Instance.CanGetXP(ev.Player, "drop", ev.Item.Serial))
+                return;
             var hub = ev.Player.ReferenceHub;
             var itemType = ev.Item.Type;
 #else
         [PluginAPI.Core.Attributes.PluginEvent(PluginAPI.Enums.ServerEventType.PlayerDropItem)]
 		void OnPlayerDroppedItem(PluginAPI.Core.Player ply, ItemBase item)
 		{
+            if (!Main.Instance.CanGetXP(ply, "drop", item.ItemSerial, item.ItemTypeId))
+                return;
             var hub = ply?.ReferenceHub;
             var itemType = item.ItemTypeId;
 #endif

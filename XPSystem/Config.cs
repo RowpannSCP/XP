@@ -105,6 +105,13 @@ namespace XPSystem
         [Description("Whether or not the xp for upgrading can only be gotten once per round")]
         public bool UpgradeXPOneTime { get; set; } = true;
 
+        [Description("Use a timer to limit xp gain from an item. Will work with one time configs.")]
+        public bool UseTimer { get; set; } = true;
+        [Description("Whether the timer should count item itself or item types")]
+        public bool TimerUseItemType { get; set; } = true;
+        [Description("How long the timer should be")]
+        public float TimerDuration { get; set; } = 60f;
+
         [Description("(You may add your own entries) How much xp a player gets for picking up an item, itemtype none for default")]
         public Dictionary<ItemType, int> PickupXP { get; set; } = new Dictionary<ItemType, int>()
         {
@@ -112,8 +119,6 @@ namespace XPSystem
             [ItemType.Adrenaline] = 10,
         };
 
-        //[Description("Whether or not the xp for picking up items can only be gotten once per round, per item")]
-        //public bool PickupXPOneTimeItem { get; set; } = true;
         [Description("Whether or not the xp for picking up items can only be gotten once per round, per item.")]// Will be ignore if PickupXPOneTimeItem is true")]
         public bool PickupXPOneTime { get; set; } = true;
 
@@ -188,15 +193,6 @@ namespace XPSystem
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;
 
-        [Description("Disable to use single hints at a time, wont break other plugins.")]
-        public bool EnableCustomHintManager { get; set; } = true;
-
-        [Description("Increase for slower hint updates.")]
-        public double HintDelay { get; set; } = 0.1f;
-        
-        [Description("Increase might help reduce flickering.")]
-        public double HintExtraTime { get; set; } = 0.01f;
-
         [Description("Size of hints.")]
         public byte HintSize { get; set; } = 100;
         
@@ -223,6 +219,15 @@ namespace XPSystem
         Path.Combine(PluginAPI.Helpers.Paths.LocalPlugins.Plugins, "XPSystem");
 #else
         Exiled.API.Features.Paths.Configs;
+
+        [Description("Disable to use single hints at a time, wont break other plugins.")]
+        public bool EnableCustomHintManager { get; set; } = true;
+
+        [Description("Increase for slower hint updates.")]
+        public double HintDelay { get; set; } = 0.1f;
+
+        [Description("Increase might help reduce flickering.")]
+        public double HintExtraTime { get; set; } = 0.01f;
 
         [Description("(You may add your own entries) How much xp a player gets for interacting with a door")]
         public Dictionary<Exiled.API.Enums.DoorType, int> DoorInteractXP { get; set; } = new Dictionary<Exiled.API.Enums.DoorType, int>()

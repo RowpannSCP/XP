@@ -38,8 +38,9 @@
                     {
                         foreach (var hub in ReferenceHub.AllHubs)
                         {
+                            if (hub == ReferenceHub.HostHub)
+                                continue;
                             API.API.UpdateBadge(hub, hub.serverRoles.Group?.BadgeText);
-
                         }
                     }
 

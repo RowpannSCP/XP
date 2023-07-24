@@ -15,7 +15,7 @@
         : Exiled.API.Features.Plugin<Config>
 #endif
     {
-        private const string VersionString = "1.8.5";
+        private const string VersionString = "1.8.6";
 
         public static bool EnabledNick = false;
         public static bool EnabledRank = false;
@@ -49,6 +49,7 @@
         public void OnEnabled()
 #endif
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(Config.SavePath)!);
             db = new LiteDatabase(Config.SavePath);
             Instance = this;
             _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
@@ -68,14 +69,14 @@
             Exiled.Events.Handlers.Player.ThrownProjectile += Handlers.OnThrowingGrenade;
             Exiled.Events.Handlers.Player.DroppingItem += Handlers.OnDroppingItem;
             Exiled.Events.Handlers.Player.UsedItem += Handlers.OnUsingItem;
+
+            if(Extensions.HintCoroutineHandle == null || !Extensions.HintCoroutineHandle.Value.IsValid || !Extensions.HintCoroutineHandle.Value.IsRunning)
+                Extensions.HintCoroutineHandle = Timing.RunCoroutine(Extensions.HintCoroutine());
 #else
             PluginAPI.Events.EventManager.RegisterEvents(this);
             PluginAPI.Events.EventManager.RegisterEvents(this, Handlers = new EventHandlers());
 #endif
             LoadTranslations();
-
-            if(Extensions.HintCoroutineHandle == null || !Extensions.HintCoroutineHandle.Value.IsValid || !Extensions.HintCoroutineHandle.Value.IsRunning)
-                Extensions.HintCoroutineHandle = Timing.RunCoroutine(Extensions.HintCoroutine());
 
             if (Config.EnableNickMods)
                 EnabledNick = true;
@@ -128,6 +129,97 @@
             DebugProgress($"Found key: {Instance.Translations.ContainsKey(key)}");
             return Instance.Translations.TryGetValue(key, out var translation) ? translation : null;
         }
+
+#if EXILED
+        public bool CanGetXP(Exiled.API.Features.Player ply, string key, ushort itemSerial)
+        {
+            var item = Exiled.API.Features.Items.Item.Get(itemSerial);
+            if (item == null) return false;
+            if (!Config.UseTimer) return true;
+            if (Config.TimerUseItemType)
+            {
+                if (ply.SessionVariables.TryGetValue($"xpitemusedtype{key}", out var obj) && obj is Dictionary<ItemType, DateTime> list)
+                {
+                    if (list.TryGetValue(item.Type, out var time))
+                    {
+                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
+                        {
+                            list[item.Type] = DateTime.Now;
+                            return true;
+                        }
+                        return false;
+                    }
+                    list.Add(item.Type, DateTime.Now);
+                    return true;
+                }
+                ply.SessionVariables.Add($"xpitemusedtype{key}", new Dictionary<ItemType, DateTime> { [item.Type] = DateTime.Now });
+                return true;
+            }
+            else
+            {
+                if (ply.SessionVariables.TryGetValue($"xpitemuseditem{key}", out var obj) && obj is Dictionary<ushort, DateTime> list)
+                {
+                    if (list.TryGetValue(item.Serial, out var time))
+                    {
+                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
+                        {
+                            list[item.Serial] = DateTime.Now;
+                            return true;
+                        }
+                        return false;
+                    }
+                    list.Add(item.Serial, DateTime.Now);
+                    return true;
+                }
+                ply.SessionVariables.Add($"xpitemuseditem{key}", new Dictionary<ushort, DateTime> { [item.Serial] = DateTime.Now });
+                return true;
+            }
+        }
+#else
+        public bool CanGetXP(PluginAPI.Core.Player ply, string key, ushort serial, ItemType itemType)
+        {
+            if (serial == 0 || itemType == ItemType.None) return false;
+            if (!Config.UseTimer) return true;
+            if (Config.TimerUseItemType)
+            {
+                if (ply.TemporaryData.StoredData.TryGetValue($"xpitemusedtype{key}", out var obj) && obj is Dictionary<ItemType, DateTime> list)
+                {
+                    if (list.TryGetValue(itemType, out var time))
+                    {
+                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
+                        {
+                            list[itemType] = DateTime.Now;
+                            return true;
+                        }
+                        return false;
+                    }
+                    list.Add(itemType, DateTime.Now);
+                    return true;
+                }
+                ply.TemporaryData.StoredData.Add($"xpitemusedtype{key}", new Dictionary<ItemType, DateTime> { [itemType] = DateTime.Now });
+                return true;
+            }
+            else
+            {
+                if (ply.TemporaryData.StoredData.TryGetValue($"xpitemuseditem{key}", out var obj) && obj is Dictionary<ushort, DateTime> list)
+                {
+                    if (list.TryGetValue(serial, out var time))
+                    {
+                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
+                        {
+                            list[serial] = DateTime.Now;
+                            return true;
+                        }
+                        return false;
+                    }
+                    list.Add(serial, DateTime.Now);
+                    return true;
+                }
+                ply.TemporaryData.StoredData.Add($"xpitemuseditem{key}", new Dictionary<ushort, DateTime> { [serial] = DateTime.Now });
+                return true;
+            }
+        }
+#endif
 
         private void LoadTranslations()
         {

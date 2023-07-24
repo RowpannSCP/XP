@@ -1,18 +1,19 @@
-﻿using System.Collections.Generic;
-using XPSystem.API.Serialization;
-
-namespace XPSystem.API
+﻿namespace XPSystem.API
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using CommandSystem;
     using Hints;
     using MEC;
+    using XPSystem.API.Serialization;
 
     public static class Extensions
     {
+#if EXILED
         public static CoroutineHandle? HintCoroutineHandle = null;
+#endif
         private static Config _cfg => Main.Instance.Config;
         public static PlayerLog GetLog(this ReferenceHub ply)
         {
@@ -54,20 +55,25 @@ namespace XPSystem.API
             {
                 log.LVL += lvlsGained;
                 log.XP -= lvlsGained * Main.Instance.Config.XPPerLevel;
-                if (Main.Instance.Config.ShowAddedLVL && ply != null)
-                {
-                    ply.ShowCustomHint(Main.Instance.Config.AddedLVLHint
-                        .Replace("%level%", log.LVL.ToString()));
-                    ply.serverRoles.SetText(string.Empty);
-                }
             }
             else if (Main.Instance.Config.ShowAddedXP && ply != null)
             {
                 ply.ShowCustomHint(message == null ? $"+ <color=green>{amount}</color> XP" : message.Replace("%amount%", amount.ToString()));
             }
             log.UpdateLog();
+            if (ply != null)
+            {
+                if (lvlsGained > 0 && Main.Instance.Config.ShowAddedLVL)
+                {
+                    ply.ShowCustomHint(Main.Instance.Config.AddedLVLHint
+                        .Replace("%level%", log.LVL.ToString()));
+                }
+                API.UpdateBadge(ply);
+                ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
+            }
         }
 
+#if EXILED
         internal static Dictionary<ReferenceHub, List<(float, string)>> _hintQueue = new Dictionary<ReferenceHub, List<(float, string)>>();
         public static IEnumerator<float> HintCoroutine()
         {
@@ -119,17 +125,21 @@ namespace XPSystem.API
                 yield return Timing.WaitForSeconds((float)_cfg.HintDelay);
             }
         }
+#endif
 
         public static void ShowCustomHint(this ReferenceHub ply, string text)
         {
+#if EXILED
             if (!_cfg.EnableCustomHintManager)
             {
+#endif
                 text = $"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{text}</size></voffset>";
                 ply.hints.Show(new TextHint(text, new HintParameter[]
                 {
                     new StringHintParameter(text)
                 }, null, _cfg.HintDuration));
                 return;
+#if EXILED
             }
 
             if (_hintQueue.TryGetValue(ply, out var list))
@@ -141,6 +151,7 @@ namespace XPSystem.API
             {
                 (_cfg.HintDuration, text)
             });
+#endif
         }
 
         public static bool CheckPermissionInternal(this ICommandSender ply, string perm)

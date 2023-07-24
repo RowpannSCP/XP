@@ -18,13 +18,17 @@
             Main.Paused = !Main.Paused;
             if (Main.Paused)
             {
+#if EXILED
                 if (Extensions.HintCoroutineHandle.HasValue)
                     Timing.KillCoroutines(Extensions.HintCoroutineHandle.Value);
+#endif
                 response = "XP gain paused.";
                 return true;
             }
 
+#if EXILED
             Extensions.HintCoroutineHandle = Timing.RunCoroutine(Extensions.HintCoroutine());
+#endif
             response = "XP gain unpaused.";
             return true;
         }

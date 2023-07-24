@@ -22,11 +22,12 @@ namespace XPSystem.Commands
             RegisterCommand(new RefreshNicks());
             RegisterCommand(new ShowHint());
             RegisterCommand(new PauseXPCommand());
+            RegisterCommand(new Give());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            response = "Use: .xps (leaderboard | set | get | refresh | show | pause)";
+            response = "Use: .xps (leaderboard | set | get | refresh | show | pause | give)";
             return false;
         }
     }
