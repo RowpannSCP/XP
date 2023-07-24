@@ -32,7 +32,7 @@ namespace XPSystem.Commands
             }
 
             log ??= ply.GetLog();
-            
+
             response = $"LVL: {log.LVL} | XP: {log.XP}";
             return true;
         }

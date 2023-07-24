@@ -50,20 +50,29 @@
             }
             log.XP += amount;
             ReferenceHub ply = ReferenceHub.AllHubs.FirstOrDefault(x => x.characterClassManager.UserId == log.ID);
-            int lvlsGained = log.XP / Main.Instance.Config.XPPerLevel;
-            if (lvlsGained > 0)
+            bool gainedLevel = false;
+            var increase = Main.Instance.Config.XPPerLevelIncreases.FirstOrDefault(x => x.Key <= log.LVL).Value;
+            var required = Main.Instance.Config.XPPerLevel + (increase * log.LVL);
+            while (log.XP >= required)
             {
-                log.LVL += lvlsGained;
-                log.XP -= lvlsGained * Main.Instance.Config.XPPerLevel;
+                log.XP -= required;
+                log.LVL++;
+                increase = Main.Instance.Config.XPPerLevelIncreases.FirstOrDefault(x => x.Key <= log.LVL).Value;
+                required = Main.Instance.Config.XPPerLevel + (increase * log.LVL);
+                gainedLevel = true;
             }
-            else if (Main.Instance.Config.ShowAddedXP && ply != null)
+
+            if (!gainedLevel && Main.Instance.Config.ShowAddedXP && ply != null)
             {
-                ply.ShowCustomHint(message == null ? $"+ <color=green>{amount}</color> XP" : message.Replace("%amount%", amount.ToString()));
+                ply.ShowCustomHint(message == null ? $" +<color=green>{amount}</color> ({log.XP}/{required}) XP"
+                    : message
+                        .Replace("%amount%", amount.ToString())
+                        .Replace("%required%", required.ToString()));
             }
             log.UpdateLog();
             if (ply != null)
             {
-                if (lvlsGained > 0 && Main.Instance.Config.ShowAddedLVL)
+                if (gainedLevel && Main.Instance.Config.ShowAddedLVL)
                 {
                     ply.ShowCustomHint(Main.Instance.Config.AddedLVLHint
                         .Replace("%level%", log.LVL.ToString()));

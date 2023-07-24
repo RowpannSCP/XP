@@ -266,7 +266,9 @@ namespace XPSystem
                 {
                     value.Add(type);
                     var log = ply.GetLog();
-                    log.AddXP(Main.Instance.Config.UpgradeXP[type], Main.GetTranslation($"upgrading914{type.ToString()}"));
+                    log.AddXP(Main.Instance.Config.UpgradeXP[type], 
+                        Main.GetTranslation($"upgrading914{type.ToString()}")
+                        ?? Main.GetTranslation("upgrading914"));
                 }
             }
         }

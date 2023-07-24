@@ -12,6 +12,7 @@
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>9</LangVersion>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -121,6 +122,7 @@
         <Compile Include="API\Serialization\PlayerLog.cs" />
         <Compile Include="Commands\DeleteEverythingCommand.cs" />
         <Compile Include="Commands\Get.cs" />
+        <Compile Include="Commands\GetXPClient.cs" />
         <Compile Include="Commands\Give.cs" />
         <Compile Include="Commands\Leaderboard.cs" />
         <Compile Include="Commands\Parent.cs" />

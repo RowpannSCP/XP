@@ -72,6 +72,13 @@ namespace XPSystem
         [Description("How many XP is required to advance a level.")]
         public int XPPerLevel { get; set; } = 1000;
 
+        [Description("Required xp = xpperlevel + xpperlevelincrease for level * level.")]
+        public Dictionary<int, int> XPPerLevelIncreases { get; set; } = new Dictionary<int, int>()
+        {
+            [0] = 0,
+            [100] = 1000,
+        };
+
         [Description("Show a mini-hint if a player gets XP")]
         public bool ShowAddedXP { get; set; } = true;
 
@@ -212,6 +219,8 @@ namespace XPSystem
         public string SavePathTranslations { get; set; } = Path.Combine(ConfigPath, @"xp-translations.yml");
         [Description("If disabled, will hide the global badge if set that way om the config")]
         public bool VSRComplaint { get; set; } = true;
+        [Description("Whether or not to enable the getxp (client console) command")]
+        public bool EnableGetXPCommand { get; set; } = true;
 
         [YamlIgnore]
         private static string ConfigPath =>
