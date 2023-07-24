@@ -13,7 +13,7 @@ namespace XPSystem.API
             return log != null;
         }
 
-        public static void UpdateBadge(ReferenceHub ply, string i = null)
+        public static void UpdateBadge(ReferenceHub ply, string i = null, bool hide = false)
         {
             if(i != null && i.Contains("\n"))
                 return;
@@ -22,6 +22,8 @@ namespace XPSystem.API
                 Main.LogWarn("Not updating role: player null");
                 return;
             }
+            if (ply.serverRoles.HiddenBadge != null)
+                hide = true;
             if (Main.Instance.Config.VSRComplaint && ply.serverRoles.GlobalSet && !Main.Instance.Config.BadgeStructure.Contains("%oldbadge%"))
             {
                 Main.DebugProgress("Not hiding gbadge");
@@ -40,20 +42,50 @@ namespace XPSystem.API
                 }
             }
 
-            bool hasGroup = ply.serverRoles.Group == null || string.IsNullOrEmpty(ply.serverRoles.Network_myText);
+            bool hasGroup = ply.serverRoles.Group != null || !string.IsNullOrEmpty(ply.serverRoles.Network_myText);
             Main.DebugProgress($"i is null {i == null}");
             Main.DebugProgress($"Using i: {hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)}");
-            string text = hasGroup && !string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)
-                ? Main.Instance.Config.BadgeStructureNoBadge
+            string text;
+            if (hasGroup)
+            {
+                if (hide)
+                {
+                    text = string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)
+                        ? Main.Instance.Config.BadgeStructure
+                            .Replace("%lvl%", log.LVL.ToString())
+                            .Replace("%badge%", badge.Name)
+                            .Replace("%oldbadge%", string.Empty)
+                        : Main.Instance.Config.BadgeStructureNoBadge
+                            .Replace("%lvl%", log.LVL.ToString())
+                            .Replace("%badge%", badge.Name);
+                    ply.serverRoles.HiddenBadge = Main.Instance.Config.BadgeStructure
                         .Replace("%lvl%", log.LVL.ToString())
                         .Replace("%badge%", badge.Name)
-                : Main.Instance.Config.BadgeStructure
-                    .Replace("%lvl%", log.LVL.ToString())
-                    .Replace("%badge%", badge.Name)
-                    .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.serverRoles.Group?.BadgeText : i);
+                        .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.serverRoles.Group?.BadgeText : i);
+                }
+                else
+                {
+                    text = Main.Instance.Config.BadgeStructure
+                        .Replace("%lvl%", log.LVL.ToString())
+                        .Replace("%badge%", badge.Name)
+                        .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.serverRoles.Group?.BadgeText : i);
+                }
+            }
+            else
+            {
+                text = string.IsNullOrEmpty(Main.Instance.Config.BadgeStructureNoBadge)
+                    ? Main.Instance.Config.BadgeStructure
+                        .Replace("%lvl%", log.LVL.ToString())
+                        .Replace("%badge%", badge.Name)
+                        .Replace("%oldbadge%", string.IsNullOrWhiteSpace(i) ? ply.serverRoles.Group?.BadgeText : i)
+                    : Main.Instance.Config.BadgeStructureNoBadge
+                        .Replace("%lvl%", log.LVL.ToString())
+                        .Replace("%badge%", badge.Name);
+            }
+
             text += "\n";
             string color = badge.Color;
-            if (hasGroup || !Main.Instance.Config.OverrideColor)
+            if (hasGroup || !Main.Instance.Config.OverrideColor || hide)
             {
                 color = ply.serverRoles.Group?.BadgeColor ?? color;
             }

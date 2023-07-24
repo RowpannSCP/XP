@@ -127,7 +127,7 @@
         <Compile Include="Commands\Leaderboard.cs" />
         <Compile Include="Commands\Parent.cs" />
         <Compile Include="Commands\PauseXPCommand.cs" />
-        <Compile Include="Commands\RefreshNicks.cs" />
+        <Compile Include="Commands\Refresh.cs" />
         <Compile Include="Commands\Set.cs" />
         <Compile Include="Commands\ShowHint.cs" />
         <Compile Include="Config.cs" />
@@ -135,6 +135,7 @@
         <Compile Include="Main.cs" />
         <Compile Include="Patches\RankChangePatch.cs" />
         <Compile Include="Patches\SetNickPatch.cs" />
+        <Compile Include="Patches\TagHidingPatches.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
 

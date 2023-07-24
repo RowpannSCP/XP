@@ -67,7 +67,8 @@
                 ply.ShowCustomHint(message == null ? $" +<color=green>{amount}</color> ({log.XP}/{required}) XP"
                     : message
                         .Replace("%amount%", amount.ToString())
-                        .Replace("%required%", required.ToString()));
+                        .Replace("%required%", required.ToString())
+                        .Replace("%current%", log.XP.ToString()));
             }
             log.UpdateLog();
             if (ply != null)
@@ -77,8 +78,10 @@
                     ply.ShowCustomHint(Main.Instance.Config.AddedLVLHint
                         .Replace("%level%", log.LVL.ToString()));
                 }
-                API.UpdateBadge(ply);
-                ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
+                if (Main.EnabledRank)
+                    API.UpdateBadge(ply);
+                if (Main.EnabledNick)
+                    ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
             }
         }
 

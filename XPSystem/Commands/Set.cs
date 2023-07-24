@@ -4,6 +4,8 @@ using XPSystem.API;
 
 namespace XPSystem.Commands
 {
+    using API = XPSystem.API.API;
+
     internal class Set : ICommand
     {
         public string Command { get; } =  "set";
@@ -25,7 +27,7 @@ namespace XPSystem.Commands
 
             int.TryParse(arguments.At(0), out var usernetid);
             ReferenceHub ply = ReferenceHub.GetHub(usernetid);
-            if (!(API.API.TryGetLog(arguments.At(0), out var log) || ply != null))
+            if (!(API.TryGetLog(arguments.At(0), out var log) || ply != null))
             {
                 response = "incorrect userid";
                 return false;
@@ -39,8 +41,10 @@ namespace XPSystem.Commands
                 log.LVL = lvl;
                 log.UpdateLog();
                 response = $"{arguments.At(0)}'s LVL is now {log.LVL}";
-                ply.serverRoles.SetText("");
-                ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
+                if (Main.EnabledRank)
+                    API.UpdateBadge(ply);
+                if (Main.EnabledNick)
+                    ply.nicknameSync.DisplayName = ply.nicknameSync.Network_myNickSync;
                 return true;
             }
             response = $"Invalid amount of LVLs : {arg}";

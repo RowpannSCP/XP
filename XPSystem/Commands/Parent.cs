@@ -19,7 +19,7 @@ namespace XPSystem.Commands
             RegisterCommand(new Leaderboard());
             RegisterCommand(new Set());
             RegisterCommand(new Get());
-            RegisterCommand(new RefreshNicks());
+            RegisterCommand(new Refresh());
             RegisterCommand(new ShowHint());
             RegisterCommand(new PauseXPCommand());
             RegisterCommand(new Give());

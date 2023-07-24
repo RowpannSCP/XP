@@ -221,6 +221,10 @@ namespace XPSystem
         public bool VSRComplaint { get; set; } = true;
         [Description("Whether or not to enable the getxp (client console) command")]
         public bool EnableGetXPCommand { get; set; } = true;
+        [Description("Whether or not to change how badge hiding works")]
+        public bool EditBadgeHiding { get; set; } = true;
+        [Description("Whether or not to use different badges depending whether or not the player has view hidden badges permission")]
+        public bool ShowHiddenBadgesToAdmins { get; set; } = true;
 
         [YamlIgnore]
         private static string ConfigPath =>
