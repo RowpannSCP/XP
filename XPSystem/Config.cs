@@ -5,6 +5,7 @@ using Badge = XPSystem.API.Features.Badge;
 
 namespace XPSystem
 {
+    using System.Linq;
     using PlayerRoles;
     using YamlDotNet.Serialization;
 
@@ -78,6 +79,16 @@ namespace XPSystem
             [0] = 0,
             [100] = 1000,
         };
+
+        private Dictionary<int, int> _xpPerLevelIncreasesOrdered;
+        public Dictionary<int, int> GetIncreasesOrdered()
+        {
+            if (_xpPerLevelIncreasesOrdered != null)
+                return _xpPerLevelIncreasesOrdered;
+            return _xpPerLevelIncreasesOrdered = new Dictionary<int, int>(XPPerLevelIncreases)
+                .OrderByDescending(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.Value);
+        }
 
         [Description("Show a mini-hint if a player gets XP")]
         public bool ShowAddedXP { get; set; } = true;
@@ -154,6 +165,9 @@ namespace XPSystem
 
         [Description("Whether or not the xp for using items can only be gotten once per round, per item.")]
         public bool UseXPOneTime { get; set; } = true;
+
+        [Description("If true, the level for the badge is the starting level where you will recieve it. If false, the level for the badge is what you will recieve as long as your level is below it")]
+        public bool BadgeKeyIsRequiredLevel { get; set; } = false;
 
         [Description("(You may add your own entries) Level threshold and a badge. %color%. if you get a TAG FAIL in your console, either change your color, or remove special characters like brackets.")]
         public Dictionary<int, Badge> LevelsBadge { get; set; } = new Dictionary<int, Badge>()

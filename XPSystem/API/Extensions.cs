@@ -51,14 +51,18 @@
             log.XP += amount;
             ReferenceHub ply = ReferenceHub.AllHubs.FirstOrDefault(x => x.characterClassManager.UserId == log.ID);
             bool gainedLevel = false;
-            var increase = Main.Instance.Config.XPPerLevelIncreases.FirstOrDefault(x => x.Key <= log.LVL).Value;
-            var required = Main.Instance.Config.XPPerLevel + (increase * log.LVL);
+            var ordered = Main.Instance.Config.GetIncreasesOrdered();
+            var increase = ordered.FirstOrDefault(x => x.Key <= log.LVL).Value;
+            var xpPerLevel = Main.Instance.Config.XPPerLevel;
+            var required = xpPerLevel + (increase * log.LVL);
+            Main.DebugProgress($"Required: {required} ({xpPerLevel} (xpperlevel) + {increase} (increase) * {log.LVL} (lvl))");
             while (log.XP >= required)
             {
                 log.XP -= required;
                 log.LVL++;
-                increase = Main.Instance.Config.XPPerLevelIncreases.FirstOrDefault(x => x.Key <= log.LVL).Value;
-                required = Main.Instance.Config.XPPerLevel + (increase * log.LVL);
+                increase = ordered.FirstOrDefault(x => x.Key <= log.LVL).Value;
+                required = xpPerLevel + (increase * log.LVL);
+                Main.DebugProgress($"Gained lvl, new required {required} ({Main.Instance.Config.XPPerLevel} (xpperlevel) + {increase} (increase) * {log.LVL} (lvl))");
                 gainedLevel = true;
             }
 

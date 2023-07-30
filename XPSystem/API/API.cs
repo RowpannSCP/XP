@@ -29,17 +29,41 @@ namespace XPSystem.API
                 Main.DebugProgress("Not hiding gbadge");
                 return;
             }
+
             var log = ply.GetLog();
-            Badge badge = Main.Instance.Config.DNTBadge;
+            Badge badge = null;
             if(!ply.serverRoles.DoNotTrack)
             {
-                foreach (var kvp in Main.Instance.Config.LevelsBadge.OrderBy(kvp => kvp.Key))
+                if (Main.Instance.Config.BadgeKeyIsRequiredLevel)
                 {
-                    if (log.LVL > kvp.Key && Main.Instance.Config.LevelsBadge.OrderByDescending(kvp2 => kvp2.Key).ElementAt(0).Key != kvp.Key)
-                        continue;
-                    badge = kvp.Value;
-                    break;
+                    foreach (var kvp in Main.Instance.Config.LevelsBadge.OrderByDescending(kvp => kvp.Key))
+                    {
+                        if (log.LVL < kvp.Key)
+                            continue;
+                        badge = kvp.Value;
+                        break;
+                    }
                 }
+                else
+                {
+                    var lastBadge = Main.Instance.Config.LevelsBadge.OrderByDescending(kvp2 => kvp2.Key).ElementAt(0);
+                    foreach (var kvp in Main.Instance.Config.LevelsBadge.OrderBy(kvp => kvp.Key))
+                    {
+                        if (log.LVL > kvp.Key && kvp.Key != lastBadge.Key)
+                            continue;
+                        badge = kvp.Value;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                badge = Main.Instance.Config.DNTBadge;
+            }
+
+            if (badge == null)
+            {
+                return;
             }
 
             bool hasGroup = ply.serverRoles.Group != null || !string.IsNullOrEmpty(ply.serverRoles.Network_myText);
