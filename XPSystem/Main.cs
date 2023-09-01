@@ -15,7 +15,7 @@
         : Exiled.API.Features.Plugin<Config>
 #endif
     {
-        private const string VersionString = "1.8.8";
+        private const string VersionString = "1.9.0";
 
         public static bool EnabledNick = false;
         public static bool EnabledRank = false;
