@@ -1,4 +1,5 @@
-﻿using MEC;
+﻿using InventorySystem.Disarming;
+using MEC;
 using XPSystem.API;
 
 namespace XPSystem
@@ -108,6 +109,8 @@ namespace XPSystem
             if (Main.Paused) return;
             if (hub.serverRoles.DoNotTrack)
                 return;
+            if (!hub.inventory.IsDisarmed())
+                return;
             if (!Main.Instance.Config.EscapeXP.TryGetValue(hub.GetRoleId(), out int xp))
             {
                 Main.LogWarn($"No escape XP for {hub.GetRoleId()}");
@@ -151,6 +154,15 @@ namespace XPSystem
             //AlreadyGainedPlayers4.Clear();
             AlreadyGainedPlayers5.Clear();
             AlreadyGainedPlayers6.Clear();
+
+            if (Main.Instance.Config.LogXPGainedMethods)
+            {
+                Main.LogWarn("XP Gained Methods:");
+                foreach (var method in Main.Instance.UsedKeys.OrderByDescending(x => x.Value))
+                {
+                    Main.LogWarn($"- {method.Key}: {method.Value}");
+                }
+            }
         }
 
         private static Dictionary<RoundSummary.LeadingTeam, List<RoleTypeId>> Winners =
@@ -284,8 +296,8 @@ namespace XPSystem
             if (type is ItemType.ArmorCombat or ItemType.ArmorHeavy or ItemType.ArmorLight)
                 return ItemCategory.Armor;
             if (type is ItemType.KeycardJanitor or ItemType.KeycardScientist or
-                ItemType.KeycardResearchCoordinator or ItemType.KeycardZoneManager or ItemType.KeycardGuard or ItemType.KeycardNTFOfficer or
-                ItemType.KeycardContainmentEngineer or ItemType.KeycardNTFLieutenant or ItemType.KeycardNTFCommander or
+                ItemType.KeycardResearchCoordinator or ItemType.KeycardZoneManager or ItemType.KeycardGuard or ItemType.KeycardMTFPrivate or
+                ItemType.KeycardContainmentEngineer or ItemType.KeycardMTFOperative or ItemType.KeycardMTFCaptain or
                 ItemType.KeycardFacilityManager or ItemType.KeycardChaosInsurgency or ItemType.KeycardO5)
                 return ItemCategory.Keycard;
             if (type is ItemType.Painkillers or ItemType.Medkit or ItemType.SCP500 or ItemType.Adrenaline)

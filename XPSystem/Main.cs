@@ -30,6 +30,7 @@
             ["ExampleKey"] = "ExampleValue",
             ["ExampleKey2"] = "ExampleValue",
         };
+        public Dictionary<string, int> UsedKeys = new Dictionary<string, int>();
 
 #if EXILED
         private static readonly int[] split = VersionString.Split('.').Select(x => Convert.ToInt32(x)).ToArray();
@@ -125,6 +126,14 @@
 
         public static string GetTranslation(string key)
         {
+            if (Instance?.Config.LogXPGainedMethods ?? false)
+            {
+                if (Instance.UsedKeys.ContainsKey(key))
+                    Instance.UsedKeys[key]++;
+                else
+                    Instance.UsedKeys.Add(key, 1);
+            }
+
             DebugProgress("looking for key: " + key);
             DebugProgress($"Found key: {Instance.Translations.ContainsKey(key)}");
             return Instance.Translations.TryGetValue(key, out var translation) ? translation : null;
