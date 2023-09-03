@@ -60,7 +60,7 @@
           <HintPath>..\packages\Lib.Harmony.2.2.2\lib\net48\0Harmony.dll</HintPath>
         </Reference>
         <Reference Include="AdvancedHints">
-            <HintPath>..\refs\AdvancedHints.dll</HintPath>
+            <HintPath>..\..\refs\AdvancedHints.dll</HintPath>
         </Reference>
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>..\packages\EXILED.8.0.0\lib\net48\Assembly-CSharp-Publicized.dll</HintPath>
