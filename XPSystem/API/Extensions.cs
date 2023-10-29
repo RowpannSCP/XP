@@ -18,13 +18,13 @@
         public static PlayerLog GetLog(this ReferenceHub ply)
         {
             PlayerLog toInsert = null;
-            if (string.IsNullOrWhiteSpace(ply.characterClassManager.UserId))
+            if (string.IsNullOrWhiteSpace(ply.authManager.UserId))
                 throw new ArgumentNullException(nameof(ply));
-            if (!API.TryGetLog(ply.characterClassManager.UserId, out var log))
+            if (!API.TryGetLog(ply.authManager.UserId, out var log))
             {
                 toInsert = new PlayerLog()
                 {
-                    ID = ply.characterClassManager.UserId,
+                    ID = ply.authManager.UserId,
                     LVL = 0,
                     XP = 0,
                 };
@@ -49,7 +49,7 @@
                 return;
             }
             log.XP += amount;
-            ReferenceHub ply = ReferenceHub.AllHubs.FirstOrDefault(x => x.characterClassManager.UserId == log.ID);
+            ReferenceHub ply = ReferenceHub.AllHubs.FirstOrDefault(x => x.authManager.UserId == log.ID);
             bool gainedLevel = false;
             var ordered = Main.Instance.Config.GetIncreasesOrdered();
             var increase = ordered.FirstOrDefault(x => x.Key <= log.LVL).Value;

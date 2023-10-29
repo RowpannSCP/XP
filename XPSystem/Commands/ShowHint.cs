@@ -18,7 +18,7 @@
                 response = "Sender is not a CommandSender";
                 return false;
             }
-            ReferenceHub ply = ReferenceHub.AllHubs.First(x => x.characterClassManager.UserId.Contains(sender2.SenderId));
+            ReferenceHub ply = ReferenceHub.AllHubs.First(x => x.authManager.UserId.Contains(sender2.SenderId));
             ply.ShowCustomHint("Test");
             response = "Shown hint!";
             return true;

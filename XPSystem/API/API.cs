@@ -17,7 +17,7 @@ namespace XPSystem.API
         {
             if(i != null && i.Contains("\n"))
                 return;
-            if (ply == null || ply.characterClassManager.UserId == null)
+            if (ply == null || ply.authManager.UserId == null)
             {
                 Main.LogWarn("Not updating role: player null");
                 return;
@@ -32,7 +32,7 @@ namespace XPSystem.API
 
             var log = ply.GetLog();
             Badge badge = null;
-            if(!ply.serverRoles.DoNotTrack)
+            if(!ply.authManager.DoNotTrack)
             {
                 if (Main.Instance.Config.BadgeKeyIsRequiredLevel)
                 {

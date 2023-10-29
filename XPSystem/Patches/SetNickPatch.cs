@@ -14,7 +14,7 @@ namespace XPSystem.Patches
             var log = __instance._hub.GetLog();
 
             __instance._displayName = Main.Instance.Config.NickStructure
-                .Replace("%lvl%", __instance._hub.serverRoles.DoNotTrack ? "DNT" : log.LVL.ToString())
+                .Replace("%lvl%", __instance._hub.authManager.DoNotTrack ? "DNT" : log.LVL.ToString())
                 .Replace("%name%", value)
                 .Replace("$IGNORE$", "");
         }

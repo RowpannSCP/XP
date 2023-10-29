@@ -35,9 +35,9 @@ namespace XPSystem
         {
             var hub = ply.ReferenceHub;
 #endif
-            if (hub.serverRoles.DoNotTrack)
+            if (hub.authManager.DoNotTrack)
             {
-                hub.characterClassManager.ConsolePrint($"[REPORTING] {Main.Instance.Config.DNTHint}", "white");
+                hub.gameConsoleTransmission.SendToClient($"[REPORTING] {Main.Instance.Config.DNTHint}", "white");
                 return;
             }
 
@@ -69,7 +69,7 @@ namespace XPSystem
                 oldRole = player.Role;
 #endif
             if (Main.Paused) return;
-            if (hub == null || (attackerHub != null && attackerHub.serverRoles.DoNotTrack))
+            if (hub == null || (attackerHub != null && attackerHub.authManager.DoNotTrack))
             {
                 return;
             }
@@ -107,7 +107,7 @@ namespace XPSystem
             var hub = ply.ReferenceHub;
 #endif
             if (Main.Paused) return;
-            if (hub.serverRoles.DoNotTrack)
+            if (hub.authManager.DoNotTrack)
                 return;
             if (!hub.inventory.IsDisarmed())
                 return;
@@ -135,7 +135,7 @@ namespace XPSystem
             {
                 if(hub == ReferenceHub.HostHub)
                     continue;
-                if (hub.serverRoles.DoNotTrack)
+                if (hub.authManager.DoNotTrack)
                     continue;
                 if (!Winners[team].Contains(hub.GetRoleId()))
                 {
@@ -265,7 +265,7 @@ namespace XPSystem
         public void OnUpgradingItem(ReferenceHub ply, ItemCategory type)
         {
             if (Main.Paused) return;
-            if (ply.serverRoles.DoNotTrack)
+            if (ply.authManager.DoNotTrack)
                 return;
             if (Main.Instance.Config.UpgradeXP.ContainsKey(type) && Main.Instance.Config.UpgradeXP[type] != 0)
             {

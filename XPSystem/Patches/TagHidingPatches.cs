@@ -1,4 +1,6 @@
-﻿namespace XPSystem.Patches
+﻿using CommandSystem.Commands.Shared;
+
+namespace XPSystem.Patches
 {
     using System;
     using CommandSystem;
@@ -14,36 +16,32 @@
         {
             response = string.Empty;
             if (!Main.Instance.Config.EditBadgeHiding) return true;
-            PlayerCommandSender playerCommandSender = sender as PlayerCommandSender;
-            if (playerCommandSender == null)
+
+            if (!(sender is PlayerCommandSender playerCommandSender))
             {
                 response = "You must be in-game to use this command!";
                 __result = false;
                 return false;
             }
+
             ServerRoles serverRoles = playerCommandSender.ReferenceHub.serverRoles;
-            if (!serverRoles.BypassStaff)
+            if (serverRoles.HasBadgeHidden)
             {
-                if (!string.IsNullOrEmpty(serverRoles.HiddenBadge))
-                {
-                    response = "Your badge is already hidden.";
-                    __result = false;
-                    return false;
-                }
-                if (string.IsNullOrEmpty(serverRoles.MyText))
-                {
-                    response = "Your don't have any badge.";
-                    __result = false;
-                    return false;
-                }
+                response = "Your badge is already hidden.";
+                __result = false;
+                return false;
             }
 
-            serverRoles.GlobalHidden = serverRoles.GlobalSet;
-            serverRoles.NetworkGlobalBadge = null;
+            if (!serverRoles.TryHideTag())
+            {
+                response = "Your don't have any badge.";
+                __result = false;
+            }
+
             API.UpdateBadge(playerCommandSender.ReferenceHub, null, true);
             if (Main.Instance.Config.ShowHiddenBadgesToAdmins)
                 serverRoles.RefreshHiddenTag();
-            response = "Tag hidden!";
+            response = "Tag hidden.";
             __result = true;
             return false;
         }
