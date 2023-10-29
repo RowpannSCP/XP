@@ -15,7 +15,7 @@
         : Exiled.API.Features.Plugin<Config>
 #endif
     {
-        private const string VersionString = "1.9.0";
+        private const string VersionString = "1.10.0";
 
         public static bool EnabledNick = false;
         public static bool EnabledRank = false;
@@ -37,7 +37,7 @@
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
         public override Version Version { get; } = new Version(split[0], split[1], split[2]);
-        public override Version RequiredExiledVersion { get; } = new Version(8, 0, 0);
+        public override Version RequiredExiledVersion { get; } = new Version(8, 3, 0);
 #else
         [PluginAPI.Core.Attributes.PluginConfig]
         public Config Config;
