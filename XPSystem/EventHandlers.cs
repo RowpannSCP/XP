@@ -17,13 +17,13 @@ namespace XPSystem
     public class EventHandlers
     {
 #if EXILED
-        public Dictionary<Exiled.API.Features.Player, List<Exiled.API.Enums.DoorType>> AlreadyGainedPlayers = new Dictionary<Exiled.API.Features.Player, List<Exiled.API.Enums.DoorType>>();
+        public Dictionary<Exiled.API.Features.Player, List<Exiled.API.Enums.DoorType>> AlreadyGainedPlayers = new();
 #endif
-        public Dictionary<ReferenceHub, List<ItemCategory>> AlreadyGainedPlayers2 = new Dictionary<ReferenceHub, List<ItemCategory>>();
-        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers3 = new Dictionary<ReferenceHub, List<ItemType>>();
+        public Dictionary<ReferenceHub, List<ItemCategory>> AlreadyGainedPlayers2 = new();
+        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers3 = new();
         //public Dictionary<Player, List<ItemCategory>> AlreadyGainedPlayers4 = new Dictionary<Player, List<ItemCategory>>();
-        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers5 = new Dictionary<ReferenceHub, List<ItemType>>();
-        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers6 = new Dictionary<ReferenceHub, List<ItemType>>();
+        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers5 = new();
+        public Dictionary<ReferenceHub, List<ItemType>> AlreadyGainedPlayers6 = new();
 
 #if EXILED
         public void OnJoined(Exiled.Events.EventArgs.Player.VerifiedEventArgs ev)
@@ -84,15 +84,18 @@ namespace XPSystem
             }
 
             var attackerRoleId = attackerHub.GetRoleId();
-            var hasKey = Main.Instance.Config.KillXP.TryGetValue(attackerRoleId, out var killxpdict);
-            if (!hasKey)
-                hasKey = Main.Instance.Config.KillXP.TryGetValue(RoleTypeId.None, out killxpdict);
-            Main.DebugProgress($"OnKill, haskey: {hasKey} (attroleid: {attackerRoleId}) (role: {oldRole})");
-            if (hasKey && (killxpdict.TryGetValue(oldRole, out int xp) || killxpdict.TryGetValue(RoleTypeId.None, out xp)))
-            {
-                var log = attackerHub.GetLog();
-                log.AddXP(xp, Main.GetTranslation($"kill{attackerRoleId.ToString()}"));
-            }
+
+            int xp = 0;
+            bool attackerRoleHasDict = Main.Instance.Config.KillXP.TryGetValue(attackerRoleId, out var killxpdict);
+            bool victimRoleHasEntry = attackerRoleHasDict && killxpdict.TryGetValue(oldRole, out xp);
+            bool usingDefaultDict = !attackerRoleHasDict && Main.Instance.Config.KillXP.TryGetValue(RoleTypeId.None, out killxpdict);
+            bool usingDefaultKey = killxpdict?.TryGetValue(oldRole, out xp) ?? false;
+
+            Main.DebugProgress($"attackerRoleHasDict: {attackerRoleHasDict}, victimRoleHasEntry: {victimRoleHasEntry}, usingDefaultDict: {usingDefaultDict}, usingDefaultKey: {usingDefaultKey}, xp: {xp}");
+            if (xp == 0)
+                return;
+            var log = attackerHub.GetLog();
+            log.AddXP(xp, Main.GetTranslation($"kill{attackerRoleId.ToString()}"));
         }
 
 #if EXILED

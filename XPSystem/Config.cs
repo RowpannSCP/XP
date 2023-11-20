@@ -30,7 +30,7 @@ namespace XPSystem
             Color = "nickel"
         };
 
-        [Description("(You may add your own entries) Role1: Role2: XP player with Role1 gets for killing a person with Role2. Roletypid none for default")]
+        [Description("(You may add your own entries) Role1: Role2: XP player with Role1 gets for killing a person with Role2. RoleTypeId.None is used as default for both killer and viction roletype")]
         public Dictionary<RoleTypeId, Dictionary<RoleTypeId, int>> KillXP { get; set; } = new Dictionary<RoleTypeId, Dictionary<RoleTypeId, int>>()
         {
             [RoleTypeId.None] = new Dictionary<RoleTypeId, int>()
