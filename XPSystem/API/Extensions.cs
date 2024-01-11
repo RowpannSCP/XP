@@ -6,6 +6,7 @@
     using System.Text;
     using CommandSystem;
     using Hints;
+    using LiteDB;
     using MEC;
     using XPSystem.API.Serialization;
 
@@ -15,6 +16,9 @@
         public static CoroutineHandle? HintCoroutineHandle = null;
 #endif
         private static Config _cfg => Main.Instance.Config;
+        
+        public static ILiteCollection<PlayerLog> PlayerLogCollection => Main.Instance.db.GetCollection<PlayerLog>("Players");
+
         public static PlayerLog GetLog(this ReferenceHub ply)
         {
             PlayerLog toInsert = null;
@@ -28,13 +32,17 @@
                     LVL = 0,
                     XP = 0,
                 };
-                Main.Instance.db.GetCollection<PlayerLog>("Players").Insert(toInsert);
+
+                PlayerLogCollection.Insert(toInsert);
             }
 
             if (log is null)
                 return toInsert;
             return log;
         }
+
+        public static bool HasLog(this ReferenceHub ply) => PlayerLogCollection.Exists(ply.authManager.UserId);
+        public static bool DeleteLog(this ReferenceHub ply) => PlayerLogCollection.Delete(ply.authManager.UserId);
 
         public static void UpdateLog(this PlayerLog log)
         {
@@ -145,29 +153,42 @@
 
         public static void ShowCustomHint(this ReferenceHub ply, string text)
         {
-#if EXILED
-            if (!_cfg.EnableCustomHintManager)
-            {
-#endif
-                text = $"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{text}</size></voffset>";
-                ply.hints.Show(new TextHint(text, new HintParameter[]
-                {
-                    new StringHintParameter(text)
-                }, null, _cfg.HintDuration));
+            if (_cfg.HintMode == HintMode.None)
                 return;
+            text = $"<voffset={_cfg.VOffest}em><space={_cfg.HintSpace}em><size={_cfg.HintSize}%>{text}</size></voffset>";
+            switch (_cfg.HintMode)
+            {
+                case HintMode.Hint:
 #if EXILED
-            }
+                    if (!_cfg.EnableCustomHintManager)
+                    {
+#endif
+                        ply.hints.Show(new TextHint(text, new HintParameter[]
+                        {
+                            new StringHintParameter(text)
+                        }, null, _cfg.HintDuration));
+                        return;
+#if EXILED
+                    }
 
-            if (_hintQueue.TryGetValue(ply, out var list))
-            {
-                list.Add((_cfg.HintDuration, text));
-                return;
-            }
-            _hintQueue.Add(ply, new List<(float, string)>()
-            {
-                (_cfg.HintDuration, text)
-            });
+                    if (_hintQueue.TryGetValue(ply, out var list))
+                    {
+                        list.Add((_cfg.HintDuration, text));
+                        return;
+                    }
+                    _hintQueue.Add(ply, new List<(float, string)>()
+                    {
+                        (_cfg.HintDuration, text)
+                    });
+                    break;
 #endif
+                case HintMode.Broadcast:
+                    Broadcast.Singleton.TargetAddElement(ply.characterClassManager.connectionToClient, text, (ushort)_cfg.HintDuration, Broadcast.BroadcastFlags.Normal);
+                    break;
+                case HintMode.Console:
+                    ply.gameConsoleTransmission.SendToClient(text, "green");
+                    break;
+            }
         }
 
         public static bool CheckPermissionInternal(this ICommandSender ply, string perm)

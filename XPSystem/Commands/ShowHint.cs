@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using CommandSystem;
+    using RemoteAdmin;
     using XPSystem.API;
 
     public class ShowHint : ICommand
@@ -13,13 +14,13 @@
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (sender is not CommandSender sender2)
+            if (sender is not PlayerCommandSender sender2)
             {
-                response = "Sender is not a CommandSender";
+                response = "Sender is not a PlayerCommandSender";
                 return false;
             }
-            ReferenceHub ply = ReferenceHub.AllHubs.First(x => x.authManager.UserId.Contains(sender2.SenderId));
-            ply.ShowCustomHint("Test");
+
+            sender2.ReferenceHub.ShowCustomHint("Test");
             response = "Shown hint!";
             return true;
         }

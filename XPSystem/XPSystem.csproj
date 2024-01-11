@@ -129,6 +129,7 @@
         <Compile Include="Commands\ShowHint.cs" />
         <Compile Include="Config.cs" />
         <Compile Include="EventHandlers.cs" />
+        <Compile Include="HintMode.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="Patches\RankChangePatch.cs" />
         <Compile Include="Patches\SetNickPatch.cs" />

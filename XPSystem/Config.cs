@@ -20,6 +20,9 @@ namespace XPSystem
         [Description("Show debug messages?")] 
         public bool Debug { get; set; } = false;
 
+        [Description("Available modes: Hint, Broadcast, Console, None.")]
+        public HintMode HintMode { get; set; } = HintMode.Hint;
+
         [Description("Hint shown to the players if they have DNT enabled.")]
         public string DNTHint { get; set; } = "We can't track your stats while you have DNT enabled in your game options!";
         
@@ -90,13 +93,13 @@ namespace XPSystem
                 .ToDictionary(x => x.Key, x => x.Value);
         }
 
-        [Description("Show a mini-hint if a player gets XP")]
+        [Description("Show a message if a player gets XP")]
         public bool ShowAddedXP { get; set; } = true;
 
-        [Description("Show a hint to the player if he advances a level.")]
+        [Description("Show a message to the player if he advances a level.")]
         public bool ShowAddedLVL { get; set; } = true;
 
-        [Description("What hint to show if player advances a level. (if ShowAddedLVL = false, this is irrelevant)")]
+        [Description("What message to show if player advances a level. (if ShowAddedLVL = false, this is irrelevant)")]
         public string AddedLVLHint { get; set; } = "NEW LEVEL: <color=red>%level%</color>";
 
         [Description("(You may add your own entries) How many XP a player gets for escaping")]
@@ -214,16 +217,16 @@ namespace XPSystem
         [Description("Override colors for people who already have a rank")]
         public bool OverrideColor { get; set; } = false;
 
-        [Description("Size of hints.")]
+        [Description("Size of the message.")]
         public byte HintSize { get; set; } = 100;
         
-        [Description("Spacing of the in (horizontal offset)")]
+        [Description("Spacing of the message in (horizontal offset)")]
         public short HintSpace { get; set; } = 0;
         
-        [Description("Vertical offset of hints.")]
+        [Description("Vertical offset of the message.")]
         public byte VOffest { get; set; } = 0;
         
-        [Description("Duration of hints.")]
+        [Description("Duration of the message.")]
         public float HintDuration { get; set; } = 3;
 
         [Description("Path the database gets saved to. May require change depending on OS.")]

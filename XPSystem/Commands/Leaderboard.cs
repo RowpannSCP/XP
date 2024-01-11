@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using CommandSystem;
 using XPSystem.API.Serialization;
 
@@ -22,13 +21,13 @@ namespace XPSystem.Commands
             }
             if (arguments.Count == 0)
             {
-                response = GetTopPlayers(10);
+                response = GetTopPlayersString(10);
                 return true;
             }
 
             if (int.TryParse(arguments.At(0), out var amount) && amount > 0)
             {
-                response = GetTopPlayers(amount);
+                response = GetTopPlayersString(amount);
                 return true;
             }
 
@@ -36,18 +35,29 @@ namespace XPSystem.Commands
             return false;
         }
 
-        private string GetTopPlayers(int amount)
+        private static string GetTopPlayersString(int amount)
         {
-            var sorted = Main.Instance.db.GetCollection<PlayerLog>("Players").FindAll().OrderByDescending(o => o.LVL);
-            var players = sorted.Take(amount);
             string str = "";
             int index = 1;
-            foreach (var log in players)
+            foreach (var log in GetTopPlayers(amount))
             {
                 str += $"{index}. ({log.ID}) : LVL{log.LVL}, XP: {log.XP}\n";
                 index++;
             }
+
             return str;
+        }
+
+        /// <summary>
+        /// public cause notintense wants it
+        /// </summary>
+        public static PlayerLog[] GetTopPlayers(int amount)
+        {
+            var sorted = Main.Instance.db.GetCollection<PlayerLog>("Players")
+                .Query()
+                .OrderByDescending(x => x.LVL)
+                .Limit(amount);
+            return sorted.ToArray();
         }
     }
 }
