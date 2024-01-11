@@ -3,13 +3,16 @@
 namespace XPSystem.API
 {
     using System.Linq;
+    using LiteDB;
     using Badge = Features.Badge;
 
     public static class API
     {
+        public static ILiteCollection<PlayerLog> PlayerLogCollection => Main.Instance.db.GetCollection<PlayerLog>("Players");
+
         public static bool TryGetLog(string id, out PlayerLog log)
         {
-            log = Main.Instance.db.GetCollection<PlayerLog>("Players")?.FindById(id);
+            log = PlayerLogCollection?.FindById(id);
             return log != null;
         }
 

@@ -37,8 +37,8 @@ namespace XPSystem
 #endif
             if (hub.authManager.DoNotTrack) // dnt
             {
-                if (hub.HasLog())
-                    hub.DeleteLog();
+                if (hub.DeleteLog())
+                    Main.LogDebug($"Deleted log for {hub.nicknameSync.Network_myNickSync} because of dnt");
                 hub.gameConsoleTransmission.SendToClient($"[REPORTING] {Main.Instance.Config.DNTHint}", "white");
                 return;
             }
@@ -70,7 +70,7 @@ namespace XPSystem
             if (player != null)
                 oldRole = player.Role;
 #endif
-            if (Main.Paused)
+            if (Main.Paused) // pause
                 return;
             if (hub == null || (attackerHub != null && attackerHub.authManager.DoNotTrack)) // dnt
             {

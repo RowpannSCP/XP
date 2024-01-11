@@ -53,7 +53,7 @@ namespace XPSystem.Commands
         /// </summary>
         public static PlayerLog[] GetTopPlayers(int amount)
         {
-            var sorted = Main.Instance.db.GetCollection<PlayerLog>("Players")
+            var sorted = API.PlayerLogCollection
                 .Query()
                 .OrderByDescending(x => x.LVL)
                 .Limit(amount);

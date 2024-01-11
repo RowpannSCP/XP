@@ -2,6 +2,7 @@
 {
     using System;
     using CommandSystem;
+    using XPSystem.API;
     using XPSystem.API.Serialization;
 
     [CommandHandler(typeof(GameConsoleCommandHandler))]
@@ -15,7 +16,7 @@
             {
                 if ((DateTime.Now - _lastUsed).TotalSeconds < 10)
                 {
-                    Main.Instance.db.GetCollection<PlayerLog>("Players").DeleteAll();
+                    API.PlayerLogCollection.DeleteAll();
 #if EXILED
                     Main.Instance.Handlers.AlreadyGainedPlayers.Clear();
 #endif
@@ -40,7 +41,7 @@
                         {
                             if (hub == ReferenceHub.HostHub)
                                 continue;
-                            API.API.UpdateBadge(hub, hub.serverRoles.Group?.BadgeText);
+                            API.UpdateBadge(hub, hub.serverRoles.Group?.BadgeText);
                         }
                     }
 

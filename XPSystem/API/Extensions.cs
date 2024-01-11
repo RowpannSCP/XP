@@ -6,7 +6,6 @@
     using System.Text;
     using CommandSystem;
     using Hints;
-    using LiteDB;
     using MEC;
     using XPSystem.API.Serialization;
 
@@ -16,8 +15,6 @@
         public static CoroutineHandle? HintCoroutineHandle = null;
 #endif
         private static Config _cfg => Main.Instance.Config;
-        
-        public static ILiteCollection<PlayerLog> PlayerLogCollection => Main.Instance.db.GetCollection<PlayerLog>("Players");
 
         public static PlayerLog GetLog(this ReferenceHub ply)
         {
@@ -33,7 +30,7 @@
                     XP = 0,
                 };
 
-                PlayerLogCollection.Insert(toInsert);
+                API.PlayerLogCollection.Insert(toInsert);
             }
 
             if (log is null)
@@ -41,12 +38,11 @@
             return log;
         }
 
-        public static bool HasLog(this ReferenceHub ply) => PlayerLogCollection.Exists(ply.authManager.UserId);
-        public static bool DeleteLog(this ReferenceHub ply) => PlayerLogCollection.Delete(ply.authManager.UserId);
+        public static bool DeleteLog(this ReferenceHub ply) => API.PlayerLogCollection.Delete(ply.authManager.UserId);
 
         public static void UpdateLog(this PlayerLog log)
         {
-            Main.Instance.db.GetCollection<PlayerLog>("Players").Update(log);
+            API.PlayerLogCollection.Update(log);
         }
 
         public static void AddXP(this PlayerLog log, int amount, string message = null)
@@ -56,8 +52,15 @@
                 Main.DebugProgress("skipping adding 0 xp");
                 return;
             }
+
             log.XP += amount;
-            ReferenceHub ply = ReferenceHub.AllHubs.FirstOrDefault(x => x.authManager.UserId == log.ID);
+            var ply = ReferenceHub.AllHubs.FirstOrDefault(x => x.authManager.UserId == log.ID);
+            if (ply == null)
+            {
+                Main.LogWarn($"Player {log.ID} not found, skipping");
+                return;
+            }
+
             bool gainedLevel = false;
             var ordered = Main.Instance.Config.GetIncreasesOrdered();
             var increase = ordered.FirstOrDefault(x => x.Key <= log.LVL).Value;
@@ -124,6 +127,7 @@
                         _hintQueue.Remove(kvp.Key);
                         continue;
                     }
+
                     StringBuilder sb = new StringBuilder();
                     foreach (var var in hints)
                     {
