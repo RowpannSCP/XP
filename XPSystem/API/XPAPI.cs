@@ -4,15 +4,22 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
+    using XPSystem.API.DisplayProviders;
     using XPSystem.API.Enums;
     using XPSystem.API.Exceptions;
     using XPSystem.API.StorageProviders;
     using XPSystem.API.StorageProviders.Models;
     using XPSystem.Config;
+    using XPSystem.Config.Events;
+    using YamlDotNet.Serialization;
+    using YamlDotNet.Serialization.NamingConventions;
+    using YamlDotNet.Serialization.NodeDeserializers;
+    using static LevelCalculator;
     using static LoaderSpecific;
 
     public static class XPAPI
     {
+#region Properties
         /// <summary>
         /// Whether the plugin is enabled or not.
         /// </summary>
@@ -30,11 +37,6 @@
         public static IMessagingProvider MessagingProvider;
 
         /// <summary>
-        /// The parameters for the storage provider.
-        /// </summary>
-        public static Dictionary<string, string> StorageProviderParameters = new();
-
-        /// <summary>
         /// The storage provider for the plugin.
         /// Change it using <see cref="SetStorageProvider"/>.
         /// </summary>
@@ -46,10 +48,35 @@
         public static readonly XPDisplayProviderCollection DisplayProviders = new();
 
         /// <summary>
+        /// Gets the serializer for the plugin.
+        /// </summary>
+        public static ISerializer Serializer { get; } = new SerializerBuilder()
+            .WithLoaderTypeConverters()
+            .WithTypeInspector(inner => new CommentGatheringTypeInspector(inner))
+            .WithEmissionPhaseObjectGraphVisitor(args => new CommentsObjectGraphVisitor(args.InnerVisitor))
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .IgnoreFields()
+            .Build();
+
+        /// <summary>
+        /// Gets the deserializer for the plugin.
+        /// </summary>
+        public static IDeserializer Deserializer { get; } = new DeserializerBuilder()
+            .WithLoaderTypeConverters()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithNodeDeserializer(inner => new ValidatingNodeDeserializer(inner), 
+                deserializer => deserializer.InsteadOf<ObjectNodeDeserializer>())
+            .IgnoreFields()
+            .IgnoreUnmatchedProperties()
+            .Build();
+
+        /// <summary>
         /// Whether xp gain is currently paused.
         /// </summary>
         public static bool XPGainPaused = false;
+#endregion
 
+#region Storage
         /// <summary>
         /// Sets the storage provider for the plugin.
         /// </summary>
@@ -67,8 +94,10 @@
 
             try
             {
-                LoadStorageProviderParameters(provider);
-                provider.Initialize(StorageProviderParameters);
+                if (provider is StorageProvider { ConfigTypeInternal: not null } storageProvider)
+                    LoadStorageProviderConfig(storageProvider);
+
+                provider.Initialize();
             }
             catch (Exception e)
             {
@@ -82,21 +111,32 @@
         }
 
         /// <summary>
-        /// Loads the storage provider parameters from the file.
+        /// Loads the storage providers config.
         /// </summary>
-        /// <param name="provider">The storage provider used to load the parameters.</param>
-        public static void LoadStorageProviderParameters(IStorageProvider provider)
+        /// <param name="provider">The storage provider whose config is to be loaded.</param>
+        public static void LoadStorageProviderConfig(StorageProvider provider)
         {
-            try
-            {
-                var file = Path.Combine(Config.ExtendedConfigPath, Config.DatabaseParametersFile);
-                using var fs = new FileStream(file, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            string name = provider.GetType().Name;
+            string file = Path.Combine(Config.ExtendedConfigPath, name + ".yml");
 
-                StorageProviderParameters = provider.LoadParameters(fs);
-            }
-            catch (Exception e)
+            if (File.Exists(file))
             {
-                throw new Exception("Could not load storage provider parameters: ", e);
+                try
+                {
+                    provider.ConfigPropertyInternal =
+                        Deserializer.Deserialize(File.ReadAllText(file), provider.ConfigTypeInternal);
+                }
+                catch (Exception e)
+                {
+                    LogError($"Error loading storageprovider config for {name}: {e}");
+                }
+            }
+            else
+            {
+                var obj = provider.ConfigPropertyInternal;
+
+                File.WriteAllText(file, Serializer.Serialize(obj));
+                provider.ConfigPropertyInternal = obj;
             }
         }
 
@@ -110,6 +150,28 @@
                 throw new StorageProviderInvalidException("No storage provider has been set successfully.");
         }
 
+        /// <summary>
+        /// Gets the player info of a player.
+        /// Will create a new one if it doesn't exist.
+        /// </summary>
+        /// <param name="playerId">The <see cref="PlayerId"/> of the player to get the info of.</param>
+        /// <returns>The <see cref="PlayerInfoWrapper"/> belonging to the player.</returns>
+        public static PlayerInfoWrapper GetPlayerInfo(PlayerId playerId)
+        {
+            EnsureStorageProviderValid();
+            return StorageProvider.GetPlayerInfoAndCreateOfNotExist(playerId);
+        }
+
+        /// <summary>
+        /// Gets the player info of a player.
+        /// </summary>
+        /// <param name="player">The player to get the info of.</param>
+        /// <returns>The <see cref="PlayerInfoWrapper"/> belonging to the player.</returns>
+        public static PlayerInfoWrapper GetPlayerInfo(XPPlayer player)
+        {
+            return GetPlayerInfo(player.PlayerId);
+        }
+
 #if STORENICKS
         /// <summary>
         /// Updates the stored nickname of a player.
@@ -118,8 +180,8 @@
         {
             EnsureStorageProviderValid();
 
-            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.GetPlayerId());
-            playerInfo.Nickname = player.Nickname;
+            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+            playerInfo.PlayerInfo.Nickname = player.Nickname;
             StorageProvider.SetPlayerInfo(playerInfo);
         }
 #endif
@@ -133,18 +195,21 @@
         /// <returns>Whether or not the XP was added.</returns>
         public static bool AddXP(XPPlayer player, int amount, bool force = false)
         {
+            if (amount == 0)
+                return false;
+
             EnsureStorageProviderValid();
 
             if (XPGainPaused && !force)
                 return false;
 
-            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.GetPlayerId());
+            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
             int prevLevel = GetLevel(playerInfo);
 
-            playerInfo.XP += amount;
+            playerInfo.PlayerInfo.XP += amount;
             StorageProvider.SetPlayerInfo(playerInfo);
 
-            if (GetLevel(playerInfo) > prevLevel)
+            if (player.IsConnected && GetLevel(playerInfo) != prevLevel)
                 DisplayProviders.Refresh(player);
 
             return true;
@@ -157,56 +222,66 @@
         /// <param name="amount">The amount of XP to add.</param>
         /// <param name="force">Whether to force the addition of XP, even if <see cref="XPGainPaused"/>.</param>
         /// <returns>Whether or not the XP was added.</returns>
-        public static bool AddXP(PlayerInfo playerInfo, int amount, bool force = false)
+        public static bool AddXP(PlayerInfoWrapper playerInfo, int amount, bool force = false)
         {
-            EnsureStorageProviderValid();
+            if (amount == 0)
+                return false;
 
             if (XPGainPaused && !force)
                 return false;
 
-            int prevLevel = GetLevel(playerInfo);
-
             playerInfo.XP += amount;
-            StorageProvider.SetPlayerInfo(playerInfo);
-
-            if (GetLevel(playerInfo) > prevLevel && TryGetPlayer(playerInfo.Player, out var xpPlayer))
-                DisplayProviders.Refresh(xpPlayer);
-
             return true;
         }
-
+#endregion
+#region Translations
         /// <summary>
-        /// Gets the level of a player.
+        /// Formats and displays a message to a player.
+        /// <remarks>If <see cref="MessagingProvider"/> is null, it will not be displayed.</remarks>
         /// </summary>
-        /// <param name="playerInfo">The player's info.</param>
-        /// <returns>The player's level.</returns>
-        public static int GetLevel(PlayerInfo playerInfo)
+        /// <param name="player">The player to display the message to.</param>
+        /// <param name="message">The message to display.</param>
+        public static void DisplayMessage(XPPlayer player, string message)
         {
-            return playerInfo.XP / Config.XPPerLevel;
+            if (string.IsNullOrWhiteSpace(message))
+                return;
+
+            MessagingProvider?.DisplayMessage(player, Config.TextPrefix + message + Config.TextSuffix, Config.DisplayDuration);
+        }
+#endregion
+#region Mixed
+        /// <summary>
+        /// Adds XP to a player and displays it's corresponding message.
+        /// <remarks>Uses <see cref="XPECManager.GetXPEC{T}(string, T)"/>.</remarks>
+        /// </summary>
+        /// <param name="player">The player to affect.</param>
+        /// <param name="key">The key of the XPEC.</param>
+        /// <param name="subkey">The subkey of the XPEC.</param>
+        /// <typeparam name="T">The type of the subkey.</typeparam>
+        /// <exception cref="Exception">The XPEC file for the key cannot be found.</exception>
+        public static void AddXPAndDisplayMessage<T>(XPPlayer player, string key, T subkey)
+        #error
+        {
+            var xpecitem = XPECManager.GetXPEC(key, subkey)
+                           ?? throw new Exception("Key does not match any XPEC.");
+
+            AddXP(player, xpecitem.Amount);
+            DisplayMessage(player, xpecitem.Translation);
         }
 
         /// <summary>
-        /// Gets the <see cref="PlayerId"/> of a <see cref="XPPlayer"/>.
+        /// Adds XP to a player and displays it's corresponding message.
+        /// <remarks>Uses <see cref="XPECManager.GetXPEC(string)"/>.</remarks>
         /// </summary>
-        public static PlayerId GetPlayerId(XPPlayer player)
+        /// <param name="player">The player to affect.</param>
+        /// <param name="key">The key of the XPEC.</param>
+        /// <exception cref="Exception">The XPEC file for the key cannot be found.</exception>
+        public static void AddXPAndDisplayMessage(XPPlayer player, string key)
         {
-            if (!TryParseUserId(player.UserId, out var playerId))
-                throw new InvalidOperationException("PlayerId of player is invalid (GetPlayerId).");
-
-            return playerId;
+            AddXPAndDisplayMessage<object>(player, key, null);
         }
-
-        /// <summary>
-        /// Attempts to get a player using a <see cref="PlayerId"/>.
-        /// </summary>
-        /// <param name="playerId">The <see cref="PlayerId"/> of the player.</param>
-        /// <param name="player">The player, if on the server.</param>
-        /// <returns>Whether or not the player is on the server.</returns>
-        public static bool TryGetPlayer(PlayerId playerId, out XPPlayer player)
-        {
-            return XPPlayer.TryGet(playerId.ToString(), out player);
-        }
-
+#endregion
+#region Misc
         /// <summary>
         /// Attempts to parse a string into a <see cref="PlayerId"/>.
         /// </summary>
@@ -247,15 +322,15 @@
         /// </summary>
         /// <param name="players">The player data to format.</param>
         /// <returns>The formatted leaderboard, as a string..</returns>
-        public static string FormatLeaderboard(IEnumerable<PlayerInfo> players)
+        public static string FormatLeaderboard(IEnumerable<PlayerInfoWrapper> players)
         {
             StringBuilder sb = new();
             foreach (var playerInfo in players)
             {
 #if STORENICKS
                 sb.AppendLine(string.IsNullOrWhiteSpace(playerInfo.Nickname)
-                    ? $"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.GetLevel()})"
-                    : $"{playerInfo.Nickname} - {playerInfo.XP} ({playerInfo.GetLevel()})");
+                    ? $"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({GetLevel(playerInfo)})"
+                    : $"{playerInfo.Nickname} - {playerInfo.XP} ({GetLevel(playerInfo)})");
 #else
                 sb.AppendLine($"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.GetLevel()})");
 #endif
@@ -263,5 +338,6 @@
 
             return sb.ToString();
         }
+#endregion
     }
 }

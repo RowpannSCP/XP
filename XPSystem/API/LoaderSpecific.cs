@@ -1,8 +1,15 @@
 ﻿namespace XPSystem.API
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Reflection.Emit;
     using CommandSystem;
-    using Exiled.Loader.Features.Configs.CustomConverters;
+    using Mirror;
+    using PlayerRoles;
     using YamlDotNet.Serialization;
 
     /// <summary>
@@ -125,9 +132,9 @@
         /// </summary>
         public static SerializerBuilder WithLoaderTypeConverters(this SerializerBuilder serializerBuilder) =>
 #if EXILED
-            serializerBuilder.WithTypeConverter(new VectorsConverter())
-                .WithTypeConverter(new ColorConverter())
-                .WithTypeConverter(new AttachmentIdentifiersConverter());
+            serializerBuilder.WithTypeConverter(new Exiled.Loader.Features.Configs.CustomConverters.VectorsConverter())
+                .WithTypeConverter(new Exiled.Loader.Features.Configs.CustomConverters.ColorConverter())
+                .WithTypeConverter(new Exiled.Loader.Features.Configs.CustomConverters.AttachmentIdentifiersConverter());
 #else
             serializerBuilder;
 #endif
@@ -137,11 +144,125 @@
         /// </summary>
         public static DeserializerBuilder WithLoaderTypeConverters(this DeserializerBuilder deserializerBuilder) =>
 #if EXILED
-            deserializerBuilder.WithTypeConverter(new VectorsConverter())
-                .WithTypeConverter(new ColorConverter())
-                .WithTypeConverter(new AttachmentIdentifiersConverter());
+            deserializerBuilder.WithTypeConverter(new Exiled.Loader.Features.Configs.CustomConverters.VectorsConverter())
+                .WithTypeConverter(new Exiled.Loader.Features.Configs.CustomConverters.ColorConverter())
+                .WithTypeConverter(new Exiled.Loader.Features.Configs.CustomConverters.AttachmentIdentifiersConverter());
 #else
             deserializerBuilder;
 #endif
+
+#region Exiled Mirror Dicts (Source: https://github.com/Exiled-Team/EXILED/blob/dev/Exiled.API/Extensions/MirrorExtensions.cs)
+#if !EXILED
+        private static readonly Dictionary<Type, MethodInfo> WriterExtensionsValue = new();
+        private static readonly Dictionary<string, ulong> SyncVarDirtyBitsValue = new();
+        private static readonly ReadOnlyDictionary<Type, MethodInfo> ReadOnlyWriterExtensionsValue = new(WriterExtensionsValue);
+        private static readonly ReadOnlyDictionary<string, ulong> ReadOnlySyncVarDirtyBitsValue = new(SyncVarDirtyBitsValue);
+        private static MethodInfo setDirtyBitsMethodInfoValue;
+#endif
+
+        /// <summary>
+        /// Gets <see cref="MethodInfo"/> corresponding to <see cref="Type"/>.
+        /// </summary>
+        public static ReadOnlyDictionary<Type, MethodInfo> WriterExtensions
+        {
+            get
+            {
+#if EXILED
+                return Exiled.API.Extensions.MirrorExtensions.WriterExtensions;
+#else
+                if (WriterExtensionsValue.Count == 0)
+                {
+                    foreach (var method in typeof(NetworkWriterExtensions)
+                                 .GetMethods()
+                                 .Where(x => !x.IsGenericMethod
+                                             && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null
+                                             && (x.GetParameters()?.Length == 2)))
+                    {
+                        WriterExtensionsValue.Add(
+                            method.GetParameters().First(x => x.ParameterType != typeof(NetworkWriter)).ParameterType,
+                            method);
+                    }
+
+                    var nonoword = Assembly.GetAssembly(typeof(RoleTypeId)).GetType("Mirror.GeneratedNetworkCode");
+                    foreach (var method in nonoword.GetMethods()
+                                 .Where(x => !x.IsGenericMethod
+                                             && (x.GetParameters()?.Length == 2)
+                                             && (x.ReturnType == typeof(void))))
+                    {
+                        WriterExtensionsValue.Add(
+                            method.GetParameters().First(x => x.ParameterType != typeof(NetworkWriter)).ParameterType,
+                            method);
+                    }
+
+                    foreach (var serializer in typeof(ServerConsole).Assembly
+                                 .GetTypes()
+                                 .Where(x => x.Name.EndsWith("Serializer")))
+                    {
+                        foreach (var method in serializer.
+                                     GetMethods()
+                                     .Where(x => (x.ReturnType == typeof(void))
+                                     && x.Name.StartsWith("Write")))
+                        {
+                            WriterExtensionsValue.Add(
+                                method.GetParameters().First(x => x.ParameterType != typeof(NetworkWriter))
+                                    .ParameterType, method);
+                        }
+                    }
+                }
+
+                return ReadOnlyWriterExtensionsValue;
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Gets a all DirtyBit <see cref="ulong"/> from something(idk) (format:classname.methodname).
+        /// </summary>
+        public static ReadOnlyDictionary<string, ulong> SyncVarDirtyBits
+        {
+            get
+            {
+#if EXILED
+                return Exiled.API.Extensions.MirrorExtensions.SyncVarDirtyBits;
+#else
+                if (SyncVarDirtyBitsValue.Count == 0)
+                {
+                    foreach (var property in typeof(ServerConsole).Assembly.GetTypes()
+                        .SelectMany(x => x.GetProperties())
+                        .Where(m => m.Name.StartsWith("Network")))
+                    {
+                        var setMethod = property.GetSetMethod();
+
+                        if (setMethod is null)
+                            continue;
+
+                        var methodBody = setMethod.GetMethodBody();
+
+                        if (methodBody is null)
+                            continue;
+
+                        byte[] bytecodes = methodBody.GetILAsByteArray();
+
+                        string key = $"{property.ReflectedType!.Name}.{property.Name}";
+                        if (!SyncVarDirtyBitsValue.ContainsKey(key))
+                            SyncVarDirtyBitsValue.Add(key, bytecodes[bytecodes.LastIndexOf((byte)OpCodes.Ldc_I8.Value) + 1]);
+                    }
+                }
+
+                return ReadOnlySyncVarDirtyBitsValue;
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="NetworkBehaviour.SetSyncVarDirtyBit(ulong)"/>'s <see cref="MethodInfo"/>.
+        /// </summary>
+        public static MethodInfo SetDirtyBitsMethodInfo =>
+#if EXILED
+            Exiled.API.Extensions.MirrorExtensions.SetDirtyBitsMethodInfo;
+#else
+            setDirtyBitsMethodInfoValue ??= typeof(NetworkBehaviour).GetMethod(nameof(NetworkBehaviour.SetSyncVarDirtyBit));
+#endif
+#endregion
     }
 }

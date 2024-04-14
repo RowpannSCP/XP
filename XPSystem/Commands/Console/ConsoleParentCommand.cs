@@ -13,7 +13,7 @@
         {
             RegisterCommand(new DeleteEverythingCommand());
             RegisterCommand(new MigrateCommand());
-            
+            RegisterCommand(new ReloadConfigsCommand());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)

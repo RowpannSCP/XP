@@ -5,6 +5,6 @@
     /// </summary>
     public interface IMessagingProvider
     {
-        void DisplayMessage(XPPlayer player, string message);
+        void DisplayMessage(XPPlayer player, string message, float duration);
     }
 }

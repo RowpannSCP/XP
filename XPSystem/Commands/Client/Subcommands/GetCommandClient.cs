@@ -14,12 +14,9 @@
                 return false;
             }
 
-            XPAPI.EnsureStorageProviderValid();
+            var log = player.GetPlayerInfo();
 
-            var playerId = player.GetPlayerId();
-            var log = XPAPI.StorageProvider.GetPlayerInfoAndCreateOfNotExist(playerId);
-
-            response = $"LVL: {log.GetLevel()} | XP: {log.XP}";
+            response = $"LVL: {log.Level} | XP: {log.XP}";
             return true;
         }
 

@@ -5,11 +5,10 @@
     using System.Linq;
     using HarmonyLib;
     using XPSystem.API;
-    using XPSystem.API.Config;
     using XPSystem.Config;
+    using XPSystem.Config.Events;
     using XPSystem.EventHandlers;
     using XPSystem.EventHandlers.LoaderSpecific;
-    using XPSystem.Patches;
     using XPSystem.XPDisplayProviders;
     using static API.LoaderSpecific;
     using static API.XPAPI;
@@ -53,17 +52,15 @@
             _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
             _harmony.PatchAll();
 
-            LoadExtraConfigs();
-
-            if (Config.EnableNicks)
-                DisplayProviders.Add(new NickXPDisplayProvider());
-            if (Config.EnableBadges)
-                DisplayProviders.Add(new RankXPDisplayProvider());
-
+            DisplayProviders.Add(new NickXPDisplayProvider());
+            DisplayProviders.Add(new RankXPDisplayProvider());
             MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
 
-            _eventHandlers.RegisterEvents(this);
+            LoadExtraConfigs();
+            LevelCalculator.Precalculate();
+            DisplayProviders.Enable();
 
+            _eventHandlers.RegisterEvents(this);
             PluginEnabled = true;
 #if EXILED
             base.OnEnabled();
@@ -78,15 +75,13 @@
 #endif
         {
             PluginEnabled = false;
-
             _eventHandlers.UnregisterEvents(this);
 
-            DisplayProviders.RemoveAll();
+            DisplayProviders.DisableAll();
             MessagingProvider = null;
-            XPConfigManager.XPConfigs.Clear();
+            XPECManager.Files.Clear();
 
             _harmony.UnpatchAll(_harmony.Id);
-
             _harmony = null;
             Instance = null;
 #if EXILED
@@ -94,18 +89,29 @@
 #endif
         }
 
-        private void LoadExtraConfigs()
+#if EXILED
+        public override void OnReloaded()
+#else
+        [PluginAPI.Core.Attributes.PluginReload]
+        public void OnReloaded()
+#endif
+        {
+            LevelCalculator.Precalculate();
+        }
+
+        public void LoadExtraConfigs()
         {
             try
             {
                 if (!Directory.Exists(Config.ExtendedConfigPath))
                     Directory.CreateDirectory(Config.ExtendedConfigPath);
 
-                var file = Path.Combine(Config.ExtendedConfigPath, Config.XPConfigsFile);
-                using (var fs = new FileStream(file, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                {
-                    XPConfigManager.LoadConfigs(fs);
-                }
+                DisplayProviders.LoadConfigs(Config.ExtendedConfigPath);
+
+                #error roletypeid overrides, diff xpecfile types
+                var eventConfigsFolder = Path.Combine(Config.ExtendedConfigPath, Config.EventConfigsFolder);
+                Directory.CreateDirectory(eventConfigsFolder);
+                XPECManager.Load(eventConfigsFolder);
             }
             catch (Exception e)
             {

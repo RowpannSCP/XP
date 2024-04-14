@@ -4,7 +4,7 @@
     using XPSystem.API.StorageProviders.Models;
 
     /// <summary>
-    /// Represents a player info cache that stores playerinfos of currently online players.
+    /// Represents a player info cache that stores <see cref="PlayerInfoWrapper"/> of currently online players.
     /// </summary>
     public class PlayerInfoCache
     {
@@ -15,7 +15,7 @@
         /// </summary>
         /// <param name="player">The player who the info belongs to.</param>
         /// <param name="playerInfo">The player info to cache.</param>
-        public void EnsureInCache(XPPlayer player, PlayerInfo playerInfo)
+        public void EnsureInCache(XPPlayer player, PlayerInfoWrapper playerInfo)
         {
             _cache[playerInfo.Player] = new PlayerInfoCacheObject(playerInfo, player);
         }
@@ -24,7 +24,7 @@
         /// Updates the player info entry in the cache.
         /// </summary>
         /// <param name="playerInfo">The player info to update.</param>
-        public void Update(PlayerInfo playerInfo)
+        public void Update(PlayerInfoWrapper playerInfo)
         {
             if (!_cache.TryGetValue(playerInfo.Player, out var playerInfoCache))
                 return;
@@ -38,7 +38,7 @@
         /// <param name="playerId">The player id to get the player info of.</param>
         /// <param name="playerInfo">The player info of the player.</param>
         /// <returns>Whether or not the player info was found in the cache.</returns>
-        public bool TryGet(PlayerId playerId, out PlayerInfo playerInfo)
+        public bool TryGet(PlayerId playerId, out PlayerInfoWrapper playerInfo)
         {
             if (_cache.TryGetValue(playerId, out var cacheObject))
             {

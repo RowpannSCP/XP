@@ -32,7 +32,7 @@
                     out string nickname))
                 return false;
 
-            XPAPI.AddXP(playerInfo, amount, true);
+            playerInfo.XP += amount;
 
             response = $"Gave {amount} XP to {playerId.ToString()} ({nickname}).";
             return true;

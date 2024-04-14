@@ -9,13 +9,12 @@
     /// </summary>
     public interface IStorageProvider
     {
-        Dictionary<string, string> LoadParameters(FileStream fs);
-        void Initialize(Dictionary<string, string> parameters);
+        void Initialize();
         void Dispose();
-        bool TryGetPlayerInfo(PlayerId playerId, out PlayerInfo playerInfo);
-        PlayerInfo GetPlayerInfoAndCreateOfNotExist(PlayerId playerId);
-        IEnumerable<PlayerInfo> GetTopPlayers(int count);
-        void SetPlayerInfo(PlayerInfo playerInfo);
+        bool TryGetPlayerInfo(PlayerId playerId, out PlayerInfoWrapper playerInfo);
+        PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(PlayerId playerId);
+        IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count);
+        void SetPlayerInfo(PlayerInfoWrapper playerInfo);
         bool DeletePlayerInfo(PlayerId playerId);
         void DeleteAllPlayerInfo();
     }

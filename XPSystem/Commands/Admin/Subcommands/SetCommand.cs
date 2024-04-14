@@ -35,7 +35,6 @@
                 return false;
 
             playerInfo.XP = amount;
-            XPAPI.StorageProvider.SetPlayerInfo(playerInfo);
 
             response = $"Set {amount} XP to {playerId.ToString()} ({nickname}).";
             return true;

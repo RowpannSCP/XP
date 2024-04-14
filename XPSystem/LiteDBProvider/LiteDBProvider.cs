@@ -11,35 +11,17 @@
     using XPSystem.LiteDBProvider.Models;
     using static API.LoaderSpecific;
 
-    public class LiteDBProvider : StorageProvider
+    public class LiteDBProvider : StorageProvider<LiteDBProvider.LiteDBProviderConfig>
     {
         public ILiteCollection<LiteDBPlayerInfo> SteamCollection { get; private set; }
         public ILiteCollection<LiteDBPlayerInfo> DiscordCollection { get; private set; }
         public ILiteCollection<LiteDBPlayerInfo> NWCollection { get; private set; }
-        public bool IndexXP { get; private set; }
 
         private LiteDatabase database;
 
-        protected override Dictionary<string, string> GetRequiredDefaults()
+        protected override void InitializeNoCache()
         {
-            return new Dictionary<string, string>
-            {
-                { "file", "database.db" },
-                { "indexXP", true.ToString() }
-            };
-        }
-
-        protected override Dictionary<string, Type> ExpectedParametersTypes { get; } = new()
-        {
-            { "indexXP", typeof(bool) }
-        };
-
-        protected override void InitializeNoCache(Dictionary<string, string> parameters)
-        {
-            IndexXP = GetParameter<bool>("indexXP");
-
-            var file = parameters["file"];
-            database = new LiteDatabase(file);
+            database = new LiteDatabase(Config.File);
 
             if (LiteDBMigrator.CanMigrate(database))
             {
@@ -55,7 +37,7 @@
             NWCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo-nw");
             NWCollection.EnsureIndex(x => x.Id);
 
-            if (IndexXP)
+            if (Config.IndexDB)
             {
                 SteamCollection.EnsureIndex(x => x.XP);
                 DiscordCollection.EnsureIndex(x => x.XP);
@@ -114,7 +96,7 @@
             return result.ToPlayerInfo(playerId.AuthType);
         }
 
-        public override IEnumerable<PlayerInfo> GetTopPlayers(int count)
+        public override IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count)
         {
             var result = SteamCollection.Query()
                 .OrderByDescending(x => x.XP)
@@ -140,7 +122,8 @@
 
             result.Sort((x, y) => y.XP.CompareTo(x.XP));
 
-            return result.Take(count);
+            return result.Take(count)
+                .Select(x => new PlayerInfoWrapper(x));
         }
 
         protected override void SetPlayerInfoNoCache(PlayerInfo liteDBPlayerInfo)
@@ -174,6 +157,12 @@
             SteamCollection.DeleteAll();
             DiscordCollection.DeleteAll();
             NWCollection.DeleteAll();
+        }
+
+        public class LiteDBProviderConfig
+        {
+            public bool IndexDB { get; set; } = true;
+            public string File { get; set; } = "database.db";
         }
     }
 }

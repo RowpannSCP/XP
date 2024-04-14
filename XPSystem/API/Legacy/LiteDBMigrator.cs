@@ -43,7 +43,7 @@
                 var playerInfo = new PlayerInfo
                 {
                     Player = id,
-                    XP = log.XP + log.LVL * XPAPI.Config.XPPerLevel
+                    XP = log.XP + LevelCalculator.GetXP(log.LVL)
                 };
 
                 XPAPI.StorageProvider.SetPlayerInfo(playerInfo);

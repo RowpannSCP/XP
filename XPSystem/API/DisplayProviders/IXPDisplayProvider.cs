@@ -1,7 +1,9 @@
 ﻿namespace XPSystem.API
 {
+    using System;
+
     /// <summary>
-    /// Interface for xp display provider, shows the xp/lvl of a player to others.
+    /// <see cref="XPDisplayProvider{T}"/>, just without generic.
     /// </summary>
     public interface IXPDisplayProvider
     {
@@ -9,5 +11,7 @@
         void Disable();
         void Refresh(XPPlayer player);
         void RefreshAll();
+        IXPDisplayProviderConfig ConfigPropertyInternal { get; set; }
+        Type ConfigTypeInternal { get; }
     }
 }

@@ -3,6 +3,7 @@
     using System;
     using CommandSystem;
     using XPSystem.API;
+    using XPSystem.API.StorageProviders;
     using XPSystem.API.StorageProviders.Models;
 
     /// <summary>
@@ -23,7 +24,7 @@
         /// <param name="nickname">The targeted player's nickname, if found, otherwise null.</param>
         /// <returns>Whether the operation was successful (whether or not to return immediately after).</returns>
         /// <remarks>If the argument count and the target player's argument position don't match, the sender will become the targeted player.</remarks>
-        protected bool DoThingWithArgs(ref ArraySegment<string> arguments, byte targetPlayerArgumentIndex, XPPlayer player, ref string response, out PlayerInfo playerInfo, out PlayerId playerId, out string nickname)
+        protected bool DoThingWithArgs(ref ArraySegment<string> arguments, byte targetPlayerArgumentIndex, XPPlayer player, ref string response, out PlayerInfoWrapper playerInfo, out PlayerId playerId, out string nickname)
         {
             nickname = null;
             playerId = default;
@@ -36,7 +37,7 @@
                 // Try to get player by name or user id.
                 if (XPPlayer.TryGet(arg, out player))
                 {
-                    playerId = player.GetPlayerId();
+                    playerId = player.PlayerId;
                     nickname = player.Nickname;
                 }
                 else
@@ -54,7 +55,7 @@
             // Player not specified, use sender.
             else
             {
-                playerId = player.GetPlayerId();
+                playerId = player.PlayerId;
                 nickname = "You";
             }
 

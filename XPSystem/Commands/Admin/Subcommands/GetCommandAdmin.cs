@@ -21,7 +21,7 @@
                     out string nickname))
                 return false;
 
-            response = $"{playerId.ToString()} ({nickname})] XP: {playerInfo.XP} (Level {playerInfo.GetLevel()})";
+            response = $"{playerId.ToString()} ({nickname})] XP: {playerInfo.XP} (Level {playerInfo.Level})";
             return true;
         }
 
