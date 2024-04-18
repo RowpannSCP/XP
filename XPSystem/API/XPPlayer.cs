@@ -5,6 +5,7 @@
     using CommandSystem;
     using Hints;
     using Mirror;
+    using PlayerRoles;
     using RemoteAdmin;
     using XPSystem.API.StorageProviders.Models;
     using XPSystem.Config.Models;
@@ -85,6 +86,11 @@
         /// Gets whether or not the player has a global badge.
         /// </summary>
         public bool HasGlobalBadge => Hub.serverRoles.GlobalSet;
+
+        /// <summary>
+        /// Gets the player's current <see cref="RoleTypeId"/>.
+        /// </summary>
+        public RoleTypeId Role => Hub.roleManager.CurrentRole.RoleTypeId;
 
         public void ShowHint(string message, float duration = 3f)
         {

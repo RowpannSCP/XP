@@ -244,9 +244,6 @@ namespace XPSystem
         [Description("Whether or not to use different badges depending whether or not the player has view hidden badges permission")]
         public bool ShowHiddenBadgesToAdmins { get; set; } = true;
 
-        [Description("Will print used keys to console at end of round.")]
-        public bool LogXPGainedMethods { get; set; } = false;
-
         [YamlIgnore]
         private static string ConfigPath =>
 #if !EXILED

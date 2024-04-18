@@ -1,10 +1,12 @@
 ﻿namespace XPSystem
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using HarmonyLib;
     using XPSystem.API;
+    using XPSystem.API.StorageProviders;
     using XPSystem.Config;
     using XPSystem.Config.Events;
     using XPSystem.EventHandlers;
@@ -40,6 +42,8 @@
 #endif
         private Harmony _harmony;
 
+#error more debug
+
 #if EXILED
         public override void OnEnabled()
 #else
@@ -57,8 +61,6 @@
             MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
 
             LoadExtraConfigs();
-            LevelCalculator.Precalculate();
-            DisplayProviders.Enable();
 
             _eventHandlers.RegisterEvents(this);
             PluginEnabled = true;
@@ -79,7 +81,8 @@
 
             DisplayProviders.DisableAll();
             MessagingProvider = null;
-            XPECManager.Files.Clear();
+            XPECManager.Default.Files.Clear();
+            XPECManager.Overrides.Clear();
 
             _harmony.UnpatchAll(_harmony.Id);
             _harmony = null;
@@ -99,24 +102,62 @@
             LevelCalculator.Precalculate();
         }
 
+        public void SetDisplayProviders(IEnumerable<string> typeNames)
+        {
+            foreach (var typeName in typeNames)
+            {
+                if (!TryCreate(typeName, out var exception, out IXPDisplayProvider provider))
+                {
+                    LogError($"Could not create display provider {typeName}: {exception}");
+                    continue;
+                }
+
+                DisplayProviders.Add(provider);
+            }
+        }
+
         public void LoadExtraConfigs()
         {
             try
             {
+                SetStorageProvider(Config.StorageProvider);
+                SetDisplayProviders(Config.AdditionalDisplayProviders);
+
                 if (!Directory.Exists(Config.ExtendedConfigPath))
                     Directory.CreateDirectory(Config.ExtendedConfigPath);
 
                 DisplayProviders.LoadConfigs(Config.ExtendedConfigPath);
 
-                #error roletypeid overrides, diff xpecfile types
                 var eventConfigsFolder = Path.Combine(Config.ExtendedConfigPath, Config.EventConfigsFolder);
                 Directory.CreateDirectory(eventConfigsFolder);
                 XPECManager.Load(eventConfigsFolder);
+
+                LevelCalculator.Precalculate();
+                DisplayProviders.Enable();
             }
             catch (Exception e)
             {
                 LogError("Could not load extra configs: " + e);
             }
+        }
+
+        public static bool TryCreate<T>(string typeName, out Exception exception, out T obj)
+        {
+            obj = default;
+            exception = null;
+
+            try
+            {
+                var type = Type.GetType(typeName) ?? throw new TypeLoadException("Type not found!");
+                obj = (T)Activator.CreateInstance(type);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                return false;
+            }
+
+            return true;
         }
     }
 }

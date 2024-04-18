@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
+    using PlayerRoles;
     using XPSystem.API.DisplayProviders;
     using XPSystem.API.Enums;
     using XPSystem.API.Exceptions;
@@ -11,6 +12,8 @@
     using XPSystem.API.StorageProviders.Models;
     using XPSystem.Config;
     using XPSystem.Config.Events;
+    using XPSystem.Config.Events.Types;
+    using XPSystem.Config.YamlConverters;
     using YamlDotNet.Serialization;
     using YamlDotNet.Serialization.NamingConventions;
     using YamlDotNet.Serialization.NodeDeserializers;
@@ -102,12 +105,34 @@
             catch (Exception e)
             {
                 LogError("Could not set storage provider: " + e);
-                LogError("No data will be saved!");
+                LogError("No data will be read or saved!");
                 return;
             }
 
             StorageProvider = provider;
             LogInfo("Set storage provider to " + provider.GetType().Name);
+        }
+
+        /// <summary>
+        /// Sets the storage provider for the plugin.
+        /// </summary>
+        /// <param name="typeName">The full type name of the type of the storage provider to set.</param>
+        public static void SetStorageProvider(string typeName)
+        {
+            if (string.IsNullOrWhiteSpace(typeName))
+            {
+                LogError("Storage provider type name is empty!");
+                return;
+            }
+
+            if (Main.TryCreate(typeName, out var e, out IStorageProvider provider))
+            {
+                SetStorageProvider(provider);
+                return;
+            }
+
+            LogError("Could not instantiate storage provider (are you implementing IStorageProvider and have parameterless constructor?): " + e);
+            LogError("No data will be read or saved!");
         }
 
         /// <summary>
@@ -252,33 +277,18 @@
 #region Mixed
         /// <summary>
         /// Adds XP to a player and displays it's corresponding message.
-        /// <remarks>Uses <see cref="XPECManager.GetXPEC{T}(string, T)"/>.</remarks>
+        /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         /// </summary>
         /// <param name="player">The player to affect.</param>
-        /// <param name="key">The key of the XPEC.</param>
-        /// <param name="subkey">The subkey of the XPEC.</param>
-        /// <typeparam name="T">The type of the subkey.</typeparam>
-        /// <exception cref="Exception">The XPEC file for the key cannot be found.</exception>
-        public static void AddXPAndDisplayMessage<T>(XPPlayer player, string key, T subkey)
-        #error
+        /// <param name="key">The key of the <see cref="XPECFile"/>.</param>
+        /// <param name="subkeys">The subkeys of the <see cref="XPECItem"/>.</param>
+        /// <exception cref="Exception">The matching <see cref="XPECItem"/> found.</exception>
+        public static void AddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
         {
-            var xpecitem = XPECManager.GetXPEC(key, subkey)
-                           ?? throw new Exception("Key does not match any XPEC.");
+            var xpecitem = XPECManager.GetItem(key, player.Role, subkeys);
 
             AddXP(player, xpecitem.Amount);
             DisplayMessage(player, xpecitem.Translation);
-        }
-
-        /// <summary>
-        /// Adds XP to a player and displays it's corresponding message.
-        /// <remarks>Uses <see cref="XPECManager.GetXPEC(string)"/>.</remarks>
-        /// </summary>
-        /// <param name="player">The player to affect.</param>
-        /// <param name="key">The key of the XPEC.</param>
-        /// <exception cref="Exception">The XPEC file for the key cannot be found.</exception>
-        public static void AddXPAndDisplayMessage(XPPlayer player, string key)
-        {
-            AddXPAndDisplayMessage<object>(player, key, null);
         }
 #endregion
 #region Misc
@@ -334,6 +344,31 @@
 #else
                 sb.AppendLine($"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.GetLevel()})");
 #endif
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Formats a type into a string, with it's generic arguments.
+        /// </summary>
+        /// <param name="type">The type to format.</param>
+        /// <returns>The type, formatted into a string.</returns>
+        public static string FormatType(Type type)
+        {
+            var sb = new StringBuilder();
+            sb.Append(type.Name);
+            if (type.IsGenericType)
+            {
+                sb.Append("<");
+                foreach (var arg in type.GetGenericArguments())
+                {
+                    sb.Append(FormatType(arg));
+                    sb.Append(", ");
+                }
+
+                sb.Remove(sb.Length - 2, 2);
+                sb.Append(">");
             }
 
             return sb.ToString();

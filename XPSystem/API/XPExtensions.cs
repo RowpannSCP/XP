@@ -1,5 +1,6 @@
 ﻿namespace XPSystem.API
 {
+    using System;
     using System.Collections.Generic;
     using CommandSystem;
     using XPSystem.API.StorageProviders;
@@ -25,7 +26,15 @@
         /// <inheritdoc cref="XPAPI.AddXP(XPPlayer, int, bool)"/>
         public static bool AddXP(this XPPlayer player, int amount, bool notify = false) => XPAPI.AddXP(player, amount, notify);
 
-        /// <inheritdoc cref="XPAPI.AddXPAndDisplayMessage{T}(XPPlayer, string, T)"/>
-        public static void AddXP
+        /// <inheritdoc cref="XPAPI.AddXPAndDisplayMessage(XPPlayer, string, object[])"/>
+        public static void AddXPAndDisplayMessage(this XPPlayer player, string key, params object[] args) => XPAPI.AddXPAndDisplayMessage(player, key, args);
+
+        /// <inheritdoc cref="XPAPI.FormatType"/>
+        public static string FormatType(this Type type) => XPAPI.FormatType(type);
+
+        /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
+        public static void Add<TKey, TValue>(
+            this IDictionary<TKey, TValue> dict,
+            KeyValuePair<TKey, TValue> pair) => dict.Add(pair.Key, pair.Value);
     }
 }

@@ -20,9 +20,15 @@
         }
 
         [PluginEvent(ServerEventType.PlayerJoined)]
-        private void OnPlayerJoined(Player player)
+        private void PlayerJoined(Player player)
         {
             OnPlayerJoined(new XPPlayer(player.ReferenceHub));
+        }
+
+        [PluginEvent(ServerEventType.RoundEnd)]
+        private void RoundEnded(RoundSummary.LeadingTeam leadingTeam)
+        {
+            OnRoundEnded();
         }
     }
 #endif

@@ -48,5 +48,16 @@
 
         [Description("Prepended to all messages.")]
         public string TextSuffix { get; set; } = "";
+
+        [Description("The full type name of the storage provider to use (default: XPSystem.LiteDBProvider.LiteDBProvide).")]
+        public string StorageProvider { get; set; } = "XPSystem.LiteDBProvider.LiteDBProvider";
+
+        [Description("Full type names of fisplay providers to load, in addition to the built-in rank and nick ones.")]
+        public List<string> AdditionalDisplayProviders { get; set; } = new()
+        {
+        };
+
+        [Description("Prints used keys to console at end of round. Not recommended to keep on - performance.")]
+        public bool LogXPGainedMethods { get; set; } = false;
     }
 }

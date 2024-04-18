@@ -1,4 +1,4 @@
-﻿namespace XPSystem.Config
+﻿namespace XPSystem.Config.YamlConverters
 {
     using System;
     using System.Collections.Generic;

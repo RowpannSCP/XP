@@ -14,13 +14,13 @@
 
         public void Initialize()
         {
-            UnifiedEventHandlers.PlayerJoined += PlayerInfoCache.EnsureInCache;
+            UnifiedEventHandlers.XPPlayerJoined += PlayerInfoCache.EnsureInCache;
             InitializeNoCache();
         }
 
         public virtual void Dispose()
         {
-            UnifiedEventHandlers.PlayerJoined -= PlayerInfoCache.EnsureInCache;
+            UnifiedEventHandlers.XPPlayerJoined -= PlayerInfoCache.EnsureInCache;
             PlayerInfoCache.Clear();
             DisposeNoCache();
         }

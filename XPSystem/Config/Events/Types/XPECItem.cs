@@ -1,9 +1,9 @@
-﻿namespace XPSystem.Config.Events.Models
+﻿namespace XPSystem.Config.Events.Types
 {
     using System.ComponentModel;
 
     /// <summary>
-    /// XP Event Config Item.
+    /// Represents a XP Event Config Item.
     /// </summary>
     public class XPECItem
     {
