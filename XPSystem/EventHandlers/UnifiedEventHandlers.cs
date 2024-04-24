@@ -7,7 +7,6 @@
     using XPSystem.API.StorageProviders;
     using XPSystem.Config.Events;
     using static XPSystem.API.XPAPI;
-    using static API.LoaderSpecific;
 
     public class UnifiedEventHandlers
     {
@@ -25,6 +24,7 @@
             {
                 if (player.DNT)
                 {
+                    player.DisplayMessage(Config.DNTMessage);
                     XPAPI.StorageProvider.DeletePlayerInfo(player.PlayerId);
                     return;
                 }

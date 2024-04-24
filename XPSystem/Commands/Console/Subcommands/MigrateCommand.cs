@@ -4,8 +4,9 @@
     using System.IO;
     using CommandSystem;
     using LiteDB;
+    using XPSystem.API;
     using XPSystem.API.Legacy;
-    using static API.LoaderSpecific;
+    using static API.XPAPI;
 
     public class MigrateCommand : ICommand
     {
@@ -14,7 +15,7 @@
             string path;
             if (arguments.Count < 1)
             {
-                path = LegacyDefaultDatabasePath;
+                path = LoaderSpecific.LegacyDefaultDatabasePath;
                 LogInfo("No file provided, using default.");
             }
             else

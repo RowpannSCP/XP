@@ -12,7 +12,6 @@
     using XPSystem.EventHandlers;
     using XPSystem.EventHandlers.LoaderSpecific;
     using XPSystem.XPDisplayProviders;
-    using static API.LoaderSpecific;
     using static API.XPAPI;
 
     public class Main
@@ -22,8 +21,18 @@
     {
         public const string VersionString = "2.0.0";
 
+        /// <summary>
+        /// This number is increased every time the plugin is reloaded.
+        /// Store last calculated value to check if recalculation is needed.
+        /// </summary>
+        public static int Reload = 0;
+
 #if EXILED
-        private static readonly int[] _splitVersion = VersionString.Split('.').Select(x => Convert.ToInt32(x)).ToArray();
+        private static readonly int[] _splitVersion = VersionString
+            .Split('.')
+            .Select(x => Convert.ToInt32(x))
+            .ToArray();
+
         public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
         public override Version Version { get; } = new Version(_splitVersion[0], _splitVersion[1], _splitVersion[2]);
@@ -42,8 +51,6 @@
 #endif
         private Harmony _harmony;
 
-#error more debug
-
 #if EXILED
         public override void OnEnabled()
 #else
@@ -59,6 +66,7 @@
             DisplayProviders.Add(new NickXPDisplayProvider());
             DisplayProviders.Add(new RankXPDisplayProvider());
             MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
+            XPECLimitTracker.Initialize();
 
             LoadExtraConfigs();
 
@@ -79,8 +87,12 @@
             PluginEnabled = false;
             _eventHandlers.UnregisterEvents(this);
 
-            DisplayProviders.DisableAll();
+            SetStorageProvider((IStorageProvider)null);
             MessagingProvider = null;
+
+            DisplayProviders.DisableAll();
+            XPECLimitTracker.Disable();
+
             XPECManager.Default.Files.Clear();
             XPECManager.Overrides.Clear();
 
@@ -99,7 +111,7 @@
         public void OnReloaded()
 #endif
         {
-            LevelCalculator.Precalculate();
+            LoadExtraConfigs();
         }
 
         public void SetDisplayProviders(IEnumerable<string> typeNames)
@@ -120,6 +132,7 @@
         {
             try
             {
+                Reload++;
                 SetStorageProvider(Config.StorageProvider);
                 SetDisplayProviders(Config.AdditionalDisplayProviders);
 

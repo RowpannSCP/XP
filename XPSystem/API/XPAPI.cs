@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Text;
+    using NorthwoodLib.Pools;
     using PlayerRoles;
     using XPSystem.API.DisplayProviders;
     using XPSystem.API.Enums;
@@ -13,12 +13,11 @@
     using XPSystem.Config;
     using XPSystem.Config.Events;
     using XPSystem.Config.Events.Types;
+    using XPSystem.Config.Events.Types.Custom;
     using XPSystem.Config.YamlConverters;
     using YamlDotNet.Serialization;
     using YamlDotNet.Serialization.NamingConventions;
     using YamlDotNet.Serialization.NodeDeserializers;
-    using static LevelCalculator;
-    using static LoaderSpecific;
 
     public static class XPAPI
     {
@@ -29,9 +28,9 @@
         public static bool PluginEnabled { get; internal set; } = false;
 
         /// <summary>
-        /// The plugin config, for nwapi or exiled-specific configs use safe casts.
+        /// The plugin config, cast to get nwapi or exiled-specific config.
         /// </summary>
-        public static ConfigShared Config = new();
+        public static Config Config = new UninitializedConfig();
 
         /// <summary>
         /// The display provider for the plugin.
@@ -41,7 +40,7 @@
 
         /// <summary>
         /// The storage provider for the plugin.
-        /// Change it using <see cref="SetStorageProvider"/>.
+        /// Change it using <see cref="SetStorageProvider(IStorageProvider)"/>.
         /// </summary>
         public static IStorageProvider StorageProvider { get; private set; }
 
@@ -51,32 +50,71 @@
         public static readonly XPDisplayProviderCollection DisplayProviders = new();
 
         /// <summary>
-        /// Gets the serializer for the plugin.
+        /// Gets a new serializer builder for the plugin.
         /// </summary>
-        public static ISerializer Serializer { get; } = new SerializerBuilder()
+        private static SerializerBuilder SerializerBuilder => new SerializerBuilder()
             .WithLoaderTypeConverters()
+            .WithTypeConverter(new XPECFileYamlConverter())
             .WithTypeInspector(inner => new CommentGatheringTypeInspector(inner))
             .WithEmissionPhaseObjectGraphVisitor(args => new CommentsObjectGraphVisitor(args.InnerVisitor))
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .IgnoreFields();
+
+        /// <summary>
+        /// Gets the serializer of the plugin.
+        /// </summary>
+        public static ISerializer Serializer { get; } = SerializerBuilder.Build();
+
+        /// <summary>
+        /// Gets the value serializer of the plugin.
+        /// </summary>
+        public static IValueSerializer ValueSerializer { get; } = SerializerBuilder.BuildValueSerializer();
+
+        /// <summary>
+        /// Gets a new deserializer builder for the plugin.
+        /// </summary>
+        private static DeserializerBuilder DeserializerBuilder => new DeserializerBuilder()
+            .WithLoaderTypeConverters()
+            .WithTypeConverter(new XPECFileYamlConverter())
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithNodeDeserializer(inner => new ValidatingNodeDeserializer(inner),
+                deserializer => deserializer.InsteadOf<ObjectNodeDeserializer>())
             .IgnoreFields()
-            .Build();
+            .IgnoreUnmatchedProperties();
 
         /// <summary>
         /// Gets the deserializer for the plugin.
         /// </summary>
-        public static IDeserializer Deserializer { get; } = new DeserializerBuilder()
-            .WithLoaderTypeConverters()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .WithNodeDeserializer(inner => new ValidatingNodeDeserializer(inner), 
-                deserializer => deserializer.InsteadOf<ObjectNodeDeserializer>())
-            .IgnoreFields()
-            .IgnoreUnmatchedProperties()
-            .Build();
+        public static IDeserializer Deserializer { get; } = DeserializerBuilder.Build();
 
         /// <summary>
         /// Whether xp gain is currently paused.
         /// </summary>
         public static bool XPGainPaused = false;
+
+        /// <summary>
+        /// Prints a debug message, if debug is enabled.
+        /// Not too different from your loader's LogDebug.
+        /// </summary>
+        public static Action<string> LogDebug = LoaderSpecific.LogDebug; 
+
+        /// <summary>
+        /// Prints a info message.
+        /// Not too different from your loader's LogInfo.
+        /// </summary>
+        public static Action<string> LogInfo = LoaderSpecific.LogInfo;
+
+        /// <summary>
+        /// Prints a warning.
+        /// Not too different from your loader's LogWarn.
+        /// </summary>
+        public static Action<string> LogWarn = LoaderSpecific.LogWarn;
+
+        /// <summary>
+        /// Prints a error message.
+        /// Not too different from your loader's LogError.
+        /// </summary>
+        public static Action<string> LogError = LoaderSpecific.LogError;
 #endregion
 
 #region Storage
@@ -93,6 +131,12 @@
             catch (Exception e)
             {
                 LogError("Error while disposing the previous storage provider: " + e);
+            }
+
+            if (provider == null)
+            {
+                LogDebug("Disposed storage provider. No data will be read or saved!");
+                return;
             }
 
             try
@@ -216,26 +260,27 @@
         /// </summary>
         /// <param name="player">The player to add XP to.</param>
         /// <param name="amount">The amount of XP to add.</param>
-        /// <param name="force">Whether to force the addition of XP, even if <see cref="XPGainPaused"/>.</param>
+        /// <param name="force">Whether to force the addition of XP, even if <see cref="XPGainPaused"/> or the player has <see cref="XPPlayer.DNT"/> enabled.</param>
+        /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
         /// <returns>Whether or not the XP was added.</returns>
-        public static bool AddXP(XPPlayer player, int amount, bool force = false)
+        public static bool AddXP(XPPlayer player, int amount, bool force = false, PlayerInfoWrapper playerInfo = null)
         {
             if (amount == 0)
                 return false;
 
             EnsureStorageProviderValid();
 
-            if (XPGainPaused && !force)
+            if (!force && (XPGainPaused || player.DNT))
                 return false;
 
-            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
-            int prevLevel = GetLevel(playerInfo);
+            playerInfo ??= StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+            int prevLevel = playerInfo.Level;
 
             playerInfo.PlayerInfo.XP += amount;
             StorageProvider.SetPlayerInfo(playerInfo);
 
-            if (player.IsConnected && GetLevel(playerInfo) != prevLevel)
-                DisplayProviders.Refresh(player);
+            if (player.IsConnected && playerInfo.Level != prevLevel)
+                HandleLevelUp(player, playerInfo);
 
             return true;
         }
@@ -277,21 +322,84 @@
 #region Mixed
         /// <summary>
         /// Adds XP to a player and displays it's corresponding message.
+        /// Respects role overrides, DNT, and <see cref="XPGainPaused"/>.
         /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         /// </summary>
         /// <param name="player">The player to affect.</param>
         /// <param name="key">The key of the <see cref="XPECFile"/>.</param>
         /// <param name="subkeys">The subkeys of the <see cref="XPECItem"/>.</param>
-        /// <exception cref="Exception">The matching <see cref="XPECItem"/> found.</exception>
-        public static void AddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
+        /// <returns>Whether or not the XP was added and the message was sent (can be forced with
+        /// <see cref="AddXP(XPSystem.API.XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/>
+        /// and <see cref="DisplayMessage"/>).</returns>
+        public static bool AddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
         {
-            var xpecitem = XPECManager.GetItem(key, player.Role, subkeys);
+            return AddXPAndDisplayMessage(player, XPECManager.GetItem(key, player.Role, subkeys));
+        }
 
-            AddXP(player, xpecitem.Amount);
-            DisplayMessage(player, xpecitem.Translation);
+        /// <summary>
+        /// Tries to add XP to a player and display it's corresponding message.
+        /// Respects <see cref="XPECLimitedDictFile{T}"/> limits, role overrides, DNT, and <see cref="XPGainPaused"/>.
+        /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
+        /// </summary>
+        /// <inheritdoc cref="AddXPAndDisplayMessage(XPPlayer, string, object[])"/>
+        public static bool TryAddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
+        {
+            var item = XPECManager.GetItem(key, player.Role, subkeys);
+            if
+
+            return AddXPAndDisplayMessage(player, item);
+        }
+
+        /// <summary>
+        /// Adds XP to a player and displays it's corresponding message.
+        /// Respects role overrides, DNT, and <see cref="XPGainPaused"/>.
+        /// </summary>
+        /// <param name="player">The player to affect.</param>
+        /// <param name="xpecItem">The <see cref="XPECItem"/> containing the amount and the message.</param>
+        /// <returns>Whether or not the XP was added and the message was sent (can be forced with
+        /// <see cref="AddXP(XPSystem.API.XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/>
+        /// and <see cref="DisplayMessage"/>).</returns>
+        public static bool AddXPAndDisplayMessage(XPPlayer player, XPECItem xpecItem)
+        {
+            if (xpecItem.Amount == 0 || player.DNT || XPGainPaused)
+                return false;
+
+            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+
+            AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
+
+            string message = xpecItem.Translation;
+            if (Config.UseAddedXPTemplate)
+            {
+                message = Config.AddedXPTemplate
+                    .Replace("%message%", message)
+                    .Replace("%currentxp%", playerInfo.XP.ToString())
+                    .Replace("%currentlevel%", playerInfo.Level.ToString())
+                    .Replace("%neededxp%", playerInfo.NeededXP.ToString())
+                    .Replace("%nextlevel%", (playerInfo.Level + 1).ToString());
+            }
+
+            DisplayMessage(player, message);
+            return true;
         }
 #endregion
 #region Misc
+        /// <summary>
+        /// Handles a player leveling up.
+        /// </summary>
+        /// <param name="player">The player that leveled up.</param>
+        /// <param name="wrapper">The <see cref="PlayerInfoWrapper"/> belonging to the player.</param>
+        public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper)
+        {
+            DisplayProviders.Refresh(player);
+
+            if (Config.ShowAddedLVL)
+            {
+                player.DisplayMessage(Config.AddedLVLMessage.Replace("%level%",
+                    wrapper.Level.ToString()));
+            }
+        }
+
         /// <summary>
         /// Attempts to parse a string into a <see cref="PlayerId"/>.
         /// </summary>
@@ -334,19 +442,19 @@
         /// <returns>The formatted leaderboard, as a string..</returns>
         public static string FormatLeaderboard(IEnumerable<PlayerInfoWrapper> players)
         {
-            StringBuilder sb = new();
+            var sb = StringBuilderPool.Shared.Rent();
             foreach (var playerInfo in players)
             {
 #if STORENICKS
                 sb.AppendLine(string.IsNullOrWhiteSpace(playerInfo.Nickname)
-                    ? $"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({GetLevel(playerInfo)})"
-                    : $"{playerInfo.Nickname} - {playerInfo.XP} ({GetLevel(playerInfo)})");
+                    ? $"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.Level})"
+                    : $"{playerInfo.Nickname} - {playerInfo.XP} ({playerInfo.Level})");
 #else
-                sb.AppendLine($"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.GetLevel()})");
+                sb.AppendLine($"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.Level})");
 #endif
             }
 
-            return sb.ToString();
+            return StringBuilderPool.Shared.ToStringReturn(sb);
         }
 
         /// <summary>
@@ -356,8 +464,8 @@
         /// <returns>The type, formatted into a string.</returns>
         public static string FormatType(Type type)
         {
-            var sb = new StringBuilder();
-            sb.Append(type.Name);
+            var sb = StringBuilderPool.Shared.Rent();
+            sb.Append(type.FullName);
             if (type.IsGenericType)
             {
                 sb.Append("<");
@@ -371,7 +479,7 @@
                 sb.Append(">");
             }
 
-            return sb.ToString();
+            return StringBuilderPool.Shared.ToStringReturn(sb);
         }
 #endregion
     }

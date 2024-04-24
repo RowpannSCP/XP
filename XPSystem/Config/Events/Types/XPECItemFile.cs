@@ -1,10 +1,13 @@
 ﻿namespace XPSystem.Config.Events.Types
 {
+    /// <summary>
+    /// Represents a XP Event Config file with a single item.
+    /// </summary>
     public class XPECItemFile : XPECFile
     {
-        public override XPECItem Get(params object[] keys)
-        {
-            throw new System.NotImplementedException();
-        }
+        public XPECItem Item { get; set; }
+
+        /// <inheritdoc />
+        public override XPECItem Get(params object[] keys) => Item;
     }
 }

@@ -2,7 +2,7 @@
 {
     using LiteDB;
     using XPSystem.API.StorageProviders.Models;
-    using static LoaderSpecific;
+    using static XPAPI;
 
     public static class LiteDBMigrator
     {

@@ -27,6 +27,6 @@
         /// Ignore this, used by loader.
         /// Type of <see cref="IXPDisplayProvider.ConfigPropertyInternal"/>.
         /// </summary>
-        public Type ConfigTypeInternal => typeof(T);
+        public Type ConfigTypeInternal { get; } = typeof(T);
     }
 }

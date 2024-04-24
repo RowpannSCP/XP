@@ -2,9 +2,6 @@
 {
     using System;
     using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using XPSystem.API;
     using XPSystem.Config.Events.Types;
     using YamlDotNet.Core;
     using YamlDotNet.Core.Events;
@@ -12,20 +9,29 @@
 
     public class XPECFileYamlConverter : IYamlTypeConverter
     {
-        public bool Accepts(Type type) => type == typeof(XPECFile);
+        public bool Accepts(Type type) => typeof(XPECFile).IsAssignableFrom(type);
 
         public object ReadYaml(IParser parser, Type type)
         {
-#mark where to add stuff for additional values
             object result;
 
             if (!parser.TryConsume(out MappingStart _))
-                throw new InvalidDataException("Invalid YAML content.");
+                throw new InvalidDataException("Invalid YAML content: MappingStart not found.");
 
-            
+            if (!parser.TryConsume(out Scalar typeScalar)
+                || typeScalar.Value != "type"
+                || !parser.TryConsume(out Scalar typeValue))
+                throw new InvalidDataException("Invalid YAML content: type not found.");
+
+            type = Type.GetType(typeValue.Value)
+                   ?? throw new InvalidDataException($"Invalid YAML content: type {typeValue.Value} not resolved.");
+
+            result = Activator.CreateInstance(type);
+
+            ((XPECFile)result).Read(parser);
 
             if (!parser.TryConsume(out MappingEnd _))
-                throw new InvalidDataException("Invalid YAML content.");
+                throw new InvalidDataException("Invalid YAML content: MappingEnd not found.");
 
             return result;
         }
@@ -34,19 +40,14 @@
         {
             emitter.Emit(new MappingStart(null, null, false, MappingStyle.Block));
 
-            
+            emitter.Emit(new Scalar("type"));
+            emitter.Emit(new Scalar(AnchorName.Empty, TagName.Empty, type.AssemblyQualifiedName!, ScalarStyle.SingleQuoted, true, true));
+
+            emitter.Emit(new Comment("-------- Don't edit above this line unless you know what you are doing!!!!! Will break config!!!!!!! --------", false));
+
+            ((XPECFile)value)!.Write(emitter);
 
             emitter.Emit(new MappingEnd());
-        }
-
-        private string SerializeProperty(PropertyInfo propertyInfo, object obj)
-        {
-            return XPAPI.Serializer.Serialize(propertyInfo.GetValue(obj));
-        }
-
-        private object DeserializeProperty(IParser parser, PropertyInfo propertyInfo)
-        {
-            return XPAPI.Deserializer.Deserialize(parser, propertyInfo.PropertyType);
         }
     }
 }

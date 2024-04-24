@@ -9,7 +9,7 @@
     using XPSystem.API.StorageProviders;
     using XPSystem.API.StorageProviders.Models;
     using XPSystem.LiteDBProvider.Models;
-    using static API.LoaderSpecific;
+    using static API.XPAPI;
 
     public class LiteDBProvider : StorageProvider<LiteDBProvider.LiteDBProviderConfig>
     {
@@ -25,7 +25,8 @@
 
             if (LiteDBMigrator.CanMigrate(database))
             {
-                for (int i = 0; i < 3; i++) LogInfo("Found legacy data in database, migrate using xps migrate in server console!.");
+                for (int i = 0; i < 3; i++)
+                    LogInfo("Found legacy data in database, migrate using xps migrate in server console!.");
             }
 
             SteamCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo-steam");

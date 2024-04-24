@@ -12,6 +12,7 @@
         public override void Enable() => RefreshAll();
         public override void Disable() => RefreshAll();
 
+        #error
         public override void Refresh(XPPlayer player)
         {
             if (player.HasBadge && !player.HasHiddenBadge)
@@ -53,6 +54,7 @@
                 .Replace("%oldbadge%", player.Group?.BadgeText);
         }
 
+        #error account for not enough xp for a badge
         public class RankConfig : IXPDisplayProviderConfig
         {
             [Description("Enable badge modifications?")]

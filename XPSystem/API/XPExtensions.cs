@@ -23,6 +23,9 @@
         /// <inheritdoc cref="XPAPI.GetPlayerInfo(XPPlayer)"/>
         public static PlayerInfoWrapper GetPlayerInfo(this XPPlayer player) => XPAPI.GetPlayerInfo(player);
 
+        /// <inheritdoc cref="XPAPI.DisplayMessage(XPPlayer, string)"/>
+        public static void DisplayMessage(this XPPlayer player, string message) => XPAPI.DisplayMessage(player, message);
+
         /// <inheritdoc cref="XPAPI.AddXP(XPPlayer, int, bool)"/>
         public static bool AddXP(this XPPlayer player, int amount, bool notify = false) => XPAPI.AddXP(player, amount, notify);
 
@@ -31,10 +34,5 @@
 
         /// <inheritdoc cref="XPAPI.FormatType"/>
         public static string FormatType(this Type type) => XPAPI.FormatType(type);
-
-        /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
-        public static void Add<TKey, TValue>(
-            this IDictionary<TKey, TValue> dict,
-            KeyValuePair<TKey, TValue> pair) => dict.Add(pair.Key, pair.Value);
     }
 }

@@ -1,7 +1,11 @@
 ﻿namespace XPSystem.Commands.Admin.Subcommands
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using CommandSystem;
+    using NorthwoodLib.Pools;
     using XPSystem.API;
     using XPSystem.Config.Events;
 
@@ -17,37 +21,76 @@
 
             if (arguments.Count < 1)
             {
-                response = "Usage: showmessage <key> (<subkey>)";
+                response = "Usage: showmessage <key> (<subkeys>)";
                 return false;
             }
 
-            var file = XPECManager.GetXPECFile(arguments.At(0));
+            var file = XPECManager.GetFile(arguments.At(0));
             if (file == null)
             {
                 response = "No such XPEC file.";
                 return false;
             }
 
-            object subkey = null;
+            object[] subkeys = null;
             if (arguments.Count > 1)
             {
-                var subkeyString = arguments.At(1);
-                subkey = Convert.ChangeType(subkeyString, file.GetSubkeyType());
-                if (subkey == null)
+                List<object> subkeyList = new();
+                var types = file.ParametersTypes;
+                var subkeysStrings = arguments
+                    .Skip(1)
+                    .ToArray();
+
+                for (int i = 0; i < subkeysStrings.Length; i++)
                 {
-                    response = "Subkey conversion failed.";
+                    var @string = subkeysStrings[i];
+                    if (types.Length <= i)
+                    {
+                        subkeyList.Add(@string);
+                        continue;
+                    }
+
+                    Exception e = null;
+                    var argTypes = types[i];
+                    foreach (var type in argTypes)
+                    {
+                        try
+                        {
+                            var converted = Convert.ChangeType(@string, type);
+                            if (converted != null)
+                            {
+                                subkeyList.Add(converted);
+                                break;
+                            }
+                        }
+                        catch (Exception e2)
+                        {
+                            e = e2;
+                        }
+                    }
+
+                    response =
+                        $"Could not convert argument at {i}: {@string} to any of the specified types, last error {e?.ToString() ?? "null"}";
                     return false;
                 }
+
+                subkeys = subkeyList.ToArray();
             }
 
-            var item = file.GetItem(subkey);
+            var item = file.Get(subkeys);
             if (item == null)
             {
                 response = "Item null.";
                 return false;
             }
 
-            response = $"Amount: {item.Amount}, Translation: {item.Translation}";
+            var sb = StringBuilderPool.Shared.Rent();
+            foreach (var property in item.GetType().GetProperties())
+            {
+                sb.AppendLine($"{property.Name}: {property.GetValue(item)}");
+            }
+
+            response = StringBuilderPool.Shared.ToStringReturn(sb);
             return true;
         }
 

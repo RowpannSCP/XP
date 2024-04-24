@@ -10,6 +10,7 @@
             throw new System.NotImplementedException();
         }
 
+        #error
         public override void Disable()
         {
             throw new System.NotImplementedException();

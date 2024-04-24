@@ -81,7 +81,7 @@
         /// Used by loader when combined with <see cref="StorageProvider{T}"/>.
         /// Type of <see cref="ConfigPropertyInternal"/>.
         /// </summary>
-        public virtual Type ConfigTypeInternal => null;
+        public virtual Type ConfigTypeInternal { get; } = null;
     }
 
     /// <summary>
@@ -100,6 +100,6 @@
         }
 
         /// <inheritdoc/>
-        public override Type ConfigTypeInternal => typeof(T);
+        public override Type ConfigTypeInternal { get; } = typeof(T);
     }
 }

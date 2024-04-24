@@ -38,15 +38,38 @@
                 int prevLevel = Level;
                 PlayerInfo.XP = value;
                 int newLevel = Level;
+
                 if (prevLevel != newLevel  && XPPlayer.TryGetPlayer(Player, out var xpPlayer))
-                    DisplayProviders.Refresh(xpPlayer);
+                    HandleLevelUp(xpPlayer, this);
 
                 XPAPI.StorageProvider.SetPlayerInfo(this);
             }
         }
 
+        private int _neededXP;
+        private int _lastCalculatedNeededXP;
+        private int _lastCalculatedNeededReload = -1;
+
+        /// <summary>
+        /// Gets the amount of XP needed for the next level.
+        /// </summary>
+        public int NeededXP
+        {
+            get
+            {
+                if (_lastCalculatedNeededXP != XP || _lastCalculatedNeededReload != Main.Reload)
+                {
+                    _lastCalculatedNeededXP = XP;
+                    _lastCalculatedNeededReload = Main.Reload;
+                    _neededXP = LevelCalculator.GetXP(Level + 1);
+                }
+
+                return _neededXP;
+            }
+        }
+
         private int _level;
-        private int _lastCalculatedXP;
+        private int _lastCalculatedLevelXP;
 
         /// <summary>
         /// Gets or sets (not recommended) the level of the player.
@@ -55,9 +78,9 @@
         {
             get
             {
-                if (_lastCalculatedXP != XP)
+                if (_lastCalculatedLevelXP != XP)
                 {
-                    _lastCalculatedXP = XP;
+                    _lastCalculatedLevelXP = XP;
                     _level = LevelCalculator.GetLevel(XP);
                 }
 

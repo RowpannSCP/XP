@@ -2,23 +2,37 @@
 {
     using System;
     using System.Collections.Generic;
+    using XPSystem.API;
 
     /// <summary>
-    /// Represents a translation file for a key.
+    /// Represents a XP Event Config file with a dictionary of items.
     /// </summary>
     /// <typeparam name="T">The type of the subkeys.</typeparam>
-    public class XPECDictFile<T> : XPECFile, IGenericXPECFile
+    public class XPECDictFile<T> : XPECFile
     {
         public XPECItem Default { get; set; }
 
         public Dictionary<T, XPECItem> Items { get; set; } = new();
 
+        /// <inheritdoc />
         public override XPECItem Get(params object[] keys)
         {
-            throw new NotImplementedException();
+            if (keys.Length == 0)
+                return Default;
+
+            var keyObj = keys[0];
+            if (keyObj is not T key)
+                throw new InvalidCastException($"Key is not of the correct type (was: {keyObj.GetType().FormatType()}, expected: {typeof(T).FormatType()})");
+
+            return Items.TryGetValue(key, out var item)
+                ? item
+                : Default;
         }
 
-        public Type GenericType => typeof(T);
+        /// <inheritdoc />
+        public override Type[][] ParametersTypes { get; } = { new[] { typeof(T) } };
+
+        /// <inheritdoc />
         public override bool IsEqualType(object obj) => obj is XPECDictFile<T>;
     }
 }

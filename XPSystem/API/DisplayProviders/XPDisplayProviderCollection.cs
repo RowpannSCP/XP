@@ -5,7 +5,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using static LoaderSpecific;
+    using static XPAPI;
 
     /// <summary>
     /// Represents a collection of <see cref="IXPDisplayProvider"/>s.
