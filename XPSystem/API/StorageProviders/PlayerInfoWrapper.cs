@@ -39,7 +39,7 @@
                 PlayerInfo.XP = value;
                 int newLevel = Level;
 
-                if (prevLevel != newLevel  && XPPlayer.TryGetPlayer(Player, out var xpPlayer))
+                if (prevLevel != newLevel  && XPPlayer.TryGet(Player, out var xpPlayer))
                     HandleLevelUp(xpPlayer, this);
 
                 XPAPI.StorageProvider.SetPlayerInfo(this);

@@ -8,17 +8,18 @@
     using PlayerRoles;
     using RemoteAdmin;
     using XPSystem.API.StorageProviders.Models;
+    using XPSystem.API.Variables;
     using XPSystem.Config.Models;
     using static LoaderSpecific;
 
     /// <summary>
     /// <see cref="ReferenceHub"/> wrapper.
-    /// <remarks>Multiple instances of this class can exist for the same player, instances are not saved, there is no constructor logic.</remarks>
     /// </summary>
-    public class XPPlayer
+    /// <remarks>Multiple instances of this class can exist for the same player, instances are not saved, there is no constructor logic.</remarks>
+    public partial class XPPlayer
     {
-        private static Dictionary<string, PlayerId> _playerIdCache = new();
-        private PlayerId? _playerId;
+        public static IReadOnlyDictionary<ReferenceHub, XPPlayer> Players => PlayersValue;
+        internal static readonly Dictionary<ReferenceHub, XPPlayer> PlayersValue = new();
 
         /// <summary>
         /// The player's <see cref="ReferenceHub"/>.
@@ -31,6 +32,12 @@
         public string UserId => Hub.authManager.UserId;
 
         /// <summary>
+        /// Gets the player's variables.
+        /// </summary>
+        public readonly VariableCollection Variables = new();
+
+        private PlayerId? _playerId;
+        /// <summary>
         /// Gets the player's <see cref="PlayerId"/>.
         /// </summary>
         public PlayerId PlayerId
@@ -40,13 +47,9 @@
                 if (_playerId != null)
                     return _playerId.Value;
 
-                if (_playerIdCache.TryGetValue(UserId, out var playerId))
-                    return (_playerId = playerId).Value;
-
-                if (!XPAPI.TryParseUserId(UserId, out playerId))
+                if (!XPAPI.TryParseUserId(UserId, out var playerId))
                     throw new InvalidOperationException("PlayerId of player is invalid (GetPlayerId).");
 
-                _playerIdCache.Add(UserId, playerId);
                 _playerId = playerId;
                 return playerId;
             }
@@ -135,11 +138,28 @@
         /// Creates a new instance of <see cref="XPPlayer"/> for the specified <see cref="ReferenceHub"/>.
         /// </summary>
         /// <param name="referenceHub">The player's <see cref="ReferenceHub"/> to wrap.</param>
-        public XPPlayer(ReferenceHub referenceHub)
+        private XPPlayer(ReferenceHub referenceHub)
         {
             if (referenceHub == null)
-                throw new System.ArgumentNullException(nameof(referenceHub));
+                throw new ArgumentNullException(nameof(referenceHub));
+
             Hub = referenceHub;
+            PlayersValue.Add(referenceHub, this);
+        }
+
+        /// <summary>
+        /// Gets a player from their <see cref="ReferenceHub"/>.
+        /// </summary>
+        /// <param name="hub">The <see cref="ReferenceHub"/> of the player.</param>
+        /// <returns>The player.</returns>
+        public static XPPlayer Get(ReferenceHub hub)
+        {
+            if (Players.TryGetValue(hub, out var player))
+                return player;
+            
+            player = new XPPlayer(hub);
+            PlayersValue.Add(hub, player);
+            return player;
         }
 
         /// <summary>
@@ -148,7 +168,7 @@
         /// <param name="playerId">The <see cref="PlayerId"/> of the player.</param>
         /// <param name="player">The player, if on the server.</param>
         /// <returns>Whether or not the playerid is valid and player is on the server.</returns>
-        public static bool TryGetPlayer(PlayerId playerId, out XPPlayer player)
+        public static bool TryGet(PlayerId playerId, out XPPlayer player)
         {
             return TryGet(playerId.ToString(), out player);
         }
@@ -161,7 +181,24 @@
                 return false;
             }
 
-            player = new XPPlayer(playerSender.ReferenceHub);
+            player = Get(playerSender.ReferenceHub);
+            return true;
+        }
+
+        /// <summary>
+        /// Just <see cref="LoaderSpecific.GetHub"/> with extra return.
+        /// </summary>
+        public static bool TryGet(string data, out XPPlayer player)
+        {
+            player = null;
+            if (string.IsNullOrWhiteSpace(data))
+                return false;
+
+            var hub = GetHub(data);
+            if (hub == null)
+                return false;
+
+            player = Get(hub);
             return true;
         }
 
@@ -175,23 +212,6 @@
         public static bool TryGetAndCheckPermission(ICommandSender sender, string permission, out XPPlayer player)
         {
             return TryGet(sender, out player) && player.CheckPermission(permission);
-        }
-
-        /// <summary>
-        /// Just <see cref="LoaderSpecific.GetHub"/> with useless extra return.
-        /// </summary>
-        public static bool TryGet(string data, out XPPlayer player)
-        {
-            player = null;
-            if (string.IsNullOrWhiteSpace(data))
-                return false;
-
-            var hub = GetHub(data);
-            if (hub == null)
-                return false;
-
-            player = new XPPlayer(hub);
-            return true;
         }
 
         /// <summary>
@@ -414,17 +434,17 @@
         }
 #endregion
 
-        /// <inheritdoc cref="XPPlayer(ReferenceHub)"/>
-        public static implicit operator XPPlayer(ReferenceHub hub) => new(hub);
+        /// <inheritdoc cref="Get(ReferenceHub)"/>
+        public static implicit operator XPPlayer(ReferenceHub hub) => Get(hub);
 
         /// <inheritdoc cref="Hub"/>
         public static implicit operator ReferenceHub(XPPlayer player) => player.Hub;
         
 #if EXILED
         /// <inheritdoc cref="Exiled.API.Features.Player"/>
-        public static implicit operator XPPlayer(Exiled.API.Features.Player player) => new(player.ReferenceHub);
+        public static implicit operator XPPlayer(Exiled.API.Features.Player player) => Get(player.ReferenceHub);
 #else
-        public static implicit operator XPPlayer(PluginAPI.Core.Player player) => new(player.ReferenceHub);
+        public static implicit operator XPPlayer(PluginAPI.Core.Player player) => Get(player.ReferenceHub);
 #endif
     }
 }

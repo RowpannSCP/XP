@@ -34,3 +34,9 @@ run `xps migrate` in the server console to migrate the old database.
 - Server console
     - `xps deleteeverything` - Deletes everything
     - `xps migrate` - Migrates old database
+## Notes
+Due to limitations with subkeys and my lack of willingness to make a complex system to handle this,
+XPECLimitedDicts cooldown will be combined when the default item is used,
+even if LimitUnified is disabled.
+You can work around this by providing overrides for every possible subkey,
+even if their value is the same as the default.

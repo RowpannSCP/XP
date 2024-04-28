@@ -7,6 +7,7 @@
     using PlayerRoles;
     using XPSystem.API;
     using XPSystem.Config.Events.Types;
+    using XPSystem.Config.Events.Types.Custom;
     using static API.XPAPI;
 
     /// <summary>
@@ -16,8 +17,7 @@
     {
         public static readonly XPECFileCollection NeededFiles = new XPECFileCollection()
         {
-            #error
-            ["kills"] = new XPECDictFile<RoleTypeId>()
+            ["kill"] = new XPECDictFile<RoleTypeId>()
             {
                 Default = new XPECItem()
                 {
@@ -33,24 +33,6 @@
                     }
                 }
             },
-            #error
-            ["spawn"] = new XPECDictFile<RoleTypeId>()
-            {
-                Default = new XPECItem()
-                {
-                    Amount = 5,
-                    Translation = "You spawned!"
-                },
-                Items = new ()
-                {
-                    [RoleTypeId.Scp173] = new ()
-                    {
-                        Amount = 10,
-                        Translation = "You spawned as 173!"
-                    }
-                }
-            },
-            #error
             ["upgrade"] = new XPECDictFile<ItemCategory>()
             {
                 Default = new XPECItem()
@@ -67,9 +49,9 @@
                     }
                 }
             },
-            #error
-            ["pickup"] = new XPECDictFile<ItemCategory>()
+            ["pickup"] = new XPECLimitedDictFile<ItemCategory>()
             {
+                LifeLimit = 1,
                 Default = new XPECItem()
                 {
                     Amount = 1,
@@ -84,9 +66,9 @@
                     }
                 }
             },
-            #error
-            ["drop"] = new XPECDictFile<ItemType>()
+            ["drop"] = new XPECLimitedDictFile<ItemCategory>()
             {
+                LifeLimit = 1,
                 Default = new XPECItem()
                 {
                     Amount = 1,
@@ -94,14 +76,13 @@
                 },
                 Items = new ()
                 {
-                    [ItemType.MicroHID] = new ()
+                    [ItemCategory.MicroHID] = new ()
                     {
                         Amount = 10,
                         Translation = "You dropped the micro!"
                     }
                 }
             },
-            #error
             ["use"] = new XPECDictFile<ItemType>()
             {
                 Default = new XPECItem()
@@ -118,7 +99,14 @@
                     }
                 }
             },
-            #error
+            ["spawn"] = new XPECItemFile()
+            {
+                Item = new XPECItem()
+                {
+                    Amount = 5,
+                    Translation = "You spawned!"
+                }
+            },
             ["escape"] = new XPECItemFile()
             {
                 Item = new ()
@@ -127,7 +115,6 @@
                     Translation = "You escaped!"
                 }
             },
-            #error
             ["win"] = new XPECItemFile()
             {
                 Item = new ()
@@ -137,24 +124,6 @@
                 }
             },
 #if EXILED
-            #error
-            ["door"] = new XPECDictFile<Exiled.API.Enums.DoorType>()
-            {
-                Default = new XPECItem()
-                {
-                    Amount = 0,
-                    Translation = "You opened a door!"
-                },
-                Items = new ()
-                {
-                    [Exiled.API.Enums.DoorType.GateA] = new ()
-                    {
-                        Amount = 5,
-                        Translation = "You opened gate A!"
-                    }
-                }
-            },
-            #error
             ["throw"] = new XPECDictFile<Exiled.API.Enums.ProjectileType>()
             {
                 Default = new XPECItem()
@@ -169,6 +138,36 @@
                         Amount = 5,
                         Translation = "You threw a frag grenade!"
                     }
+                }
+            },
+            ["door"] = new XPECLimitedDictFile<Exiled.API.Enums.DoorType>()
+            {
+                LimitUnified = true,
+                Cooldown = 30f,
+                RoundLimit = 10,
+                Default = new XPECItem()
+                {
+                    Amount = 0,
+                    Translation = "You opened a door!"
+                },
+                Items = new ()
+                {
+                    [Exiled.API.Enums.DoorType.GateA] = new ()
+                    {
+                        Amount = 5,
+                        Translation = "You opened gate A!"
+                    }
+                }
+            },
+            ["generator"] = new XPECLimitedDictFile<Exiled.API.Enums.RoomType>()
+            {
+                LimitUnified = true,
+                Cooldown = 30f,
+                RoundLimit = 4,
+                Default = new ()
+                {
+                    Amount = 15,
+                    Translation = "You activated a generator!"
                 }
             },
 #endif
@@ -208,15 +207,11 @@
         /// <returns></returns>
         public static XPECFile GetFile(string key, RoleTypeId role = RoleTypeId.None)
         {
-            if (role != RoleTypeId.None && Overrides.TryGetValue(role, out var collection))
-            {
-                if (collection.Files.TryGetValue(key, out var file))
-                    return file;
-            }
+            if (GetCollection(role).Files.TryGetValue(key, out var defaultFile))
+                return defaultFile;
 
-            return Default.Files.TryGetValue(key, out var defaultFile)
-                ? defaultFile
-                : null;
+            LogDebug("Could not find XPEC file with key " + key);
+            return null;
         }
 
         /// <summary>

@@ -307,10 +307,10 @@
 #region Translations
         /// <summary>
         /// Formats and displays a message to a player.
-        /// <remarks>If <see cref="MessagingProvider"/> is null, it will not be displayed.</remarks>
         /// </summary>
         /// <param name="player">The player to display the message to.</param>
         /// <param name="message">The message to display.</param>
+        /// <remarks>If <see cref="MessagingProvider"/> is null, it will not be displayed.</remarks>
         public static void DisplayMessage(XPPlayer player, string message)
         {
             if (string.IsNullOrWhiteSpace(message))
@@ -323,7 +323,6 @@
         /// <summary>
         /// Adds XP to a player and displays it's corresponding message.
         /// Respects role overrides, DNT, and <see cref="XPGainPaused"/>.
-        /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         /// </summary>
         /// <param name="player">The player to affect.</param>
         /// <param name="key">The key of the <see cref="XPECFile"/>.</param>
@@ -331,6 +330,7 @@
         /// <returns>Whether or not the XP was added and the message was sent (can be forced with
         /// <see cref="AddXP(XPSystem.API.XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/>
         /// and <see cref="DisplayMessage"/>).</returns>
+        /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         public static bool AddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
         {
             return AddXPAndDisplayMessage(player, XPECManager.GetItem(key, player.Role, subkeys));
@@ -339,13 +339,19 @@
         /// <summary>
         /// Tries to add XP to a player and display it's corresponding message.
         /// Respects <see cref="XPECLimitedDictFile{T}"/> limits, role overrides, DNT, and <see cref="XPGainPaused"/>.
-        /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         /// </summary>
         /// <inheritdoc cref="AddXPAndDisplayMessage(XPPlayer, string, object[])"/>
+        /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         public static bool TryAddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
         {
-            var item = XPECManager.GetItem(key, player.Role, subkeys);
-            if
+            var file = XPECManager.GetFile(key, player.Role);
+            var item = file.Get(subkeys);
+
+            if (file is IXPECLimitedFile limitedFile)
+            {
+                if (!XPECLimitTracker.CanUse(item, limitedFile, player, true))
+                    return false;
+            }
 
             return AddXPAndDisplayMessage(player, item);
         }

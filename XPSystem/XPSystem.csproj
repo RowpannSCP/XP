@@ -217,10 +217,10 @@
         <Compile Include="API\StorageProviders\IStorageProvider.cs" />
         <Compile Include="API\StorageProviders\Models\PlayerId.cs" />
         <Compile Include="API\StorageProviders\Models\PlayerInfo.cs" />
-        <Compile Include="API\StorageProviders\PlayerInfoCache.cs" />
-        <Compile Include="API\StorageProviders\PlayerInfoCacheObject.cs" />
         <Compile Include="API\StorageProviders\PlayerInfoWrapper.cs" />
         <Compile Include="API\StorageProviders\StorageProvider.cs" />
+        <Compile Include="API\Variables\Variable.cs" />
+        <Compile Include="API\Variables\VariableCollection.cs" />
         <Compile Include="API\XPAPI.cs" />
         <Compile Include="API\XPExtensions.cs" />
         <Compile Include="API\XPPlayer.cs" />
@@ -244,12 +244,13 @@
         <Compile Include="ConfigOld.cs" />
         <Compile Include="Config\Config.cs" />
         <Compile Include="Config\ConfigShared.cs" />
-        <Compile Include="Config\Events\Types\Custom\XPECLimitedDictFile.cs" />
+        <Compile Include="Config\Events\Types\IXPECLimitedFile.cs" />
         <Compile Include="Config\Events\Types\XPECFile.cs" />
         <Compile Include="Config\Events\Types\XPECDictFile.cs" />
         <Compile Include="Config\Events\Types\XPECFileCollection.cs" />
         <Compile Include="Config\Events\Types\XPECItem.cs" />
         <Compile Include="Config\Events\Types\XPECItemFile.cs" />
+        <Compile Include="Config\Events\Types\XPECLimitedDictFile.cs" />
         <Compile Include="Config\Events\XPECLimitTracker.cs" />
         <Compile Include="Config\Events\XPECManager.cs" />
         <Compile Include="Config\ExiledConfig.cs" />

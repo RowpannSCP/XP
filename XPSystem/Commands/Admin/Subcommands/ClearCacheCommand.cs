@@ -23,7 +23,7 @@
                 return false;
             }
 
-            storageProvider.PlayerInfoCache.Clear();
+            storageProvider.ClearCache();
 
             response = "Cache cleared.";
             return true;

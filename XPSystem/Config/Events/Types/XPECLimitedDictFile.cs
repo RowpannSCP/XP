@@ -7,7 +7,7 @@
     /// Events that can only be achieved a limited number of times.
     /// </summary>
     /// <typeparam name="T">The type of the subkeys.</typeparam>
-    public class XPECLimitedDictFile<T> : XPECDictFile<T>
+    public class XPECLimitedDictFile<T> : XPECDictFile<T>, IXPECLimitedFile
     {
         [Description("Whether or not to always allow gaining xp. If enabled, will ignore all other limit settings.")]
         public bool AlwaysAllow { get; set; } = false;
@@ -16,7 +16,7 @@
         public bool ZeroXPGainTriggers { get; set; } = false;
 
         [Description("Whether or not the limit is per-file (ex. for all pickups) or per-subkey (ex. for each pickup type)")]
-        public bool LimitUnified { get; set; } = true;
+        public bool LimitUnified { get; set; } = false;
 
         [Description("The limit of how many times the event can be achieved per round. Negative for no limit.")]
         public int RoundLimit { get; set; } = -1;

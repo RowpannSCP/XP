@@ -8,6 +8,8 @@
     using System.Reflection;
     using System.Reflection.Emit;
     using CommandSystem;
+    using InventorySystem;
+    using InventorySystem.Items;
     using Mirror;
     using PlayerRoles;
     using YamlDotNet.Serialization;
@@ -52,7 +54,24 @@
                 return PluginAPI.Core.Player.Get(networkId).ReferenceHub;
             if (int.TryParse(data, out var playerId))
                 return PluginAPI.Core.Player.Get(playerId).ReferenceHub;
+            if (PluginAPI.Core.Player.TryGet(data, out var player))
+                return player.ReferenceHub;
             return PluginAPI.Core.Player.GetByName(data).ReferenceHub;
+#endif
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ItemCategory"/> of an <see cref="ItemType"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="ItemType"/> to get the category of.</param>
+        /// <returns>The <see cref="ItemCategory"/> of the <see cref="ItemType"/>.</returns>
+        public static ItemCategory GetCategory(ItemType type)
+        {
+#if EXILED
+            return Exiled.API.Extensions.ItemExtensions.GetCategory(type);
+#else
+            InventoryItemLoader.TryGetItem(type, out ItemBase item);
+            return item.Category;
 #endif
         }
 
