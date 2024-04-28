@@ -5,7 +5,6 @@
     using System.Reflection;
     using XPSystem.API;
     using XPSystem.Config.Events;
-    using XPSystem.Config.YamlConverters;
 
     internal class Program
     {
@@ -135,7 +134,8 @@
                 Console.ResetColor();
             }
 
-            Console.Read();
+            Console.WriteLine("Version:");
+            Console.WriteLine(XPSystem.Main.VersionString);
         }
     }
 }

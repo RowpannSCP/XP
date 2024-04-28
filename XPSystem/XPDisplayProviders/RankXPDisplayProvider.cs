@@ -4,6 +4,7 @@
     using System.ComponentModel;
     using System.Linq;
     using XPSystem.API;
+    using XPSystem.API.StorageProviders;
     using XPSystem.Config.Models;
     using YamlDotNet.Serialization;
 
@@ -12,27 +13,42 @@
         public override void Enable() => RefreshAll();
         public override void Disable() => RefreshAll();
 
-        #error
-        public override void Refresh(XPPlayer player)
+        public override void Refresh(XPPlayer player, PlayerInfoWrapper playerInfo)
         {
-            if (player.HasBadge && !player.HasHiddenBadge)
+            if (!Config.Enabled)
+            {
+                player.ResyncSyncVar(typeof(ServerRoles), nameof(ServerRoles.Network_myText));
+                player.ResyncSyncVar(typeof(ServerRoles), nameof(ServerRoles.Network_myColor));
+                return;
+            }
+
+            if (Config.SkipGlobalBadges && player.HasGlobalBadge)
+                return;
+
+            if (player.HasBadge && (!player.HasHiddenBadge || Config.EditBadgeHiding))
                 return;
 
             if (player.DNT)
             {
                 player.SetBadge(Config.DNTBadge, true);
             }
+            else
+            {
+                string text = GetBadgeText(player, playerInfo, out var color);
+                if (text != null)
+                {
+                    player.SetBadge(new Badge
+                    {
+                        Text = text,
+                        Color = color
+                    }, true);
+                }
+            }
         }
 
-        public override void RefreshAll()
-        {
-            
-        }
-
-        private string GetBadgeText(XPPlayer player, out Misc.PlayerInfoColorTypes color)
+        private string GetBadgeText(XPPlayer player, PlayerInfoWrapper playerInfo, out Misc.PlayerInfoColorTypes color)
         {
             string format = player.Group == null ? Config.BadgeStructureNoBadge : Config.BadgeStructure;
-            var playerInfo = player.GetPlayerInfo();
             Badge badge = null;
             color = Misc.PlayerInfoColorTypes.White;
 
@@ -54,7 +70,6 @@
                 .Replace("%oldbadge%", player.Group?.BadgeText);
         }
 
-        #error account for not enough xp for a badge
         public class RankConfig : IXPDisplayProviderConfig
         {
             [Description("Enable badge modifications?")]
@@ -72,9 +87,6 @@
             [Description("Whether or not to change how badge hiding works")]
             public bool EditBadgeHiding { get; set; } = true;
 
-            [Description("Whether or not to show badges to players depending whether or not they have the view hidden badges permission")]
-            public bool ShowHiddenBadgesToAdmins { get; set; } = true;
-
             [Description("Badge for players with dnt.")]
             public Badge DNTBadge { get; set; } = new()
             {
@@ -84,7 +96,7 @@
 
             private Dictionary<int, Badge> _sortedBadges;
             [YamlIgnore]
-            public Dictionary<int, Badge> SortedBadges => _sortedBadges ??= _sortedBadges
+            public Dictionary<int, Badge> SortedBadges => _sortedBadges ??= Badges
                 .OrderBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.Value);
 

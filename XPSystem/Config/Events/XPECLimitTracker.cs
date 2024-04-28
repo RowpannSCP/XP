@@ -82,9 +82,8 @@
                 if (data.LeftForRound > 0)
                     data.LeftForRound--;
 
-                player.Variables.Add(cooldownKey, true, file.Cooldown >= 0
-                    ? DateTime.Now.AddSeconds(file.Cooldown)
-                    : null);
+                if (data.File.Cooldown > 0)
+                    player.Variables.Add(cooldownKey, true, DateTime.Now.AddSeconds(file.Cooldown));
             }
 
             return true;

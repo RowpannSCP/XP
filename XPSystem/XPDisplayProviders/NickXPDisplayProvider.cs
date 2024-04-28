@@ -2,28 +2,23 @@
 {
     using System.ComponentModel;
     using XPSystem.API;
+    using XPSystem.API.StorageProviders;
 
     public class NickXPDisplayProvider : XPDisplayProvider<NickXPDisplayProvider.NickConfig>
     {
-        public override void Enable()
+        public override void Refresh(XPPlayer player, PlayerInfoWrapper playerInfo)
         {
-            throw new System.NotImplementedException();
-        }
+            if (!Config.Enabled)
+            {
+                player.ResyncSyncVar(typeof(NicknameSync), nameof(NicknameSync.Network_displayName));
+                return;
+            }
 
-        #error
-        public override void Disable()
-        {
-            throw new System.NotImplementedException();
-        }
+            string nick = Config.NickStructure
+                .Replace("%lvl%", playerInfo.Level.ToString())
+                .Replace("%name%", player.Nickname);
 
-        public override void Refresh(XPPlayer player)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override void RefreshAll()
-        {
-            throw new System.NotImplementedException();
+            player.SetNick(nick, true);
         }
 
         public class NickConfig : IXPDisplayProviderConfig

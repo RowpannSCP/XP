@@ -33,10 +33,10 @@
         /// <param name="player">The player to refresh the displays for.</param>
         public void Refresh(XPPlayer player)
         {
+            var playerInfo = player.GetPlayerInfo();
+
             foreach (var provider in _providers)
-            {
-                provider.Refresh(player);
-            }
+                provider.Refresh(player, playerInfo);
         }
 
         /// <summary>
