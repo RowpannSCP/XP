@@ -55,14 +55,15 @@ jobs:
         run: |
           msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
 
-      - name: Rename files
-        run: |
-          cp '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
-          cp '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
-
       - name: Run
         run: |
-          echo "currver=$(${{ github.workspace }}/XPSystem/bin/Release/XPSystem.Console | tail -n 1)" >> "$GITHUB_ENV"
+          cd ${{ github.workspace }}/XPSystem/bin/Release
+          echo "currver=$(XPSystem.Console | tail -n 1)" >> "$GITHUB_ENV"
+
+      - name: Rename files
+        run: |
+          mv '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
+          mv '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
 
       - name: Get Latest Tag
         id: getlatesttag
