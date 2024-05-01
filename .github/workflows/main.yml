@@ -56,6 +56,7 @@ jobs:
           msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
 
       - name: Run
+        shell: bash
         run: |
           cd ${{ github.workspace }}/XPSystem/bin/Release
           echo "currver=$(XPSystem.Console.exe | tail -n 1)" >> "$GITHUB_ENV"
