@@ -16,7 +16,7 @@ Make sure you have harmony (0Harmony.dll) in the dependencies folder.
 - https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest
 
 ## READ: If you have previously (before version 2.0) used the plugin and your data is gone,
-run `xps migrate` in the server console to migrate the old database.
+Run `xps migrate` in the server console to migrate the old database.
 
 ## Commands
 - Client console
@@ -35,8 +35,9 @@ run `xps migrate` in the server console to migrate the old database.
     - `xps deleteeverything` - Deletes everything
     - `xps migrate` - Migrates old database
 ## Notes
-Due to limitations with subkeys and my lack of willingness to make a complex system to handle this,
+- Due to limitations with subkeys and my lack of willingness to make a complex system to handle this,
 XPECLimitedDicts cooldown will be combined when the default item is used,
 even if LimitUnified is disabled.
 You can work around this by providing overrides for every possible subkey,
 even if their value is the same as the default.
+- Any config that wants you to specify a type name **NEEDS** to be a assembly qualified name if it is **NOT BUILT-IN**

@@ -59,10 +59,10 @@
         [Description("Prepended to all messages.")]
         public string TextSuffix { get; set; } = "";
 
-        [Description("The full type name of the storage provider to use (default: XPSystem.LiteDBProvider.LiteDBProvide).")]
+        [Description("The assembly qualified type name of the storage provider to use (default: XPSystem.LiteDBProvider.LiteDBProvider) (not assembly qualified because it's built-in, unlike yours).")]
         public string StorageProvider { get; set; } = "XPSystem.LiteDBProvider.LiteDBProvider";
 
-        [Description("Full type names of fisplay providers to load, in addition to the built-in rank and nick ones.")]
+        [Description("The assembly qualified type names of xp display providers to load, in addition to the built-in rank and nick ones.")]
         public List<string> AdditionalDisplayProviders { get; set; } = new()
         {
         };

@@ -69,24 +69,32 @@
             if (!Config.EditBadgeHiding)
                 return true;
 
-            if (player.HasHiddenBadge && !target.CanViewHiddenBadge)
-                return false;
-
-            return true;
+            return !(player.HasHiddenBadge && (player == target || target.CanViewHiddenBadge));
         }
 
-        [HarmonyPatch(typeof(ServerRoles), nameof(ServerRoles.TryHideTag))]
         internal static class HiddenBadgePatch
         {
-            public static void Prefix(ServerRoles __instance)
+            [HarmonyPatch(typeof(ServerRoles), nameof(ServerRoles.RefreshLocalTag))]
+            public class HiddenBadgePatchShow
+            {
+                public static void Postfix(ServerRoles __instance) => Refresh(__instance);
+            }
+
+            [HarmonyPatch(typeof(ServerRoles), nameof(ServerRoles.TryHideTag))]
+            public class HiddenBadgePatchHide
+            {
+                public static void Postfix(ServerRoles __instance) => Refresh(__instance);
+            }
+
+            private static void Refresh(ServerRoles instance)
             {
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
                 {
-                    if (provider is RankXPDisplayProvider rankProvider && rankProvider.Config.PatchHiddenBadgeSetter)
+                    if (provider is RankXPDisplayProvider rankProvider && rankProvider.Config.PatchBadgeCommands)
                     {
                         Timing.CallDelayed(.5f, () =>
                         {
-                            rankProvider.RefreshOf(__instance._hub);
+                            rankProvider.RefreshOf(instance._hub);
                         });
 
                         return;
@@ -112,8 +120,8 @@
             [Description("Whether or not to change how badge hiding works")]
             public bool EditBadgeHiding { get; set; } = true;
 
-            [Description("Whether or not to patch the hidden badge setter to automatically update the badge.")]
-            public bool PatchHiddenBadgeSetter { get; set; } = true;
+            [Description("Whether or not to patch the show & hide badge commands to automatically update the badge.")]
+            public bool PatchBadgeCommands { get; set; } = true;
 
             [Description("Badge for players with dnt.")]
             public Badge DNTBadge { get; set; } = new()

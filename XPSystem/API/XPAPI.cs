@@ -245,13 +245,16 @@
         /// <summary>
         /// Updates the stored nickname of a player.
         /// </summary>
-        public static void UpdateNickname(XPPlayer player)
+        /// <param name="player">The player to update the nickname of.</param>
+        /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
+        public static void UpdateNickname(XPPlayer player, PlayerInfoWrapper playerInfo = null)
         {
             EnsureStorageProviderValid();
 
-            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
-            playerInfo.PlayerInfo.Nickname = player.Nickname;
+            playerInfo ??= StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+            playerInfo.PlayerInfo.Nickname = player.DisplayedName;
             StorageProvider.SetPlayerInfo(playerInfo);
+            LogDebug("Updated nick of " + player.PlayerId + " to " + player.DisplayedName);
         }
 #endif
 
@@ -454,14 +457,15 @@
         public static string FormatLeaderboard(IEnumerable<PlayerInfoWrapper> players)
         {
             var sb = StringBuilderPool.Shared.Rent();
+
             foreach (var playerInfo in players)
             {
 #if STORENICKS
                 sb.AppendLine(string.IsNullOrWhiteSpace(playerInfo.Nickname)
-                    ? $"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.Level})"
+                    ? $"{playerInfo.Player.ToString()} - {playerInfo.XP} ({playerInfo.Level})"
                     : $"{playerInfo.Nickname} - {playerInfo.XP} ({playerInfo.Level})");
 #else
-                sb.AppendLine($"{playerInfo.Player.Id.ToString()} - {playerInfo.XP} ({playerInfo.Level})");
+                sb.AppendLine($"{playerInfo.Player.ToString()} - {playerInfo.XP} ({playerInfo.Level})");
 #endif
             }
 

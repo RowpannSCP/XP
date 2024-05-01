@@ -243,7 +243,6 @@
         <Compile Include="Commands\Console\Subcommands\MigrateCommand.cs" />
         <Compile Include="Commands\Client\ClientParentCommand.cs" />
         <Compile Include="Commands\Console\Subcommands\ReloadConfigsCommand.cs" />
-        <Compile Include="ConfigOld.cs" />
         <Compile Include="Config\Config.cs" />
         <Compile Include="Config\ConfigShared.cs" />
         <Compile Include="Config\Events\Types\IXPECLimitedFile.cs" />
@@ -267,7 +266,6 @@
         <Compile Include="EventHandlers\LoaderSpecific\NWAPIEventHandlers.cs" />
         <Compile Include="EventHandlers\UnifiedEventHandlers.cs" />
         <Compile Include="MessagingProviders.cs" />
-        <Compile Include="EventHandlersOld.cs" />
         <Compile Include="LiteDBProvider\LiteDBProvider.cs" />
         <Compile Include="LiteDBProvider\Models\LiteDBPlayerInfo.cs" />
         <Compile Include="Main.cs" />

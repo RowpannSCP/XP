@@ -26,7 +26,10 @@
                     Id = Id,
                     AuthType = authType
                 },
-                XP = XP
+                XP = XP,
+#if STORENICKS
+                Nickname = Nickname
+#endif
             };
         }
     }

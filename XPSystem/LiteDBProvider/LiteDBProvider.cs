@@ -78,7 +78,7 @@
         protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(PlayerId playerId)
         {
             var collection = GetCollection(playerId);
-            var existing = collection.FindOne(x => x.Id == playerId.Id);
+            var existing = collection.FindOne(x => x.Id == playerId.Id); // See note on SetPlayerInfoNoCache
             
             if (existing == null)
             {
@@ -134,12 +134,18 @@
                 collection.Insert(new LiteDBPlayerInfo()
                 {
                     Id = playerInfo.Player.Id,
-                    XP = playerInfo.XP
+                    XP = playerInfo.XP,
+#if STORENICKS
+                    Nickname = playerInfo.Nickname
+#endif
                 });
             }
             else
             {
                 existing.XP = playerInfo.XP;
+#if STORENICKS
+                existing.Nickname = playerInfo.Nickname;
+#endif
                 collection.Update(existing);
             }
         }

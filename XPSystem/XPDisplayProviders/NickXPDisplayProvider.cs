@@ -27,7 +27,7 @@
         [HarmonyPatch(typeof(NicknameSync), nameof(NicknameSync.DisplayName), MethodType.Setter)]
         internal static class NickCommandPatch
         {
-            public static void Prefix(NicknameSync __instance)
+            public static void Postfix(NicknameSync __instance)
             {
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
                 {
