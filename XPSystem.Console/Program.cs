@@ -126,6 +126,8 @@
                 Console.Write(errors);
                 Console.WriteLine(" times");
                 Console.ResetColor();
+
+                Environment.Exit(1);
             }
             else
             {
