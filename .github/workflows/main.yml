@@ -58,7 +58,7 @@ jobs:
       - name: Run
         run: |
           cd ${{ github.workspace }}/XPSystem/bin/Release
-          echo "currver=$(XPSystem.Console | tail -n 1)" >> "$GITHUB_ENV"
+          echo "currver=$(XPSystem.Console.exe | tail -n 1)" >> "$GITHUB_ENV"
 
       - name: Rename files
         run: |
