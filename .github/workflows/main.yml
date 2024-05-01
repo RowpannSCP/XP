@@ -91,22 +91,24 @@ jobs:
             fi
 
   make_release:
-    if: ${{ env.newversion == 'true' }}
     needs: run
     runs-on: windows-latest
     steps:
       - name: Get branch name
+        if: ${{ env.newversion == 'true' }}
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: get_branch
 
       - name: Create release pr
+        if: ${{ env.newversion == 'true' }}
         uses: peter-evans/create-pull-request@v6
         with:
           title: ${{ env.currver }}
           branch: release
 
       - uses: ncipollo/release-action@v1.13.0
+        if: ${{ env.newversion == 'true' }}
         with:
           artifacts: |
             "XPSystem/bin/XPSystem-nw.dll"
