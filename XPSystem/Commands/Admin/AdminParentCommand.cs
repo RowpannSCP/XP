@@ -1,6 +1,7 @@
 ﻿namespace XPSystem.Commands.Admin
 {
     using System;
+    using System.Linq;
     using CommandSystem;
     using XPSystem.Commands.Admin.Subcommands;
 
@@ -18,11 +19,12 @@
             RegisterCommand(new PauseCommand());
             RegisterCommand(new RefreshCommand());
             RegisterCommand(new ShowMessageCommand());
+            RegisterCommand(new VariablesCommand());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            response = $"Usage: xp ({string.Join(" | ", Commands)})";
+            response = $"Usage: xp ({string.Join(" | ", Commands.Select(x => x.Key))})";
             return false;
         }
 

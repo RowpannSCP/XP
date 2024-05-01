@@ -45,6 +45,7 @@
             return false;
         }
 
+        // Event needs to exist to ensure players are added to list
         protected void OnPlayerJoined(XPPlayer player)
         {
             if (XPAPI.StorageProvider != null)
@@ -59,11 +60,12 @@
                 Timing.CallDelayed(.5f, () =>
                 {
                     var playerInfo = player.GetPlayerInfo();
+                    XPPlayerJoined.Invoke(player, playerInfo);
 #if STORENICKS
                     UpdateNickname(player);
 #endif
-                    XPPlayerJoined.Invoke(player, playerInfo);
-                    DisplayProviders.Refresh(player);
+                    DisplayProviders.RefreshTo(player);
+                    DisplayProviders.RefreshOf(player, playerInfo);
                 });
             }
         }

@@ -204,10 +204,16 @@
         /// </summary>
         /// <param name="key">The key of the file.</param>
         /// <param name="role">The role to check for overrides from.</param>
-        /// <returns></returns>
+        /// <returns>The file, if found, otherwise null.</returns>
         public static XPECFile GetFile(string key, RoleTypeId role = RoleTypeId.None)
         {
-            if (GetCollection(role).Files.TryGetValue(key, out var defaultFile))
+            if (Overrides.TryGetValue(role, out var collection))
+            {
+                if (collection.Files.TryGetValue(key, out var file))
+                    return file;
+            }
+
+            if (Default.Files.TryGetValue(key, out var defaultFile))
                 return defaultFile;
 
             LogDebug("Could not find XPEC file with key " + key);
@@ -263,17 +269,16 @@
                 .Cast<RoleTypeId>()
                 .Where(x => !_skipRoles.Contains(x));
 
-            Default = LoadInternal(Path.Combine(dir, "default"), true);
+            Default = LoadInternal(Path.Combine(dir, "!default"), true);
             foreach (var role in values)
-            {
                 Overrides[role] = LoadInternal(Path.Combine(dir, role.ToString()));
-            }
         }
 
         private static XPECFileCollection LoadInternal(string dir, bool isNeeded = false)
         {
             var collection = new XPECFileCollection();
             string dirFormatted = dir.Replace("\\", "/");
+            Directory.CreateDirectory(dir);
 
             foreach (string file in Directory.GetFiles(dir, "*.yml", SearchOption.AllDirectories))
             {
@@ -284,7 +289,8 @@
                     string key = file
                         .Replace("\\", "/")
                         .Replace(dirFormatted, "")
-                        .Replace(".yml", "");
+                        .Replace(".yml", "")
+                        .TrimStart('/');
 
                     collection.Files.Add(key, deserialized);
                 }
@@ -310,7 +316,7 @@
                     }
 
                     collection.Files.Add(needed);
-                    File.WriteAllText(GetFilePath(needed.Key, dir), XPAPI.Serializer.Serialize(needed));
+                    File.WriteAllText(GetFilePath(needed.Key, dir), Serializer.Serialize(needed.Value));
 
                     LogInfo($"Created missing XPEC file {needed.Key}");
                 }

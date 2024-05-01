@@ -12,5 +12,15 @@
         [Description("Path to folder with extended configs.")]
         public override string ExtendedConfigPath { get; set; } =
             Path.Combine(ConfigPath, "XPSystem");
+
+        [Description("Path to the legacy database file.")]
+        public override string LegacyDefaultDatabasePath { get; set; } =
+            Path.Combine(
+#if EXILED
+                Exiled.API.Features.Paths.Configs, 
+#else
+                Path.Combine(PluginAPI.Helpers.Paths.LocalPlugins.Plugins, "XPSystem"),
+#endif
+                "Players.db");
     }
 }

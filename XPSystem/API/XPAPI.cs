@@ -345,7 +345,12 @@
         public static bool TryAddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
         {
             var file = XPECManager.GetFile(key, player.Role);
+            if (file == null)
+                return false;
+
             var item = file.Get(subkeys);
+            if (item == null)
+                return false;
 
             if (file is IXPECLimitedFile limitedFile)
             {
@@ -367,7 +372,7 @@
         /// and <see cref="DisplayMessage"/>).</returns>
         public static bool AddXPAndDisplayMessage(XPPlayer player, XPECItem xpecItem)
         {
-            if (xpecItem.Amount == 0 || player.DNT || XPGainPaused)
+            if (xpecItem == null || xpecItem.Amount == 0 || player.DNT || XPGainPaused)
                 return false;
 
             var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
@@ -397,7 +402,7 @@
         /// <param name="wrapper">The <see cref="PlayerInfoWrapper"/> belonging to the player.</param>
         public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper)
         {
-            DisplayProviders.Refresh(player);
+            DisplayProviders.RefreshOf(player);
 
             if (Config.ShowAddedLVL)
             {

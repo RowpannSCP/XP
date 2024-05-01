@@ -20,23 +20,14 @@
     public static class LoaderSpecific
     {
         /// <summary>
-        /// Gets the path for XPSystem's configs.
+        /// Gets the path for the plugin configs.
         /// </summary>
         public static string ConfigPath =>
 #if EXILED
-            Path.Combine(Exiled.API.Features.Paths.Configs, "XPSystem");
+            Exiled.API.Features.Paths.Configs;
 #else
-            Path.Combine(PluginAPI.Helpers.Paths.LocalPlugins.Plugins, "XPSystem");
+            PluginAPI.Helpers.Paths.LocalPlugins.Plugins;
 #endif
-
-        public static string LegacyDefaultDatabasePath =>
-            Path.Combine(
-#if EXILED
-                Exiled.API.Features.Paths.Configs, 
-#else
-                Path.Combine(PluginAPI.Helpers.Paths.LocalPlugins.Plugins, "XPSystem"),
-#endif
-                "Players.db");
 
         /// <summary>
         /// Gets a <see cref="ReferenceHub"/> from a string.
@@ -48,15 +39,20 @@
             if (string.IsNullOrWhiteSpace(data))
                 return null;
 #if EXILED
-            return Exiled.API.Features.Player.Get(data).ReferenceHub;
+            return Exiled.API.Features.Player.Get(data)?.ReferenceHub;
 #else
-            if (uint.TryParse(data, out var networkId))
-                return PluginAPI.Core.Player.Get(networkId).ReferenceHub;
-            if (int.TryParse(data, out var playerId))
-                return PluginAPI.Core.Player.Get(playerId).ReferenceHub;
-            if (PluginAPI.Core.Player.TryGet(data, out var player))
+            if (uint.TryParse(data, out var networkId)
+                && PluginAPI.Core.Player.TryGet(networkId, out var player))
                 return player.ReferenceHub;
-            return PluginAPI.Core.Player.GetByName(data).ReferenceHub;
+
+            if (int.TryParse(data, out var playerId)
+                && PluginAPI.Core.Player.TryGet(playerId, out player))
+                return player.ReferenceHub;
+
+            if (PluginAPI.Core.Player.TryGet(data, out player))
+                return player.ReferenceHub;
+
+            return PluginAPI.Core.Player.GetByName(data)?.ReferenceHub;
 #endif
         }
 

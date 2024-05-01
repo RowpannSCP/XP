@@ -1,19 +1,49 @@
 ﻿namespace XPSystem.API.Legacy
 {
+    using System;
+    using System.IO;
     using LiteDB;
     using XPSystem.API.StorageProviders.Models;
     using static XPAPI;
 
     public static class LiteDBMigrator
     {
-        /// <summary>
-        /// Gets whether or not the database has legacy data that can be migrated.
-        /// </summary>
-        /// <param name="db">The database to check.</param>
-        public static bool CanMigrate(LiteDatabase db)
+        public static void CheckMigration()
         {
-            return db.CollectionExists("Players")
-                   && db.GetCollection<PlayerLog>("Players").Count() > 0;
+            string path = Config.LegacyDefaultDatabasePath;
+            LogDebug("Checking for legacy database at: " + path);
+
+            if (!File.Exists(path))
+                return;
+
+            try
+            {
+                using var database = new LiteDatabase(path);
+                int count = CanMigrate(database);
+
+                if (count > 0)
+                {
+                    for (int i = 0; i < 3; i++)
+                        LogInfo($"Found legacy data ({count} entries) in old database, migrate using xps migrate in server console!.");
+                }
+            }
+            catch (Exception e)
+            {
+                LogDebug($"Error while checking for legacy database: {e}");
+            }
+        }
+
+        /// <summary>
+        /// Checks if the database can be migrated.
+        /// </summary>
+        /// <param name="db">The lite database to check.</param>
+        /// <returns>The amount of entries that can be migrated.</returns>
+        public static int CanMigrate(LiteDatabase db)
+        {
+            if (!db.CollectionExists("Players"))
+                return -1;
+
+            return db.GetCollection<PlayerLog>("Players").Count();
         }
 
         /// <summary>
@@ -23,7 +53,7 @@
         /// <returns>The amount of players imported.</returns>
         public static int ImportLegacyDB(LiteDatabase db)
         {
-            XPAPI.EnsureStorageProviderValid();
+            EnsureStorageProviderValid();
             if (!db.CollectionExists("Players"))
                 return 0;
 
@@ -46,15 +76,15 @@
                     XP = log.XP + LevelCalculator.GetXP(log.LVL)
                 };
 
-                XPAPI.StorageProvider.SetPlayerInfo(playerInfo);
+                StorageProvider.SetPlayerInfo(playerInfo);
                 count++;
 
                 if (count % 100 == 0) LogInfo($"Imported {count}/{total} players.");
             }
 
             LogInfo($"Finished importing {count}/{total} players.");
-            db.RenameCollection("Players", "Players-legacy");
-            LogInfo("Renamed Players to Players-legacy.");
+            db.RenameCollection("Players", "Players_legacy");
+            LogInfo("Renamed Players to Players_legacy.");
 
             return count;
         }

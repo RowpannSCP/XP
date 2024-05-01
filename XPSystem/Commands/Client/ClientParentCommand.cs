@@ -1,6 +1,7 @@
 ﻿namespace XPSystem.Commands.User
 {
     using System;
+    using System.Linq;
     using CommandSystem;
     using XPSystem.API;
     using XPSystem.Commands.Client.Subcommands;
@@ -20,7 +21,7 @@
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            response = $"Usage: xp ({string.Join(" | ", Commands)})";
+            response = $"Usage: xp ({string.Join(" | ", Commands.Select(x => x.Key))})";
             return false;
         }
 

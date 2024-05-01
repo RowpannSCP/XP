@@ -1,14 +1,20 @@
 ﻿namespace XPSystem.API.Variables
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
 
     /// <summary>
     /// Represents a collection of variables.
     /// </summary>
-    public class VariableCollection
+    public class VariableCollection : IEnumerable<KeyValuePair<string, Variable>>
     {
         private Dictionary<string, Variable> _variables = new();
+
+        /// <summary>
+        /// Gets the number of variables in the collection.
+        /// </summary>
+        public int Count => _variables.Count;
 
         /// <summary>
         /// Adds a new variable to the collection.
@@ -35,6 +41,26 @@
                 return;
 
             _variables.Add(key, variable);
+        }
+
+        /// <summary>
+        /// Sets the value of the variable with the specified key.
+        /// Creates a new variable if one with the specified key does not exist.
+        /// </summary>
+        /// <param name="key">The key of the variable.</param>
+        /// <param name="value">The value of the variable.</param>
+        /// <param name="expiryTime">The expiry time of the variable.</param>
+        public void Set(string key, object value, DateTime? expiryTime = null)
+        {
+            if (_variables.TryGetValue(key, out var variable))
+            {
+                variable.Value = value;
+                variable.ExpiryTime = expiryTime;
+            }
+            else
+            {
+                Add(key, value, expiryTime);
+            }
         }
 
         /// <summary>
@@ -95,5 +121,11 @@
                 : null;
             set => _variables[key] = value;
         }
+
+        /// <inheritdoc />
+        public IEnumerator<KeyValuePair<string, Variable>> GetEnumerator() => _variables.GetEnumerator();
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

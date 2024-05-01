@@ -6,6 +6,7 @@
     using System.Linq;
     using HarmonyLib;
     using XPSystem.API;
+    using XPSystem.API.Legacy;
     using XPSystem.API.StorageProviders;
     using XPSystem.Config;
     using XPSystem.Config.Events;
@@ -33,7 +34,7 @@
             .Select(x => Convert.ToInt32(x))
             .ToArray();
 
-        public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
+        public override string Author { get; } = "moddedmcplayer, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
         public override Version Version { get; } = new Version(_splitVersion[0], _splitVersion[1], _splitVersion[2]);
         public override Version RequiredExiledVersion { get; } = new Version(8, 0, 0);
@@ -42,14 +43,15 @@
         public NwAPIConfig Config;
 #endif
 
-        public static Main Instance { get; set; }
+        public static Main Instance { get; private set; }
+        public Harmony Harmony { get; private set; }
+
         private UnifiedEventHandlers _eventHandlers = new
 #if EXILED
             ExiledEventHandlers();
 #else
             NWAPIEventHandlers();
 #endif
-        private Harmony _harmony;
 
 #if EXILED
         public override void OnEnabled()
@@ -60,8 +62,8 @@
         {
             Instance = this;
             XPAPI.Config = Config;
-            _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
-            _harmony.PatchAll();
+            Harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
+            Harmony.PatchAll();
 
             DisplayProviders.Add(new NickXPDisplayProvider());
             DisplayProviders.Add(new RankXPDisplayProvider());
@@ -72,6 +74,8 @@
 
             _eventHandlers.RegisterEvents(this);
             PluginEnabled = true;
+
+            LiteDBMigrator.CheckMigration();
 #if EXILED
             base.OnEnabled();
 #endif
@@ -96,8 +100,8 @@
             XPECManager.Default.Files.Clear();
             XPECManager.Overrides.Clear();
 
-            _harmony.UnpatchAll(_harmony.Id);
-            _harmony = null;
+            Harmony.UnpatchAll(Harmony.Id);
+            Harmony = null;
             Instance = null;
 #if EXILED
             base.OnDisabled();
@@ -132,16 +136,16 @@
         {
             try
             {
+                Directory.CreateDirectory(Config.ExtendedConfigPath);
+
                 Reload++;
+
                 SetStorageProvider(Config.StorageProvider);
                 SetDisplayProviders(Config.AdditionalDisplayProviders);
 
-                if (!Directory.Exists(Config.ExtendedConfigPath))
-                    Directory.CreateDirectory(Config.ExtendedConfigPath);
-
                 DisplayProviders.LoadConfigs(Config.ExtendedConfigPath);
 
-                var eventConfigsFolder = Path.Combine(Config.ExtendedConfigPath, Config.EventConfigsFolder);
+                string eventConfigsFolder = Path.Combine(Config.ExtendedConfigPath, Config.EventConfigsFolder);
                 Directory.CreateDirectory(eventConfigsFolder);
                 XPECManager.Load(eventConfigsFolder);
 

@@ -57,8 +57,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-          <HintPath>..\packages\Lib.Harmony.2.2.2\lib\net48\0Harmony.dll</HintPath>
+        <Reference Include="0Harmony, Version=2.3.3.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\Lib.Harmony.2.3.3\lib\net48\0Harmony.dll</HintPath>
         </Reference>
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>..\packages\EXILED.8.8.1\lib\net48\Assembly-CSharp-Publicized.dll</HintPath>
@@ -204,6 +204,7 @@
     <ItemGroup>
         <Compile Include="API\DisplayProviders\IXPDisplayProvider.cs" />
         <Compile Include="API\DisplayProviders\IXPDisplayProviderConfig.cs" />
+        <Compile Include="API\DisplayProviders\SyncVarXPDisplayProvider.cs" />
         <Compile Include="API\DisplayProviders\XPDisplayProvider.cs" />
         <Compile Include="API\DisplayProviders\XPDisplayProviderCollection.cs" />
         <Compile Include="API\Enums\AuthType.cs" />
@@ -234,6 +235,7 @@
         <Compile Include="Commands\Admin\Subcommands\SetCommand.cs" />
         <Compile Include="Commands\Admin\AdminParentCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\ShowMessageCommand.cs" />
+        <Compile Include="Commands\Admin\Subcommands\VariablesCommand.cs" />
         <Compile Include="Commands\Client\Subcommands\GetCommandClient.cs" />
         <Compile Include="Commands\Client\Subcommands\LeaderboardCommandClient.cs" />
         <Compile Include="Commands\Console\ConsoleParentCommand.cs" />
@@ -281,10 +283,6 @@
 
     <ItemGroup>
       <Content Include="FodyWeavers.xml" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Patches\" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

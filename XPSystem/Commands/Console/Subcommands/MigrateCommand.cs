@@ -4,7 +4,6 @@
     using System.IO;
     using CommandSystem;
     using LiteDB;
-    using XPSystem.API;
     using XPSystem.API.Legacy;
     using static API.XPAPI;
 
@@ -15,7 +14,7 @@
             string path;
             if (arguments.Count < 1)
             {
-                path = LoaderSpecific.LegacyDefaultDatabasePath;
+                path = Config.LegacyDefaultDatabasePath;
                 LogInfo("No file provided, using default.");
             }
             else

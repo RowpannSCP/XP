@@ -7,5 +7,6 @@
     public class UninitializedConfig : Config
     {
         public override string ExtendedConfigPath { get; set; } = "extendedconfigs";
+        public override string LegacyDefaultDatabasePath { get; set; } = "Players.db";
     }
 }

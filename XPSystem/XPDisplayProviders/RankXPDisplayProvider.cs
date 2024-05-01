@@ -1,56 +1,36 @@
 ﻿namespace XPSystem.XPDisplayProviders
 {
+    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+    using HarmonyLib;
+    using MEC;
     using XPSystem.API;
+    using XPSystem.API.DisplayProviders;
     using XPSystem.API.StorageProviders;
     using XPSystem.Config.Models;
     using YamlDotNet.Serialization;
 
-    public class RankXPDisplayProvider : XPDisplayProvider<RankXPDisplayProvider.RankConfig>
+    public class RankXPDisplayProvider : SyncVarXPDisplayProvider<RankXPDisplayProvider.RankConfig, Badge>
     {
-        public override void Enable() => RefreshAll();
-        public override void Disable() => RefreshAll();
+        protected override string VariableKey { get; } = "RankXPDisplayProvider_badge";
 
-        public override void Refresh(XPPlayer player, PlayerInfoWrapper playerInfo)
+        protected override (Type typeName, string methodName, Func<XPPlayer, Badge, object> getFakeSyncVar, Func<XPPlayer, object> getResyncVar)[] SyncVars { get; } =
         {
-            if (!Config.Enabled)
-            {
-                player.ResyncSyncVar(typeof(ServerRoles), nameof(ServerRoles.Network_myText));
-                player.ResyncSyncVar(typeof(ServerRoles), nameof(ServerRoles.Network_myColor));
-                return;
-            }
+            (typeof(ServerRoles), nameof(ServerRoles.Network_myText), (_, obj) => obj.Text, player => player.BadgeText),
+            (typeof(ServerRoles), nameof(ServerRoles.Network_myColor), (_, obj) => obj.Color.ToString().ToLower(), player => player.BadgeColor)
+        };
 
-            if (Config.SkipGlobalBadges && player.HasGlobalBadge)
-                return;
-
-            if (player.HasBadge && (!player.HasHiddenBadge || Config.EditBadgeHiding))
-                return;
-
+        protected override Badge CreateObject(XPPlayer player, PlayerInfoWrapper playerInfo)
+        {
             if (player.DNT)
-            {
-                player.SetBadge(Config.DNTBadge, true);
-            }
-            else
-            {
-                string text = GetBadgeText(player, playerInfo, out var color);
-                if (text != null)
-                {
-                    player.SetBadge(new Badge
-                    {
-                        Text = text,
-                        Color = color
-                    }, true);
-                }
-            }
-        }
+                return Config.DNTBadge;
 
-        private string GetBadgeText(XPPlayer player, PlayerInfoWrapper playerInfo, out Misc.PlayerInfoColorTypes color)
-        {
-            string format = player.Group == null ? Config.BadgeStructureNoBadge : Config.BadgeStructure;
             Badge badge = null;
-            color = Misc.PlayerInfoColorTypes.White;
+            string format = !player.HasBadge || player.HasHiddenBadge
+                ? Config.BadgeStructureNoBadge
+                : Config.BadgeStructure;
 
             foreach (var kvp in Config.SortedBadges)
             {
@@ -58,16 +38,61 @@
                     break;
 
                 badge = kvp.Value;
-                color = badge.Color;
             }
 
             if (badge == null)
                 return null;
 
-            return format
-                .Replace("%lvl%", player.GetPlayerInfo().Level.ToString())
-                .Replace("%badge%", badge.Text)
-                .Replace("%oldbadge%", player.Group?.BadgeText);
+            return new Badge()
+            {
+                Text = format
+                    .Replace("%lvl%", playerInfo.Level.ToString())
+                    .Replace("%badge%", badge.Text)
+                    .Replace("%oldbadge%", player.BadgeText),
+                Color = badge.Color
+            };
+        }
+
+        protected override bool ShouldEdit(XPPlayer player)
+        {
+            if (Config.SkipGlobalBadges && player.HasGlobalBadge)
+                return false;
+
+            if (!Config.EditBadgeHiding && player.HasHiddenBadge)
+                return false;
+
+            return true;
+        }
+
+        protected override bool ShouldShowTo(XPPlayer player, XPPlayer target)
+        {
+            if (!Config.EditBadgeHiding)
+                return true;
+
+            if (player.HasHiddenBadge && !target.CanViewHiddenBadge)
+                return false;
+
+            return true;
+        }
+
+        [HarmonyPatch(typeof(ServerRoles), nameof(ServerRoles.TryHideTag))]
+        internal static class HiddenBadgePatch
+        {
+            public static void Prefix(ServerRoles __instance)
+            {
+                foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
+                {
+                    if (provider is RankXPDisplayProvider rankProvider && rankProvider.Config.PatchHiddenBadgeSetter)
+                    {
+                        Timing.CallDelayed(.5f, () =>
+                        {
+                            rankProvider.RefreshOf(__instance._hub);
+                        });
+
+                        return;
+                    }
+                }
+            }
         }
 
         public class RankConfig : IXPDisplayProviderConfig
@@ -86,6 +111,9 @@
 
             [Description("Whether or not to change how badge hiding works")]
             public bool EditBadgeHiding { get; set; } = true;
+
+            [Description("Whether or not to patch the hidden badge setter to automatically update the badge.")]
+            public bool PatchHiddenBadgeSetter { get; set; } = true;
 
             [Description("Badge for players with dnt.")]
             public Badge DNTBadge { get; set; } = new()

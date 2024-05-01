@@ -9,8 +9,6 @@
         [Description("Print debug messages?")]
         public bool Debug { get; set; } = false;
 
-        public abstract string ExtendedConfigPath { get; set; }
-
         [Description("The amount of XP required for each level.")]
         public uint XPPerLevel { get; set; } = 100;
 
@@ -41,7 +39,7 @@
         public bool UseAddedXPTemplate { get; set; } = true;
 
         [Description("When enabled, template used for messages when adding xp. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
-        public string AddedXPTemplate { get; set; } = "%message, (%currentxp% / %neededxp%)%";
+        public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
 
         [Description("Whether or not to show a message to a player if they advance a level.")]
         public bool ShowAddedLVL { get; set; } = true;
@@ -71,5 +69,8 @@
 
         [Description("Prints used keys to console at end of round. Not recommended to keep on - performance.")]
         public bool LogXPGainedMethods { get; set; } = false;
+        
+        public abstract string ExtendedConfigPath { get; set; }
+        public abstract string LegacyDefaultDatabasePath { get; set; }
     }
 }

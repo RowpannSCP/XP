@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using XPSystem.API.StorageProviders;
     using static XPAPI;
 
     /// <summary>
@@ -22,27 +23,44 @@
         public void Refresh()
         {
             foreach (var provider in _providers)
-            {
                 provider.RefreshAll();
-            }
+
+            LogDebug("Refreshed all displays");
         }
 
         /// <summary>
         /// Refreshes all displays for the specified player.
+        /// Called when the person joins the server.
         /// </summary>
         /// <param name="player">The player to refresh the displays for.</param>
-        public void Refresh(XPPlayer player)
+        public void RefreshTo(XPPlayer player)
         {
-            var playerInfo = player.GetPlayerInfo();
+            foreach (var provider in _providers)
+                provider.RefreshTo(player);
+
+            LogDebug($"Refreshed displays to {player.Nickname}");
+        }
+
+        /// <summary>
+        /// Refreshes all displays of the specified player.
+        /// Called when the person levels up.
+        /// </summary>
+        /// <param name="player">The player to refresh the displays of.</param>
+        /// <param name="playerInfo">The player's info to refresh the displays using.</param>
+        public void RefreshOf(XPPlayer player, PlayerInfoWrapper playerInfo = null)
+        {
+            playerInfo ??= player.GetPlayerInfo();
 
             foreach (var provider in _providers)
-                provider.Refresh(player, playerInfo);
+                provider.RefreshOf(player, playerInfo);
+
+            LogDebug($"Refreshed displays of {player.Nickname}");
         }
 
         /// <summary>
         /// Adds a provider.
         /// </summary>
-        /// <param name="provider"></param>
+        /// <param name="provider">The provider to add.</param>
         public void Add(IXPDisplayProvider provider)
         {
             if (Providers.Any(x => x.GetType() == provider.GetType()))
@@ -96,7 +114,7 @@
         /// <summary>
         /// Reads and writes (if not exists) the configs of providers from the specified folder.
         /// </summary>
-        /// <param name="folder"></param>
+        /// <param name="folder">The folder to read and write the configs from.</param>
         public void LoadConfigs(string folder)
         {
             foreach (var provider in Providers)
@@ -109,7 +127,7 @@
                     try
                     {
                         provider.ConfigPropertyInternal = (IXPDisplayProviderConfig)
-                            XPAPI.Deserializer.Deserialize(File.ReadAllText(file), provider.ConfigTypeInternal);
+                            Deserializer.Deserialize(File.ReadAllText(file), provider.ConfigTypeInternal);
                     }
                     catch (Exception e)
                     {

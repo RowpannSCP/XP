@@ -61,6 +61,21 @@
         public string Nickname => Hub.nicknameSync.Network_myNickSync;
 
         /// <summary>
+        /// Gets the player's display name.
+        /// </summary>
+        public string DisplayName => Hub.nicknameSync.Network_displayName;
+
+        /// <summary>
+        /// Gets the name that will be displayed to other players.
+        /// </summary>
+        public string DisplayedName => DisplayName ?? Nickname;
+
+        /// <summary>
+        /// Gets the player's network identity.
+        /// </summary>
+        public NetworkIdentity NetworkIdentity => Hub.networkIdentity;
+
+        /// <summary>
         /// Gets whether or not the player is connected to the server.
         /// </summary>
         public bool IsConnected => Hub.gameObject != null;
@@ -88,7 +103,24 @@
         /// <summary>
         /// Gets whether or not the player has a global badge.
         /// </summary>
-        public bool HasGlobalBadge => Hub.serverRoles.GlobalSet;
+        public bool HasGlobalBadge => !string.IsNullOrEmpty(Hub.serverRoles.NetworkGlobalBadge);
+
+        /// <summary>
+        /// Gets the player's badge text.
+        /// </summary>
+        public string BadgeText => Hub.serverRoles.Network_myText;
+
+        /// <summary>
+        /// Gets the player's badge color.
+        /// </summary>
+        public string BadgeColor => Hub.serverRoles.Network_myColor;
+
+        /// <summary>
+        /// Gets whether or not the player can view hidden badges.
+        /// </summary>
+        public bool CanViewHiddenBadge => HasBadge &&
+                                          PermissionsHandler.IsPermitted(Hub.serverRoles.Group.Permissions,
+                                              PlayerPermissions.ViewHiddenBadges);
 
         /// <summary>
         /// Gets the player's current <see cref="RoleTypeId"/>.
@@ -156,9 +188,8 @@
         {
             if (Players.TryGetValue(hub, out var player))
                 return player;
-            
+
             player = new XPPlayer(hub);
-            PlayersValue.Add(hub, player);
             return player;
         }
 
@@ -293,11 +324,14 @@
         /// <param name="targetType"><see cref="NetworkBehaviour"/>'s type.</param>
         /// <param name="propertyName">Property name starting with Network.</param>
         /// <param name="value">Value to send to everyone.</param>
-        public void SendFakeSyncVars(Type targetType, string propertyName, object value)
+        /// <param name="skipSelf">Whether or not to skip sending to self.</param>
+        /// <returns>The amount of people the packet was sent to.</returns>
+        public int SendFakeSyncVars(Type targetType, string propertyName, object value, bool skipSelf = false)
         {
             if (!IsConnected)
-                return;
+                return -1;
 
+            int count = 0;
             var writer = NetworkWriterPool.Get();
             MakeCustomSyncWriter(Hub.networkIdentity, targetType, CustomSyncVarGenerator, writer);
 
@@ -309,9 +343,11 @@
 
             foreach (var referenceHub in ReferenceHub.AllHubs)
             {
-                if (referenceHub == Hub)
+                if (skipSelf && referenceHub == Hub)
                     continue;
+
                 referenceHub.connectionToClient.Send(message);
+                count++;
             }
 
             NetworkWriterPool.Return(writer);
@@ -321,6 +357,8 @@
                 targetWriter.WriteULong(SyncVarDirtyBits[$"{targetType.Name}.{propertyName}"]);
                 WriterExtensions[value.GetType()]?.Invoke(null, new[] { targetWriter, value });
             }
+
+            return count;
         }
 
         /// <summary>
@@ -331,11 +369,14 @@
         /// <param name="propertyName">Property name starting with Network.</param>
         /// <param name="value">Value to send to the people.</param>.
         /// <param name="value2">Value to send to people who don't match the condition.</param>
-        public void SendFakeSyncVars(Func<ReferenceHub, bool> condition, Type targetType, string propertyName, object value, object value2 = null)
+        /// <param name="skipSelf">Whether or not to skip sending to self.</param>
+        /// <returns>The amount of people the first value was sent to.</returns>
+        public int SendFakeSyncVars(Func<XPPlayer, bool> condition, Type targetType, string propertyName, object value, object value2 = null, bool skipSelf = false)
         {
             if (!IsConnected)
-                return;
+                return -1;
 
+            int count = 0;
             var writer = NetworkWriterPool.Get();
             MakeCustomSyncWriter(Hub.networkIdentity, targetType, CustomSyncVarGenerator, writer);
 
@@ -360,14 +401,20 @@
                 payload = writer.ToArraySegment(),
             };
 
-            foreach (var referenceHub in ReferenceHub.AllHubs)
+            foreach (var kvp in Players)
             {
-                if (referenceHub == Hub)
+                if (skipSelf && kvp.Value == this)
                     continue;
-                if (condition(referenceHub))
-                    referenceHub.connectionToClient.Send(message);
+
+                if (condition(kvp.Value))
+                {
+                    kvp.Value.Hub.connectionToClient.Send(message);
+                    count++;
+                }
                 else if (value2 != null)
-                    referenceHub.connectionToClient.Send(message2);
+                {
+                    kvp.Value.Hub.connectionToClient.Send(message2);
+                }
             }
 
             NetworkWriterPool.Return(writer);
@@ -383,6 +430,8 @@
                 targetWriter.WriteULong(SyncVarDirtyBits[$"{targetType.Name}.{propertyName}"]);
                 WriterExtensions[value2.GetType()]?.Invoke(null, new[] { targetWriter, value2 });
             }
+
+            return count;
         }
 
         /// <summary>

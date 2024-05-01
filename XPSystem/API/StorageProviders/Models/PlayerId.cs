@@ -10,6 +10,6 @@
         /// <summary>
         /// Returns Id@AuthType.
         /// </summary>
-        public override string ToString() => $"{Id}@{AuthType.ToString()}";
+        public override string ToString() => $"{Id}@{AuthType.ToString().ToLower()}";
     }
 }

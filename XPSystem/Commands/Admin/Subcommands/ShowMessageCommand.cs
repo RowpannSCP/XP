@@ -6,6 +6,7 @@
     using System.Text;
     using CommandSystem;
     using NorthwoodLib.Pools;
+    using PlayerRoles;
     using XPSystem.API;
     using XPSystem.Config.Events;
 
@@ -25,7 +26,15 @@
                 return false;
             }
 
-            var file = XPECManager.GetFile(arguments.At(0));
+            string key = arguments.At(0);
+            var role = RoleTypeId.None;
+
+            if (key.StartsWith("default_"))
+                key = key.Substring(8);
+            else if (XPPlayer.TryGet(sender, out var player))
+                role = player.Role;
+
+            var file = XPECManager.GetFile(key, role);
             if (file == null)
             {
                 response = "No such XPEC file.";

@@ -19,23 +19,17 @@
 
         private LiteDatabase database;
 
-        protected override void InitializeNoCache()
+        public override void Initialize()
         {
             database = new LiteDatabase(Config.File);
 
-            if (LiteDBMigrator.CanMigrate(database))
-            {
-                for (int i = 0; i < 3; i++)
-                    LogInfo("Found legacy data in database, migrate using xps migrate in server console!.");
-            }
-
-            SteamCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo-steam");
+            SteamCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo_steam");
             SteamCollection.EnsureIndex(x => x.Id);
 
-            DiscordCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo-discord");
+            DiscordCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo_discord");
             DiscordCollection.EnsureIndex(x => x.Id);
 
-            NWCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo-nw");
+            NWCollection = database.GetCollection<LiteDBPlayerInfo>("playerinfo_nw");
             NWCollection.EnsureIndex(x => x.Id);
 
             if (Config.IndexDB)
@@ -46,8 +40,10 @@
             }
         }
 
-        protected override void DisposeNoCache()
+        public override void Dispose()
         {
+            base.Dispose();
+
             SteamCollection = null;
             DiscordCollection = null;
             NWCollection = null;
@@ -64,37 +60,38 @@
             _ => throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null)
         };
 
-        protected override bool TryGetPlayerInfoNoCache(PlayerId playerId, out PlayerInfo liteDBPlayerInfo)
+        protected override bool TryGetPlayerInfoNoCache(PlayerId playerId, out PlayerInfo playerInfo)
         {
             var collection = GetCollection(playerId);
-            var result = collection.FindById(playerId.Id);
-            if (result == null)
+            var existing = collection.FindOne(x => x.Id == playerId.Id); // See note on SetPlayerInfoNoCache
+
+            if (existing == null)
             {
-                liteDBPlayerInfo = null;
+                playerInfo = null;
                 return false;
             }
 
-            liteDBPlayerInfo = result.ToPlayerInfo(playerId.AuthType);
+            playerInfo = existing.ToPlayerInfo(playerId.AuthType);
             return true;
         }
 
         protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(PlayerId playerId)
         {
             var collection = GetCollection(playerId);
-            var result = collection.FindById(playerId.Id);
+            var existing = collection.FindOne(x => x.Id == playerId.Id);
             
-            if (result == null)
+            if (existing == null)
             {
-                result = new LiteDBPlayerInfo()
+                existing = new LiteDBPlayerInfo()
                 {
                     Id = playerId.Id,
                     XP = 0
                 };
 
-                collection.Insert(result);
+                collection.Insert(existing);
             }
 
-            return result.ToPlayerInfo(playerId.AuthType);
+            return existing.ToPlayerInfo(playerId.AuthType);
         }
 
         public override IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count)
@@ -127,23 +124,23 @@
                 .Select(x => new PlayerInfoWrapper(x));
         }
 
-        protected override void SetPlayerInfoNoCache(PlayerInfo liteDBPlayerInfo)
+        protected override void SetPlayerInfoNoCache(PlayerInfo playerInfo)
         {
-            var collection = GetCollection(liteDBPlayerInfo.Player);
-            var result = collection.FindById(liteDBPlayerInfo.Player.Id);
+            var collection = GetCollection(playerInfo.Player);
+            var existing = collection.FindOne(x => x.Id == playerInfo.Player.Id); // FindById no work; BsonValue converts ulong to decimal, key is different; retarded conversion
 
-            if (result == null)
+            if (existing == null)
             {
                 collection.Insert(new LiteDBPlayerInfo()
                 {
-                    Id = liteDBPlayerInfo.Player.Id,
-                    XP = liteDBPlayerInfo.XP
+                    Id = playerInfo.Player.Id,
+                    XP = playerInfo.XP
                 });
             }
             else
             {
-                result.XP = liteDBPlayerInfo.XP;
-                collection.Update(result);
+                existing.XP = playerInfo.XP;
+                collection.Update(existing);
             }
         }
 

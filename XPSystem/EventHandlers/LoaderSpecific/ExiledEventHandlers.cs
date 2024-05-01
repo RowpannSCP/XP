@@ -133,7 +133,7 @@
             if (IsNull(ev.Player) || IsNull(ev.Door))
                 return;
 
-            TryAddXPAndDisplayMessage(ev.Player, "interact", ev.Door.Type);
+            TryAddXPAndDisplayMessage(ev.Player, "door", ev.Door.Type);
         }
 
         private void PlayerActivatingGenerator(ActivatingGeneratorEventArgs ev)

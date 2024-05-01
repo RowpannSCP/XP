@@ -10,7 +10,8 @@
     {
         void Enable();
         void Disable();
-        void Refresh(XPPlayer player, PlayerInfoWrapper playerInfo);
+        void RefreshTo(XPPlayer player);
+        void RefreshOf(XPPlayer player, PlayerInfoWrapper playerInfo);
         void RefreshAll();
         IXPDisplayProviderConfig ConfigPropertyInternal { get; set; }
         Type ConfigTypeInternal { get; }
