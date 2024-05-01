@@ -1,0 +1,110 @@
+name: XPSystem CI
+
+on:
+  push:
+    branches:
+      - master
+      - release
+
+env:
+  EXILED_REFERENCES_URL: https://misaka-zerotwo.github.io/SL-References/Dev.zip
+  EXILED_REFERENCES: ${{ github.workspace }}/refs
+  NWAPIPERMSYSTEM_URL: https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest/download/NWAPIPermissionSystem.dll
+
+jobs:
+  main:
+    runs-on: windows-latest
+    steps:
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v1.1.3
+        with:
+          # Folder location of where vswhere.exe is located if a self-hosted agent
+          # vswhere-path: # optional
+          # Version of Visual Studio to search; defaults to latest if not specified
+          # vs-version: # optional
+          # Enable searching for pre-release versions of Visual Studio/MSBuild
+          vs-prerelease: false # optional
+          # The preferred processor architecture of MSBuild. Can be either "x86" or "x64". "x64" is only available from Visual Studio version 17.0 and later.
+          msbuild-architecture: x64
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+
+      - uses: actions/checkout@v2.3.4
+
+      - name: Get sl references
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri ${{ env.EXILED_REFERENCES_URL }} -OutFile ${{ github.workspace }}/References.zip
+          Expand-Archive -Path References.zip -DestinationPath ${{ env.EXILED_REFERENCES }}
+
+      - name: Get nwapipermissionsystem
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri ${{ env.NWAPIPERMSYSTEM_URL }} -OutFile ${{ env.EXILED_REFERENCES }}/NWAPIPermissionSystem.dll
+
+      - name: Restore Packages
+        run: nuget restore ${{ github.workspace }}/XPSystem.sln
+
+      - name: Build nwapi
+        shell: pwsh
+        run: |
+          msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release" /p:Platform="Any CPU"
+
+      - name: Build exiled
+        shell: pwsh
+        run: |
+          msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
+
+      - name: Rename files
+        run: |
+          cp '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
+          cp '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
+
+      - name: Run
+        run: |
+          echo "currver=$(${{ github.workspace }}/XPSystem/bin/Release/XPSystem.Console | tail -n 1)" >> "$GITHUB_ENV"
+
+      - name: Get Latest Tag
+        id: getlatesttag
+        # You may pin to the exact commit or the version.
+        # uses: WyriHaximus/github-action-get-previous-tag@04e8485ecb6487243907e330d522ff60f02283ce
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 0.0.0
+
+      - name: Compare versions
+        run: |
+          if [ $(echo "${{ steps.previoustag.outputs.tag }} != ${{ env.currver }} && ${{ steps.previoustag.outputs.tag }}\n${{ env.currver }}"|sort -V|head -1) != "${{ steps.previoustag.outputs.tag }}") ]; then
+                echo "newversion=true" >> "$GITHUB_ENV"
+            else
+                echo "newversion=false" >> "$GITHUB_ENV"
+            fi
+
+      - name: Get branch name
+        if: ${{ env.newversion == 'true' }}
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: get_branch
+
+      - name: Create release pr
+        if: ${{ env.newversion == 'true' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: ${{ env.currver }}
+          branch: release
+
+      - uses: ncipollo/release-action@v1.13.0
+        if: ${{ env.newversion == 'true' }}
+        with:
+          artifacts: |
+            "${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll"
+            "${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll"
+          generateReleaseNotes: true
+          allowUpdates: true
+          removeArtifacts: true
+          prerelease: ${{ steps.get_branch.outputs.branch == 'master' }}
+          makeLatest: ${{ steps.get_branch.outputs.branch == 'release' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit: ${{ steps.get_branch.outputs.branch }}
+          name: "${{ github.event.head_commit.message }}"
+          tag: "${{ env.currver }}"
