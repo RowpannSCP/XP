@@ -12,7 +12,7 @@ env:
   NWAPIPERMSYSTEM_URL: https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest/download/NWAPIPermissionSystem.dll
 
 jobs:
-  setup_env:
+  main:
     runs-on: windows-latest
     steps:
       - name: setup-msbuild
@@ -30,10 +30,7 @@ jobs:
         uses: NuGet/setup-nuget@v1.0.5
 
       - uses: actions/checkout@v2.3.4
-  build:
-    needs: setup_env
-    runs-on: windows-latest
-    steps:
+
       - name: Get sl references
         shell: pwsh
         run: |
@@ -46,34 +43,27 @@ jobs:
           Invoke-WebRequest -Uri ${{ env.NWAPIPERMSYSTEM_URL }} -OutFile ${{ env.EXILED_REFERENCES }}/NWAPIPermissionSystem.dll
 
       - name: Restore Packages
-        run: nuget restore XPSystem.sln
+        run: nuget restore ${{ github.workspace }}/XPSystem.sln
 
       - name: Build nwapi
         shell: pwsh
         run: |
-          msbuild.exe XPSystem.sln /p:Configuration="Release" /p:Platform="Any CPU"
+          msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release" /p:Platform="Any CPU"
 
       - name: Build exiled
         shell: pwsh
         run: |
-          msbuild.exe XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
+          msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
 
       - name: Rename files
         run: |
-          cp 'XPSystem/bin/Release/XPSystem.dll' 'XPSystem/bin/XPSystem-nw.dll'
-          cp 'XPSystem/bin/Release EXILED/XPSystem.dll' 'XPSystem/bin/XPSystem-EXILED.dll'
-  run:
-    needs: build
-    runs-on: windows-latest
-    steps:
+          cp '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
+          cp '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
+
       - name: Run
         run: |
-          echo "currver=$(XPSystem/bin/Release/XPSystem.Console | tail -n 1)" >> "$GITHUB_ENV"
+          echo "currver=$(${{ github.workspace }}/XPSystem/bin/Release/XPSystem.Console | tail -n 1)" >> "$GITHUB_ENV"
 
-  check_for_new_version:
-    needs: run
-    runs-on: windows-latest
-    steps:
       - name: Get Latest Tag
         id: getlatesttag
         # You may pin to the exact commit or the version.
@@ -90,10 +80,6 @@ jobs:
                 echo "newversion=false" >> "$GITHUB_ENV"
             fi
 
-  make_release:
-    needs: run
-    runs-on: windows-latest
-    steps:
       - name: Get branch name
         if: ${{ env.newversion == 'true' }}
         shell: bash
@@ -111,8 +97,8 @@ jobs:
         if: ${{ env.newversion == 'true' }}
         with:
           artifacts: |
-            "XPSystem/bin/XPSystem-nw.dll"
-            "XPSystem/bin/XPSystem-EXILED.dll"
+            "${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll"
+            "${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll"
           generateReleaseNotes: true
           allowUpdates: true
           removeArtifacts: true
