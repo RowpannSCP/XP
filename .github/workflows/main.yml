@@ -58,6 +58,7 @@ jobs:
       - name: Run
         run: |
           $output = & "${{ github.workspace }}/XPSystem.Console/bin/Release/XPSystem.Console.exe" | Out-String
+          $output = $output.TrimEnd()
           echo $output
           echo "currver=$($output | Select-Object -Last 1)" >> "$GITHUB_ENV"
 
