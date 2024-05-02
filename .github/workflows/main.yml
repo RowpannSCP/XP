@@ -81,7 +81,7 @@ jobs:
       - name: Compare versions
         shell: pwsh
         run: |
-          if ($([(System.Version]"${{ env.currver }}" -gt [System.Version]"${{ steps.getlatesttag.outputs.tag }}"))
+          if ($([System.Version]"${{ env.currver }}" -gt [System.Version]"${{ steps.getlatesttag.outputs.tag }}"))
           {
               echo "newversion=true" >> $env:GITHUB_ENV
           }
