@@ -123,13 +123,9 @@ jobs:
           commit: ${{ steps.get_branch.outputs.branch }}
           tag: "${{ env.currver }}"
 
-      - name: Reset branch
-        if: ${{ env.newversion == 'true' }}
-        run: |
-          git reset --hard ${{ steps.get_branch.outputs.branch }}
-
       - name: Create release pr
         if: ${{ env.newversion == 'true' && steps.get_branch.outputs.branch == 'master' }}
-        run: gh pr create -B release -H master --title '${{ env.currver }}' --body 'Automated PR'
+        shell: pwsh
+        run: gh pr create -B release -H master --title '${{ env.currver }}' --body 'Automated PR' -ErrorAction SilentlyContinue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
