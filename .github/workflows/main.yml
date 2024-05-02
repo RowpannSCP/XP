@@ -125,9 +125,7 @@ jobs:
       - uses: ncipollo/release-action@v1.13.0
         if: ${{ env.newversion == 'true' }}
         with:
-          artifacts: |
-            "${{ github.workspace }}/bin/XPSystem-nw.dll"
-            "${{ github.workspace }}/bin/XPSystem-EXILED.dll"
+          artifacts: "${{ github.workspace }}/bin/*"
           generateReleaseNotes: true
           allowUpdates: true
           removeArtifacts: true
