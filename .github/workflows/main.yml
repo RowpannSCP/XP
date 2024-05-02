@@ -57,7 +57,7 @@ jobs:
 
       - name: Run
         run: |
-          echo "currver=$(& "${{ github.workspace }}/XPSystem/bin/Release/XPSystem.Console.exe" | Select-Object -Last 1)" >> "$GITHUB_ENV"
+          echo "currver=$(& "${{ github.workspace }}/XPSystem.Console/bin/Release/XPSystem.Console.exe" | Select-Object -Last 1)" >> "$GITHUB_ENV"
 
       - name: Rename files
         run: |
