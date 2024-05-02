@@ -76,6 +76,7 @@ jobs:
         # uses: WyriHaximus/github-action-get-previous-tag@04e8485ecb6487243907e330d522ff60f02283ce
         uses: WyriHaximus/github-action-get-previous-tag@v1
         with:
+          workingDirectory: ${{ github.workspace }}
           fallback: 0.0.0
 
       - name: Compare versions
@@ -92,13 +93,6 @@ jobs:
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: get_branch
 
-      - name: Create release pr
-        if: ${{ env.newversion == 'true' }}
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: ${{ env.currver }}
-          branch: release
-
       - uses: ncipollo/release-action@v1.13.0
         if: ${{ env.newversion == 'true' }}
         with:
@@ -113,3 +107,16 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit: ${{ steps.get_branch.outputs.branch }}
           tag: "${{ env.currver }}"
+
+      - name: Reset branch
+        if: ${{ env.newversion == 'true' }}
+        run: |
+          git fetch origin
+          git reset --hard ${{ steps.get_branch.outputs.branch }}
+
+      - name: Create release pr
+        if: ${{ env.newversion == 'true' && steps.get_branch.outputs.branch == 'master' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: ${{ env.currver }}
+          branch: release
