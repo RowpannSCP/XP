@@ -65,36 +65,48 @@ jobs:
           echo "Last line (should be version): $($ver)"
           echo "currver=$ver" >> $env:GITHUB_ENV
 
-      - name: Rename files
+      - name: Move files
         run: |
-          mv '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
-          mv '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
+          Move-Item -Path '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' -Destination '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
+          Move-Item -Path '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' -Destination '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
+
+      - name: Get branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: get_branch
 
       - name: Fetch origin
         run: |
           git fetch origin ${{ steps.get_branch.outputs.branch }}
 
-      - name: Get Latest Tag
+      - name: Get release logic
         run: |
-          $tags = git tag --sort=-creatordate | Out-String
-          $tags = $tags.TrimEnd().replace('v','')
-          $latesttag = $tags.Split([Environment]::NewLine)[0]
-          echo "Latest tag: $($latesttag)"
-          echo "releasever=$latesttag" >> $env:GITHUB_ENV
+          if ("${{ steps.get_branch.outputs.branch }}" -eq "master")
+          {
+              echo "release_exludes=''" >> $env:GITHUB_ENV
+          }
+          else
+          {
+              echo "release_exludes=prerelease" >> $env:GITHUB_ENV
+          }
+
+      - name: Get latest release
+        id: latestrelease
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          excludes: ${{ env.release_exludes }}
 
       - name: Compare versions
         shell: pwsh
         run: |
-          if ($([System.Version]"${{ env.currver }}" -gt [System.Version]"${{ env.releasever }}"))
+          $releasever = "${{ steps.latestrelease.outputs.release }}"
+          $releasever = $releasever.replace('v', '')
+          if ($([System.Version]"${{ env.currver }}" -gt [System.Version]$releasever))
           {
               echo "newversion=true" >> $env:GITHUB_ENV
           }
-
-      - name: Get branch name
-        if: ${{ env.newversion == 'true' }}
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: get_branch
 
       - uses: ncipollo/release-action@v1.13.0
         if: ${{ env.newversion == 'true' }}
@@ -118,7 +130,6 @@ jobs:
 
       - name: Create release pr
         if: ${{ env.newversion == 'true' && steps.get_branch.outputs.branch == 'master' }}
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: ${{ env.currver }}
-          branch: release
+        run: gh pr create -B release -H master --title '${{ env.currver }}' --body 'Automated PR'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
