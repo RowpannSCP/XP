@@ -63,7 +63,7 @@ jobs:
           $ver = $output.Split([Environment]::NewLine)[-1]
           echo $output
           echo "Last line (should be version): $($ver)"
-          sh "echo `"currver=$($ver)`" >> `"$GITHUB_ENV`""
+          bash -c "echo `"currver=$($ver)`" >> `"$GITHUB_ENV`""
 
       - name: Rename files
         run: |
