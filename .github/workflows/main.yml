@@ -118,7 +118,6 @@ jobs:
 
       - name: Create release pr
         if: ${{ env.newversion == 'true' && steps.get_branch.outputs.branch == 'master' }}
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: ${{ env.currver }}
-          branch: release
+        run: gh pr create -B release -H master --title '${{ env.currver }}' --body 'Automated PR'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
