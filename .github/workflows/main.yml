@@ -65,9 +65,10 @@ jobs:
           echo "Last line (should be version): $($ver)"
           echo "currver=$ver" >> $env:GITHUB_ENV
 
-      - name: Move files
+      - name: Cop files
         shell: pwsh
         run: |
+          New-Item -Path '${{ github.workspace }}/XPSystem/bin' -Type Directory
           Copy-Item -Path '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' -Destination '${{ github.workspace }}/bin/XPSystem-nw.dll'
           Copy-Item -Path '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' -Destination '${{ github.workspace }}/bin/XPSystem-EXILED.dll'
 
