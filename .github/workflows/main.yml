@@ -12,7 +12,7 @@ env:
   NWAPIPERMSYSTEM_URL: https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest/download/NWAPIPermissionSystem.dll
 
 jobs:
-  setup_env:
+  main:
     runs-on: windows-latest
     steps:
       - name: setup-msbuild
@@ -30,15 +30,12 @@ jobs:
         uses: NuGet/setup-nuget@v1.0.5
 
       - uses: actions/checkout@v2.3.4
-  build:
-    needs: setup_env
-    runs-on: windows-latest
-    steps:
+
       - name: Get sl references
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri ${{ env.EXILED_REFERENCES_URL }} -OutFile ${{ github.workspace }}/References.zip
-          Expand-Archive -Path References.zip -DestinationPath ${{ env.EXILED_REFERENCES }}
+          Expand-Archive -Path References.zip -DestinationPath ${{ env.EXILED_REFERENCES }} -Force
 
       - name: Get nwapipermissionsystem
         shell: pwsh
@@ -46,71 +43,65 @@ jobs:
           Invoke-WebRequest -Uri ${{ env.NWAPIPERMSYSTEM_URL }} -OutFile ${{ env.EXILED_REFERENCES }}/NWAPIPermissionSystem.dll
 
       - name: Restore Packages
-        run: nuget restore XPSystem.sln
+        run: nuget restore ${{ github.workspace }}/XPSystem.sln
 
       - name: Build nwapi
         shell: pwsh
         run: |
-          msbuild.exe XPSystem.sln /p:Configuration="Release" /p:Platform="Any CPU"
+          msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release" /p:Platform="Any CPU"
 
       - name: Build exiled
         shell: pwsh
         run: |
-          msbuild.exe XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
+          msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
+
+      - name: Run
+        shell: pwsh
+        run: |
+          $output = & "${{ github.workspace }}/XPSystem.Console/bin/Release/XPSystem.Console.exe" | Out-String
+          $output = $output.TrimEnd()
+          $ver = $output.Split([Environment]::NewLine)[-1]
+          echo $output
+          echo "Last line (should be version): $($ver)"
+          echo "currver=$ver" >> $env:GITHUB_ENV
 
       - name: Rename files
         run: |
-          cp 'XPSystem/bin/Release/XPSystem.dll' 'XPSystem/bin/XPSystem-nw.dll'
-          cp 'XPSystem/bin/Release EXILED/XPSystem.dll' 'XPSystem/bin/XPSystem-EXILED.dll'
-  run:
-    needs: build
-    runs-on: windows-latest
-    steps:
-      - name: Run
-        run: |
-          echo "currver=$(XPSystem/bin/Release/XPSystem.Console | tail -n 1)" >> "$GITHUB_ENV"
+          mv '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
+          mv '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
 
-  check_for_new_version:
-    needs: run
-    runs-on: windows-latest
-    steps:
+      - name: Fetch origin
+        run: |
+          git fetch origin ${{ steps.get_branch.outputs.branch }}
+
       - name: Get Latest Tag
-        id: getlatesttag
-        # You may pin to the exact commit or the version.
-        # uses: WyriHaximus/github-action-get-previous-tag@04e8485ecb6487243907e330d522ff60f02283ce
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: 0.0.0
+        run: |
+          $tags = git tag --sort=-creatordate | Out-String
+          $tags = $tags.TrimEnd()
+          $latesttag = $tags.Split([Environment]::NewLine)[0]
+          echo "Latest tag: $($latesttag)"
+          echo "releasever=$latesttag" >> $env:GITHUB_ENV
 
       - name: Compare versions
+        shell: pwsh
         run: |
-          if [ $(echo "${{ steps.previoustag.outputs.tag }} != ${{ env.currver }} && ${{ steps.previoustag.outputs.tag }}\n${{ env.currver }}"|sort -V|head -1) != "${{ steps.previoustag.outputs.tag }}") ]; then
-                echo "newversion=true" >> "$GITHUB_ENV"
-            else
-                echo "newversion=false" >> "$GITHUB_ENV"
-            fi
+          if ($([System.Version]"${{ env.currver }}" -gt [System.Version]"${{ env.releasever }}"))
+          {
+              echo "newversion=true" >> $env:GITHUB_ENV
+          }
 
-  make_release:
-    if: ${{ env.newversion == 'true' }}
-    needs: run
-    runs-on: windows-latest
-    steps:
       - name: Get branch name
+        if: ${{ env.newversion == 'true' }}
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: get_branch
 
-      - name: Create release pr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: ${{ env.currver }}
-          branch: release
-
       - uses: ncipollo/release-action@v1.13.0
+        if: ${{ env.newversion == 'true' }}
         with:
           artifacts: |
-            "XPSystem/bin/XPSystem-nw.dll"
-            "XPSystem/bin/XPSystem-EXILED.dll"
+            "${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll"
+            "${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll"
           generateReleaseNotes: true
           allowUpdates: true
           removeArtifacts: true
@@ -118,5 +109,16 @@ jobs:
           makeLatest: ${{ steps.get_branch.outputs.branch == 'release' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           commit: ${{ steps.get_branch.outputs.branch }}
-          name: "${{ github.event.head_commit.message }}"
           tag: "${{ env.currver }}"
+
+      - name: Reset branch
+        if: ${{ env.newversion == 'true' }}
+        run: |
+          git reset --hard ${{ steps.get_branch.outputs.branch }}
+
+      - name: Create release pr
+        if: ${{ env.newversion == 'true' && steps.get_branch.outputs.branch == 'master' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: ${{ env.currver }}
+          branch: release

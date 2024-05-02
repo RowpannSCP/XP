@@ -137,7 +137,7 @@
             }
 
             Console.WriteLine("Version:");
-            Console.WriteLine(XPSystem.Main.VersionString);
+            Console.Write(XPSystem.Main.VersionString);
         }
     }
 }
