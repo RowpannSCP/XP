@@ -75,7 +75,7 @@ jobs:
       - name: Compare versions
         shell: bash
         run: |
-          if [ $(echo "${{ steps.previoustag.outputs.tag }} != ${{ env.currver }} && ${{ steps.previoustag.outputs.tag }}\n${{ env.currver }}"|sort -V|head -1) != "${{ steps.previoustag.outputs.tag }}") ]; then
+          if [ $(echo "${{ steps.previoustag.outputs.tag }} != ${{ env.currver }} && ${{ steps.previoustag.outputs.tag }}\n${{ env.currver }}"|sort -V|head -1) != "${{ steps.previoustag.outputs.tag }}" ]; then
                 echo "newversion=true" >> "$GITHUB_ENV"
             else
                 echo "newversion=false" >> "$GITHUB_ENV"
