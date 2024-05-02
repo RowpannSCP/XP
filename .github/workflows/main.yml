@@ -66,9 +66,16 @@ jobs:
           echo "currver=$ver" >> $env:GITHUB_ENV
 
       - name: Move files
+        shell: pwsh
         run: |
-          Move-Item -Path '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' -Destination '${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll'
-          Move-Item -Path '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' -Destination '${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll'
+          Copy-Item -Path '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' -Destination '${{ github.workspace }}/bin/XPSystem-nw.dll'
+          Copy-Item -Path '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' -Destination '${{ github.workspace }}/bin/XPSystem-EXILED.dll'
+
+      - name: Proof it exists
+        shell: pwsh
+        run: |
+          echo [System.IO.File]::Exists('${{ github.workspace }}/bin/XPSystem-nw.dll')
+          echo [System.IO.File]::Exists('${{ github.workspace }}/bin/XPSystem-EXILED.dll')
 
       - name: Get branch name
         shell: bash
@@ -108,12 +115,18 @@ jobs:
               echo "newversion=true" >> $env:GITHUB_ENV
           }
 
+      - name: Proof it exists 2
+        shell: pwsh
+        run: |
+          echo [System.IO.File]::Exists('${{ github.workspace }}/bin/XPSystem-nw.dll')
+          echo [System.IO.File]::Exists('${{ github.workspace }}/bin/XPSystem-EXILED.dll')
+
       - uses: ncipollo/release-action@v1.13.0
         if: ${{ env.newversion == 'true' }}
         with:
           artifacts: |
-            "${{ github.workspace }}/XPSystem/bin/XPSystem-nw.dll"
-            "${{ github.workspace }}/XPSystem/bin/XPSystem-EXILED.dll"
+            "${{ github.workspace }}/bin/XPSystem-nw.dll"
+            "${{ github.workspace }}/bin/XPSystem-EXILED.dll"
           generateReleaseNotes: true
           allowUpdates: true
           removeArtifacts: true
