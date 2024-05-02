@@ -58,6 +58,7 @@ jobs:
       - name: Run
         run: |
           $output = & "${{ github.workspace }}/XPSystem.Console/bin/Release/XPSystem.Console.exe" | Out-String
+          echo $output
           echo "currver=$($output | Select-Object -Last 1)" >> "$GITHUB_ENV"
 
       - name: Rename files
@@ -108,5 +109,4 @@ jobs:
           makeLatest: ${{ steps.get_branch.outputs.branch == 'release' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           commit: ${{ steps.get_branch.outputs.branch }}
-          name: "${{ github.event.head_commit.message }}"
           tag: "${{ env.currver }}"
