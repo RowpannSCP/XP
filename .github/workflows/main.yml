@@ -56,10 +56,11 @@ jobs:
           msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release EXILED" /p:Platform="Any CPU"
 
       - name: Run
+        shell: pwsh
         run: |
           $output = & "${{ github.workspace }}/XPSystem.Console/bin/Release/XPSystem.Console.exe" | Out-String
           $output = $output.TrimEnd()
-          $ver = $($output | Select-Object -Last 1)
+          $ver = $output.Split([Environment]::NewLine)[-1]
           echo $output
           echo "Last line (should be version): " + $ver
           echo "currver=$ver" >> "$GITHUB_ENV"
