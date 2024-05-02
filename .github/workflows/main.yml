@@ -77,7 +77,7 @@ jobs:
       - name: Get Latest Tag
         run: |
           $tags = git tag --sort=-creatordate | Out-String
-          $tags = $tags.TrimEnd()
+          $tags = $tags.TrimEnd().replace('v','')
           $latesttag = $tags.Split([Environment]::NewLine)[0]
           echo "Latest tag: $($latesttag)"
           echo "releasever=$latesttag" >> $env:GITHUB_ENV
