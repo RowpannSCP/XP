@@ -234,6 +234,7 @@
         <Compile Include="Commands\Admin\Subcommands\RefreshCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\SetCommand.cs" />
         <Compile Include="Commands\Admin\AdminParentCommand.cs" />
+        <Compile Include="Commands\Admin\Subcommands\MultiplierCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\ShowMessageCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\VariablesCommand.cs" />
         <Compile Include="Commands\Client\Subcommands\GetCommandClient.cs" />

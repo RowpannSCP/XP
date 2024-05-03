@@ -35,11 +35,25 @@
             {
                 EnsureStorageProviderValid();
 
+                float floatAmount = value;
+                bool playerOnline = XPPlayer.TryGet(Player, out var xpPlayer);
+
+                if (value > 0 || Config.XPMultiplerForXPLoss)
+                {
+                    if (playerOnline)
+                        floatAmount *= xpPlayer.XPMultiplier;
+
+                    if (playerOnline || Config.GlobalXPMultiplierForNonOnline)
+                        floatAmount *= GlobalXPMultiplier;
+                }
+
+                value = (int)floatAmount;
+
                 int prevLevel = Level;
                 PlayerInfo.XP = value;
                 int newLevel = Level;
 
-                if (prevLevel != newLevel  && XPPlayer.TryGet(Player, out var xpPlayer))
+                if (prevLevel != newLevel && playerOnline)
                     HandleLevelUp(xpPlayer, this);
 
                 XPAPI.StorageProvider.SetPlayerInfo(this);

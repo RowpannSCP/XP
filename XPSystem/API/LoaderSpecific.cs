@@ -41,11 +41,11 @@
 #if EXILED
             return Exiled.API.Features.Player.Get(data)?.ReferenceHub;
 #else
-            if (uint.TryParse(data, out var networkId)
+            if (uint.TryParse(data, out uint networkId)
                 && PluginAPI.Core.Player.TryGet(networkId, out var player))
                 return player.ReferenceHub;
 
-            if (int.TryParse(data, out var playerId)
+            if (int.TryParse(data, out int playerId)
                 && PluginAPI.Core.Player.TryGet(playerId, out player))
                 return player.ReferenceHub;
 

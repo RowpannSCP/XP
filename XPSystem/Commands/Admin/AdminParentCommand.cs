@@ -20,6 +20,7 @@
             RegisterCommand(new RefreshCommand());
             RegisterCommand(new ShowMessageCommand());
             RegisterCommand(new VariablesCommand());
+            RegisterCommand(new MultiplierCommand());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)

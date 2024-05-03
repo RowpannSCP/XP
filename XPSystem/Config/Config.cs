@@ -12,6 +12,12 @@
         [Description("The amount of XP required for each level.")]
         public uint XPPerLevel { get; set; } = 100;
 
+        [Description("Whether or not the global XP multiplier should apply to xp given to people that aren't online (via commands, etc.).")]
+        public bool GlobalXPMultiplierForNonOnline { get; set; } = true;
+
+        [Description("Whether or not the global XP multiplier should apply to xp removed.")]
+        public bool XPMultiplerForXPLoss { get; set; } = false;
+
         [Description("The amount of XP required for each level in addition to XPPerLevel, starting at the specified level." +
                      "Example: 10: 100, starting from level 10 to the next entry, XPPerLevel + 100XP will be required for each level.")]
         public Dictionary<uint, uint> XPPerLevelExtra { get; set; } = new()
@@ -38,7 +44,7 @@
         [Description("Whether or not to format a message according to a template when adding xp.")]
         public bool UseAddedXPTemplate { get; set; } = true;
 
-        [Description("When enabled, template used for messages when adding xp. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
+        [Description("When enabled, template used for messages that modify xp. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
         public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
 
         [Description("Whether or not to show a message to a player if they advance a level.")]

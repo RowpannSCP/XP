@@ -90,7 +90,12 @@
         /// <summary>
         /// Whether xp gain is currently paused.
         /// </summary>
-        public static bool XPGainPaused = false;
+        public static bool XPGainPaused { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the global XP multiplier.
+        /// </summary>
+        public static float GlobalXPMultiplier { get; set; } = 1f;
 
         /// <summary>
         /// Prints a debug message, if debug is enabled.
@@ -279,10 +284,23 @@
             playerInfo ??= StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
             int prevLevel = playerInfo.Level;
 
+            float floatAmount = amount;
+            bool connected = player.IsConnected;
+
+            if (amount > 0 || Config.XPMultiplerForXPLoss)
+            {
+                floatAmount *= player.XPMultiplier;
+
+                if (connected || Config.GlobalXPMultiplierForNonOnline)
+                    floatAmount *= GlobalXPMultiplier;
+            }
+
+            amount = (int)floatAmount;
+
             playerInfo.PlayerInfo.XP += amount;
             StorageProvider.SetPlayerInfo(playerInfo);
 
-            if (player.IsConnected && playerInfo.Level != prevLevel)
+            if (connected && playerInfo.Level != prevLevel)
                 HandleLevelUp(player, playerInfo);
 
             return true;
@@ -347,6 +365,9 @@
         /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         public static bool TryAddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
         {
+            if (!player.IsConnected)
+                return false;
+
             var file = XPECManager.GetFile(key, player.Role);
             if (file == null)
                 return false;
@@ -379,7 +400,6 @@
                 return false;
 
             var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
-
             AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
 
             string message = xpecItem.Translation;
@@ -442,7 +462,7 @@
                     return false;
             }
 
-            if (!ulong.TryParse(split[0], out var ulongId))
+            if (!ulong.TryParse(split[0], out ulong ulongId))
                 return false;
 
             playerId.Id = ulongId;

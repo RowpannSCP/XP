@@ -127,6 +127,12 @@
         /// </summary>
         public RoleTypeId Role => Hub.roleManager.CurrentRole.RoleTypeId;
 
+        /// <summary>
+        /// Gets or sets the player's XP multiplier.
+        /// All XP added by methods (all built-in except for directly via non-wrapper) that respect this value will be multiplied by this value.
+        /// </summary>
+        public float XPMultiplier { get; set; } = 1f;
+
         public void ShowHint(string message, float duration = 3f)
         {
             Hub.hints.Show(new TextHint(message, new HintParameter[]
@@ -436,7 +442,7 @@
 
         /// <summary>
         /// Force resync to the client's <see cref="SyncVarAttribute"/>.
-        /// Can be used to undo <see cref="SendFakeSyncVars(Type, string, object)"/>.
+        /// Can be used to undo <see cref="SendFakeSyncVars(Type, string, object, bool)"/>.
         /// </summary>
         /// <param name="targetType"><see cref="NetworkBehaviour"/>'s type.</param>
         /// <param name="propertyName">Property name starting with Network.</param>

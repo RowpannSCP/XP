@@ -23,7 +23,7 @@
             }
 
             var amountString = arguments.At(0);
-            if (!int.TryParse(amountString, out var amount))
+            if (!int.TryParse(amountString, out int amount))
             {
                 response = $"Invalid amount: {amountString}.";
                 return false;

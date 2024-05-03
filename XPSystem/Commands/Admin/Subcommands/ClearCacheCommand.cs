@@ -9,9 +9,9 @@
     {
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!sender.CheckPermissionLS("xp.admin.clearcache"))
+            if (!sender.CheckPermissionLS("xps.admin.clearcache"))
             {
-                response = "You do not have permission to use this command.";
+                response = "You do not have permission (xps.clearcache) to use this command.";
                 return false;
             }
 
