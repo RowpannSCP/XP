@@ -5,42 +5,52 @@
     using System.IO;
     using System.Linq;
     using HarmonyLib;
-    using LiteDB;
-    using MEC;
     using XPSystem.API;
-    using YamlDotNet.Serialization;
+    using XPSystem.API.Legacy;
+    using XPSystem.API.StorageProviders;
+    using XPSystem.Config;
+    using XPSystem.Config.Events;
+    using XPSystem.EventHandlers;
+    using XPSystem.EventHandlers.LoaderSpecific;
+    using XPSystem.XPDisplayProviders;
+    using static API.XPAPI;
 
     public class Main
 #if EXILED
-        : Exiled.API.Features.Plugin<Config>
+        : Exiled.API.Features.Plugin<ExiledConfig>
 #endif
     {
-        private const string VersionString = "1.11.1";
+        public const string VersionString = "2.0.0";
 
-        public static bool EnabledNick = false;
-        public static bool EnabledRank = false;
-        public static bool Paused = false;
-        public static Main Instance { get; set; }
-        public EventHandlers Handlers;
-        private Harmony _harmony;
-        public LiteDatabase db;
-
-        public Dictionary<string, string> Translations = new Dictionary<string, string>()
-        {
-            ["ExampleKey"] = "ExampleValue",
-            ["ExampleKey2"] = "ExampleValue",
-        };
-        public Dictionary<string, int> UsedKeys = new Dictionary<string, int>();
+        /// <summary>
+        /// This number is increased every time the plugin is reloaded.
+        /// Store last calculated value to check if recalculation is needed.
+        /// </summary>
+        public static int Reload = 0;
 
 #if EXILED
-        private static readonly int[] split = VersionString.Split('.').Select(x => Convert.ToInt32(x)).ToArray();
-        public override string Author { get; } = "Rowpann's Emperium, original by BrutoForceMaestro";
+        private static readonly int[] _splitVersion = VersionString
+            .Split('.')
+            .Select(x => Convert.ToInt32(x))
+            .ToArray();
+
+        public override string Author { get; } = "moddedmcplayer, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(split[0], split[1], split[2]);
-        public override Version RequiredExiledVersion { get; } = new Version(8, 3, 9);
+        public override Version Version { get; } = new Version(_splitVersion[0], _splitVersion[1], _splitVersion[2]);
+        public override Version RequiredExiledVersion { get; } = new Version(8, 0, 0);
 #else
         [PluginAPI.Core.Attributes.PluginConfig]
-        public Config Config;
+        public NwAPIConfig Config;
+#endif
+
+        public static Main Instance { get; private set; }
+        public Harmony Harmony { get; private set; }
+
+        private UnifiedEventHandlers _eventHandlers = new
+#if EXILED
+            ExiledEventHandlers();
+#else
+            NWAPIEventHandlers();
 #endif
 
 #if EXILED
@@ -50,40 +60,27 @@
         public void OnEnabled()
 #endif
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(Config.SavePath)!);
-            db = new LiteDatabase(Config.SavePath);
             Instance = this;
-            _harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
-            _harmony.PatchAll();
+            XPAPI.Config = Config;
+            Harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
+            Harmony.PatchAll();
 
-#if EXILED
-            Handlers = new EventHandlers();
-            Exiled.Events.Handlers.Player.Verified += Handlers.OnJoined;
-            Exiled.Events.Handlers.Player.Died += Handlers.OnKill;
-            Exiled.Events.Handlers.Server.RoundEnded += Handlers.OnRoundEnd;
-            Exiled.Events.Handlers.Player.Escaping += Handlers.OnEscape;
-            Exiled.Events.Handlers.Player.InteractingDoor += Handlers.OnInteractingDoor;
-            Exiled.Events.Handlers.Scp914.UpgradingPickup += Handlers.OnScp914UpgradingItem;
-            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem += Handlers.OnScp914UpgradingInventory;
-            Exiled.Events.Handlers.Player.Spawned += Handlers.OnSpawning;
-            Exiled.Events.Handlers.Player.PickingUpItem += Handlers.OnPickingUpItem;
-            Exiled.Events.Handlers.Player.ThrownProjectile += Handlers.OnThrowingGrenade;
-            Exiled.Events.Handlers.Player.DroppingItem += Handlers.OnDroppingItem;
-            Exiled.Events.Handlers.Player.UsedItem += Handlers.OnUsingItem;
+            DisplayProviders.Add(new NickXPDisplayProvider());
+            DisplayProviders.Add(new RankXPDisplayProvider());
+            MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
+            XPECLimitTracker.Initialize();
 
-            if(Extensions.HintCoroutineHandle == null || !Extensions.HintCoroutineHandle.Value.IsValid || !Extensions.HintCoroutineHandle.Value.IsRunning)
-                Extensions.HintCoroutineHandle = Timing.RunCoroutine(Extensions.HintCoroutine());
-#else
-            PluginAPI.Events.EventManager.RegisterEvents(this);
-            PluginAPI.Events.EventManager.RegisterEvents(this, Handlers = new EventHandlers());
+            LoadExtraConfigs();
+
+            _eventHandlers.RegisterEvents(this);
+            PluginEnabled = true;
+
+            LiteDBMigrator.CheckMigration();
+
+#if STORENICKS
+            LogInfo("STORENICKS");
 #endif
-            LoadTranslations();
-
-            if (Config.EnableNickMods)
-                EnabledNick = true;
-            if (Config.EnableBadges)
-                EnabledRank = true;
-
+ 
 #if EXILED
             base.OnEnabled();
 #endif
@@ -96,199 +93,93 @@
         public void OnDisabled()
 #endif
         {
-#if EXILED
-            Exiled.Events.Handlers.Player.Verified -= Handlers.OnJoined;
-            Exiled.Events.Handlers.Player.Died -= Handlers.OnKill;
-            Exiled.Events.Handlers.Server.RoundEnded -= Handlers.OnRoundEnd;
-            Exiled.Events.Handlers.Player.Escaping -= Handlers.OnEscape;
-            Exiled.Events.Handlers.Player.InteractingDoor -= Handlers.OnInteractingDoor;
-            Exiled.Events.Handlers.Scp914.UpgradingPickup -= Handlers.OnScp914UpgradingItem;
-            Exiled.Events.Handlers.Scp914.UpgradingInventoryItem -= Handlers.OnScp914UpgradingInventory;
-            Exiled.Events.Handlers.Player.Spawned -= Handlers.OnSpawning;
-            Exiled.Events.Handlers.Player.PickingUpItem -= Handlers.OnPickingUpItem;
-            Exiled.Events.Handlers.Player.ThrownProjectile -= Handlers.OnThrowingGrenade;
-            Exiled.Events.Handlers.Player.DroppingItem -= Handlers.OnDroppingItem;
-            Exiled.Events.Handlers.Player.UsedItem -= Handlers.OnUsingItem;
-            Handlers = null;
-#endif
+            PluginEnabled = false;
+            _eventHandlers.UnregisterEvents(this);
 
-            _harmony.UnpatchAll(_harmony.Id);
+            SetStorageProvider((IStorageProvider)null);
+            MessagingProvider = null;
 
+            DisplayProviders.DisableAll();
+            XPECLimitTracker.Disable();
+
+            XPECManager.Default.Files.Clear();
+            XPECManager.Overrides.Clear();
+
+            Harmony.UnpatchAll(Harmony.Id);
+            Harmony = null;
             Instance = null;
-            _harmony = null;
-            db.Dispose();
-            db = null;
-
 #if EXILED
             base.OnDisabled();
 #endif
         }
 
-        public static string GetTranslation(string key)
-        {
-            if (Instance?.Config.LogXPGainedMethods ?? false)
-            {
-                if (Instance.UsedKeys.ContainsKey(key))
-                    Instance.UsedKeys[key]++;
-                else
-                    Instance.UsedKeys.Add(key, 1);
-            }
-
-            DebugProgress("looking for key: " + key);
-            DebugProgress($"Found key: {Instance.Translations.ContainsKey(key)}");
-            return Instance.Translations.TryGetValue(key, out var translation) ? translation : null;
-        }
-
 #if EXILED
-        public bool CanGetXP(Exiled.API.Features.Player ply, string key, ushort itemSerial)
-        {
-            var item = Exiled.API.Features.Items.Item.Get(itemSerial);
-            if (item == null) return false;
-            if (!Config.UseTimer) return true;
-            if (Config.TimerUseItemType)
-            {
-                if (ply.SessionVariables.TryGetValue($"xpitemusedtype{key}", out var obj) && obj is Dictionary<ItemType, DateTime> list)
-                {
-                    if (list.TryGetValue(item.Type, out var time))
-                    {
-                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
-                        {
-                            list[item.Type] = DateTime.Now;
-                            return true;
-                        }
-                        return false;
-                    }
-                    list.Add(item.Type, DateTime.Now);
-                    return true;
-                }
-                ply.SessionVariables.Add($"xpitemusedtype{key}", new Dictionary<ItemType, DateTime> { [item.Type] = DateTime.Now });
-                return true;
-            }
-            else
-            {
-                if (ply.SessionVariables.TryGetValue($"xpitemuseditem{key}", out var obj) && obj is Dictionary<ushort, DateTime> list)
-                {
-                    if (list.TryGetValue(item.Serial, out var time))
-                    {
-                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
-                        {
-                            list[item.Serial] = DateTime.Now;
-                            return true;
-                        }
-                        return false;
-                    }
-                    list.Add(item.Serial, DateTime.Now);
-                    return true;
-                }
-                ply.SessionVariables.Add($"xpitemuseditem{key}", new Dictionary<ushort, DateTime> { [item.Serial] = DateTime.Now });
-                return true;
-            }
-        }
+        public override void OnReloaded()
 #else
-        public bool CanGetXP(PluginAPI.Core.Player ply, string key, ushort serial, ItemType itemType)
+        [PluginAPI.Core.Attributes.PluginReload]
+        public void OnReloaded()
+#endif
         {
-            if (serial == 0 || itemType == ItemType.None) return false;
-            if (!Config.UseTimer) return true;
-            if (Config.TimerUseItemType)
+            LoadExtraConfigs();
+        }
+
+        public void SetDisplayProviders(IEnumerable<string> typeNames)
+        {
+            foreach (var typeName in typeNames)
             {
-                if (ply.TemporaryData.StoredData.TryGetValue($"xpitemusedtype{key}", out var obj) && obj is Dictionary<ItemType, DateTime> list)
+                if (!TryCreate(typeName, out var exception, out IXPDisplayProvider provider))
                 {
-                    if (list.TryGetValue(itemType, out var time))
-                    {
-                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
-                        {
-                            list[itemType] = DateTime.Now;
-                            return true;
-                        }
-                        return false;
-                    }
-                    list.Add(itemType, DateTime.Now);
-                    return true;
+                    LogError($"Could not create display provider {typeName}: {exception}");
+                    continue;
                 }
-                ply.TemporaryData.StoredData.Add($"xpitemusedtype{key}", new Dictionary<ItemType, DateTime> { [itemType] = DateTime.Now });
-                return true;
-            }
-            else
-            {
-                if (ply.TemporaryData.StoredData.TryGetValue($"xpitemuseditem{key}", out var obj) && obj is Dictionary<ushort, DateTime> list)
-                {
-                    if (list.TryGetValue(serial, out var time))
-                    {
-                        if (DateTime.Now - time > TimeSpan.FromSeconds(Config.TimerDuration))
-                        {
-                            list[serial] = DateTime.Now;
-                            return true;
-                        }
-                        return false;
-                    }
-                    list.Add(serial, DateTime.Now);
-                    return true;
-                }
-                ply.TemporaryData.StoredData.Add($"xpitemuseditem{key}", new Dictionary<ushort, DateTime> { [serial] = DateTime.Now });
-                return true;
+
+                DisplayProviders.Add(provider);
             }
         }
-#endif
 
-        private void LoadTranslations()
+        public void LoadExtraConfigs()
         {
             try
             {
-                var serializer = new Serializer();
-                var deserializer = new Deserializer();
-                if (!File.Exists(Config.SavePathTranslations))
-                {
-                    File.Create(Config.SavePathTranslations).Close();
-                    using (TextWriter sr = new StreamWriter(Config.SavePathTranslations))
-                    {
-                        sr.Write(serializer.Serialize(Translations));
-                    }
+                Directory.CreateDirectory(Config.ExtendedConfigPath);
 
-                    return;
-                }
-                
-                using (TextReader sr = new StreamReader(Config.SavePathTranslations))
-                {
-                    Translations = deserializer.Deserialize<Dictionary<string, string>>(sr.ReadToEnd());
-                }
+                Reload++;
+
+                SetStorageProvider(Config.StorageProvider);
+                SetDisplayProviders(Config.AdditionalDisplayProviders);
+
+                DisplayProviders.LoadConfigs(Config.ExtendedConfigPath);
+
+                string eventConfigsFolder = Path.Combine(Config.ExtendedConfigPath, Config.EventConfigsFolder);
+                Directory.CreateDirectory(eventConfigsFolder);
+                XPECManager.Load(eventConfigsFolder);
+
+                LevelCalculator.Precalculate();
+                DisplayProviders.Enable();
             }
             catch (Exception e)
             {
-                LogError("Could not load translations: " + e);
+                LogError("Could not load extra configs: " + e);
             }
         }
 
-        public static void DebugProgress(string message)
+        public static bool TryCreate<T>(string typeName, out Exception exception, out T obj)
         {
-            if (Instance.Config.Debug)
-                LogDebug(message);
-        }
+            obj = default;
+            exception = null;
 
-        public static void LogDebug(string message)
-        {
-#if EXILED
-            Exiled.API.Features.Log.Debug(message);
-#else
-            PluginAPI.Core.Log.Debug(message);
-#endif
-        }
+            try
+            {
+                var type = Type.GetType(typeName) ?? throw new TypeLoadException("Type not found!");
+                obj = (T)Activator.CreateInstance(type);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                return false;
+            }
 
-        public static void LogWarn(string message)
-        {
-#if EXILED
-            Exiled.API.Features.Log.Warn(message);
-#else
-            PluginAPI.Core.Log.Warning(message);
-#endif
-        }
-
-        public static void LogError(string message)
-        {
-#if EXILED
-            Exiled.API.Features.Log.Error(message);
-#else
-            PluginAPI.Core.Log.Error(message);
-#endif
+            return true;
         }
     }
 }

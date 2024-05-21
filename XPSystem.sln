@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XPSystem", "XPSystem/XPSystem.csproj", "{628E5A4F-FB0C-43D8-8927-4BD86231B91F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPSystem.Console", "XPSystem.Console\XPSystem.Console.csproj", "{A2ACC669-758C-43DC-8360-4F70845B8512}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,14 @@ Global
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Debug EXILED|Any CPU.Build.0 = Debug EXILED|Any CPU
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Release EXILED|Any CPU.ActiveCfg = Release EXILED|Any CPU
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Release EXILED|Any CPU.Build.0 = Release EXILED|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Debug EXILED|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Debug EXILED|Any CPU.Build.0 = Debug|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Release EXILED|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2ACC669-758C-43DC-8360-4F70845B8512}.Release EXILED|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
