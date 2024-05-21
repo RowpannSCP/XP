@@ -1,6 +1,6 @@
-﻿namespace XPSystem.LiteDBProvider.Models
+﻿namespace XPSystem.BuiltInProviders.LiteDB
 {
-    using LiteDB;
+    using global::LiteDB;
     using XPSystem.API.Enums;
     using XPSystem.API.StorageProviders.Models;
 

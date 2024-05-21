@@ -221,7 +221,7 @@
         public static void EnsureStorageProviderValid()
         {
             if (StorageProvider == null)
-                throw new StorageProviderInvalidException("No storage provider has been set successfully.");
+                throw new StorageProviderInvalidException();
         }
 
         /// <summary>
@@ -268,7 +268,11 @@
         /// </summary>
         /// <param name="player">The player to add XP to.</param>
         /// <param name="amount">The amount of XP to add.</param>
-        /// <param name="force">Whether to force the addition of XP, even if <see cref="XPGainPaused"/> or the player has <see cref="XPPlayer.DNT"/> enabled.</param>
+        /// <param name="force">Whether to force the addition of XP, <br/>
+        /// even if <see cref="XPGainPaused"/> <br/>
+        /// or the player has <see cref="XPPlayer.DNT"/> enabled <br/>
+        /// or <see cref="XPPlayer.IsNPC"/> is true, <br/>
+        /// or the <see cref="XPPlayer.PlayerId"/> is not <see cref="PlayerId.IsValid"/>.</param>
         /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
         /// <returns>Whether or not the XP was added.</returns>
         public static bool AddXP(XPPlayer player, int amount, bool force = false, PlayerInfoWrapper playerInfo = null)
@@ -278,18 +282,35 @@
 
             EnsureStorageProviderValid();
 
-            if (!force && (XPGainPaused || player.DNT))
+            if (!force && (XPGainPaused || player.DNT) || player.IsNPC)
                 return false;
 
+            if (!force)
+                player.PlayerId.EnsureValid();
+
             playerInfo ??= StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+
+            AddXP(playerInfo, amount, player);
+            return true;
+        }
+
+        /// <summary>
+        /// The method that actually adds XP to a player.
+        /// Beware: No checks!
+        /// </summary>
+        internal static bool AddXP(PlayerInfoWrapper playerInfo, int amount, XPPlayer player = null)
+        {
+            if (player == null)
+                XPPlayer.TryGet(playerInfo.Player, out player);
+
             int prevLevel = playerInfo.Level;
-
             float floatAmount = amount;
-            bool connected = player.IsConnected;
+            bool connected = player?.IsConnected ?? false;
 
-            if (amount > 0 || Config.XPMultiplerForXPLoss)
+            if (amount > 0 || Config.XPMultiplierForXPLoss)
             {
-                floatAmount *= player.XPMultiplier;
+                if (player?.XPMultiplier != null)
+                    floatAmount *= player.XPMultiplier;
 
                 if (connected || Config.GlobalXPMultiplierForNonOnline)
                     floatAmount *= GlobalXPMultiplier;
@@ -305,25 +326,6 @@
 
             return true;
         }
-
-        /// <summary>
-        /// Adds XP to a player.
-        /// </summary>
-        /// <param name="playerInfo">The <see cref="PlayerInfo"/> of the player to add XP to.</param>
-        /// <param name="amount">The amount of XP to add.</param>
-        /// <param name="force">Whether to force the addition of XP, even if <see cref="XPGainPaused"/>.</param>
-        /// <returns>Whether or not the XP was added.</returns>
-        public static bool AddXP(PlayerInfoWrapper playerInfo, int amount, bool force = false)
-        {
-            if (amount == 0)
-                return false;
-
-            if (XPGainPaused && !force)
-                return false;
-
-            playerInfo.XP += amount;
-            return true;
-        }
 #endregion
 #region Translations
         /// <summary>
@@ -334,7 +336,7 @@
         /// <remarks>If <see cref="MessagingProvider"/> is null, it will not be displayed.</remarks>
         public static void DisplayMessage(XPPlayer player, string message)
         {
-            if (string.IsNullOrWhiteSpace(message))
+            if (string.IsNullOrWhiteSpace(message) || player.IsNPC)
                 return;
 
             MessagingProvider?.DisplayMessage(player, Config.TextPrefix + message + Config.TextSuffix, Config.DisplayDuration);
@@ -399,6 +401,8 @@
             if (xpecItem == null || xpecItem.Amount == 0 || player.DNT || XPGainPaused)
                 return false;
 
+            EnsureStorageProviderValid();
+
             var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
             AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
 
@@ -447,6 +451,9 @@
                 return false;
 
             var split = @string.Split('@');
+            if (split.Length != 2)
+                return false;
+
             switch (split[1].ToLower())
             {
                 case "steam":

@@ -64,7 +64,7 @@
 
             if (!XPPlayer.TryGet(playerId, out var player))
             {
-                LogDebug("Player not in in server: " + playerId);
+                LogDebug("Player not in server: " + playerId);
                 playerInfo = null;
                 return false;
             }

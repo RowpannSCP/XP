@@ -16,7 +16,7 @@
         public bool GlobalXPMultiplierForNonOnline { get; set; } = true;
 
         [Description("Whether or not the global XP multiplier should apply to xp removed.")]
-        public bool XPMultiplerForXPLoss { get; set; } = false;
+        public bool XPMultiplierForXPLoss { get; set; } = false;
 
         [Description("The amount of XP required for each level in addition to XPPerLevel, starting at the specified level." +
                      "Example: 10: 100, starting from level 10 to the next entry, XPPerLevel + 100XP will be required for each level.")]
@@ -65,8 +65,9 @@
         [Description("Prepended to all messages.")]
         public string TextSuffix { get; set; } = "";
 
-        [Description("The assembly qualified type name of the storage provider to use (default: XPSystem.LiteDBProvider.LiteDBProvider) (not assembly qualified because it's built-in, unlike yours).")]
-        public string StorageProvider { get; set; } = "XPSystem.LiteDBProvider.LiteDBProvider";
+        [Description("The assembly qualified type name of the storage provider to use (default: XPSystem.BuiltInProviders.LiteDB.LiteDBProvider) (not assembly qualified because it's built-in, unlike yours)." +
+                     "Available, but I will not help you with: XPSystem.BuiltInProviders.MySql.MySqlProvider")]
+        public string StorageProvider { get; set; } = "XPSystem.BuiltInProviders.LiteDB.LiteDBProvider";
 
         [Description("The assembly qualified type names of xp display providers to load, in addition to the built-in rank and nick ones.")]
         public List<string> AdditionalDisplayProviders { get; set; } = new()

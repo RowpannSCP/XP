@@ -36,24 +36,16 @@
         /// </summary>
         public readonly VariableCollection Variables = new();
 
-        private PlayerId? _playerId;
         /// <summary>
         /// Gets the player's <see cref="PlayerId"/>.
         /// </summary>
-        public PlayerId PlayerId
-        {
-            get
-            {
-                if (_playerId != null)
-                    return _playerId.Value;
+        public PlayerId PlayerId { get; }
 
-                if (!XPAPI.TryParseUserId(UserId, out var playerId))
-                    throw new InvalidOperationException("PlayerId of player is invalid (GetPlayerId).");
-
-                _playerId = playerId;
-                return playerId;
-            }
-        }
+        /// <summary>
+        /// Gets whether or not the player is a npc.
+        /// AddXP will return unless forced, if this is true.
+        /// </summary>
+        public bool IsNPC { get; }
 
         /// <summary>
         /// Gets the player's nickname.
@@ -182,6 +174,13 @@
                 throw new ArgumentNullException(nameof(referenceHub));
 
             Hub = referenceHub;
+            IsNPC = CheckNPC(referenceHub);
+
+            if (UserId.TryParseUserId(out var playerId))
+                PlayerId = playerId;
+            else if (!IsNPC)
+                LogWarn("PlayerId could not be parsed for player " + DisplayedName);
+
             PlayersValue.Add(referenceHub, this);
         }
 

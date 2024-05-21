@@ -105,6 +105,18 @@
 #endif
         }
 
+        /// <summary>
+        /// Checks whether or not a player is a NPC.
+        /// </summary>
+        /// <param name="hub">The player to check.</param>
+        /// <returns>Whether or not the player is a NPC.</returns>
+        public static bool CheckNPC(ReferenceHub hub) =>
+#if EXILED
+            Exiled.API.Features.Player.Get(hub)?.IsNPC == true;
+#else
+            true;
+#endif
+
         public static void LogDebug(string message)
         {
 #if EXILED

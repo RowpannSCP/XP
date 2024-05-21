@@ -76,6 +76,11 @@
             PluginEnabled = true;
 
             LiteDBMigrator.CheckMigration();
+
+#if STORENICKS
+            LogInfo("STORENICKS");
+#endif
+ 
 #if EXILED
             base.OnEnabled();
 #endif

@@ -4,7 +4,7 @@
 
     public class StorageProviderInvalidException : Exception
     {
-        public StorageProviderInvalidException(string message) : base(message)
+        public StorageProviderInvalidException() : base("No storage provider has been set successfully.")
         {
         }
     }

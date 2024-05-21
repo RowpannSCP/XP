@@ -1,15 +1,12 @@
-﻿namespace XPSystem.LiteDBProvider
+﻿namespace XPSystem.BuiltInProviders.LiteDB
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using LiteDB;
+    using global::LiteDB;
     using XPSystem.API.Enums;
-    using XPSystem.API.Legacy;
     using XPSystem.API.StorageProviders;
     using XPSystem.API.StorageProviders.Models;
-    using XPSystem.LiteDBProvider.Models;
-    using static API.XPAPI;
 
     public class LiteDBProvider : StorageProvider<LiteDBProvider.LiteDBProviderConfig>
     {
@@ -103,20 +100,17 @@
                 .Select(x => x.ToPlayerInfo(AuthType.Steam))
                 .ToList();
 
-            var discord = DiscordCollection.Query()
+            result.AddRange(DiscordCollection.Query()
                 .OrderByDescending(x => x.XP)
                 .Limit(count)
                 .ToEnumerable()
-                .Select(x => x.ToPlayerInfo(AuthType.Discord));
+                .Select(x => x.ToPlayerInfo(AuthType.Discord)));
 
-            var nw = NWCollection.Query()
+            result.AddRange(NWCollection.Query()
                 .OrderByDescending(x => x.XP)
                 .Limit(count)
                 .ToEnumerable()
-                .Select(x => x.ToPlayerInfo(AuthType.Northwood));
-
-            result.AddRange(discord);
-            result.AddRange(nw);
+                .Select(x => x.ToPlayerInfo(AuthType.Northwood)));
 
             result.Sort((x, y) => y.XP.CompareTo(x.XP));
 

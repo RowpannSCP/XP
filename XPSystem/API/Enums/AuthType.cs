@@ -7,6 +7,6 @@
     {
         Steam,
         Discord,
-        Northwood
+        Northwood,
     }
 }

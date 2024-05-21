@@ -17,12 +17,18 @@
         /// <inheritdoc />
         public override XPECItem Get(params object[] keys)
         {
-            if (keys.Length == 0)
+            if (keys == null || keys.Length == 0)
                 return Default;
 
             var keyObj = keys[0];
             if (keyObj is not T key)
                 throw new InvalidCastException($"Key is not of the correct type (was: {keyObj.GetType().FormatType()}, expected: {typeof(T).FormatType()})");
+
+            if (Items == null)
+            {
+                XPAPI.LogDebug("Items null in XPECDictFile with keytype " + typeof(T).FormatType());
+                return Default;
+            }
 
             return Items.TryGetValue(key, out var item)
                 ? item

@@ -65,7 +65,7 @@
                     {
                         try
                         {
-                            var converted = Convert.ChangeType(@string, type);
+                            var converted = type.IsEnum ? Enum.Parse(type, @string, true) : Convert.ChangeType(@string, type);
                             if (converted != null)
                             {
                                 subkeyList.Add(converted);
