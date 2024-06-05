@@ -31,7 +31,7 @@
         public int XP
         {
             get => PlayerInfo.XP;
-            set => AddXP(this, value);
+            set => AddXP(this, value - XP);
         }
 
         private int _neededXP;

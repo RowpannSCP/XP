@@ -20,7 +20,7 @@
         : Exiled.API.Features.Plugin<ExiledConfig>
 #endif
     {
-        public const string VersionString = "2.0.0";
+        public const string VersionString = "2.0.1";
 
         /// <summary>
         /// This number is increased every time the plugin is reloaded.
