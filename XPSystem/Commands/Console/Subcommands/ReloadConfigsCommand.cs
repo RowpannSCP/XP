@@ -3,17 +3,17 @@
     using System;
     using CommandSystem;
 
-    public class ReloadConfigsCommand : ICommand
+    public class ReloadConfigsCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             Main.Instance.LoadExtraConfigs();
             response = "Extra (non main, use your pluginloader to reload) configs reloaded.";
             return true;
         }
 
-        public string Command { get; } = "reloadconfigs";
-        public string[] Aliases { get; } = new[] { "reload" };
-        public string Description { get; } = "Reloads the extra config files.";
+        public override string Command { get; } = "reloadconfigs";
+        public override string[] Aliases { get; } = new[] { "reload" };
+        public override string Description { get; } = "Reloads the extra config files.";
     }
 }

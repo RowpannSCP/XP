@@ -4,11 +4,11 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class DeleteEverythingCommand : ICommand
+    public class DeleteEverythingCommand : SanitizedInputCommand
     {
         private static DateTime _lastUsed = DateTime.MinValue;
 
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (sender is not ServerConsoleSender)
             {
@@ -31,8 +31,8 @@
             return true;
         }
 
-        public string Command { get; } = "deleteeverything";
-        public string[] Aliases { get; } = Array.Empty<string>();
-        public string Description { get; } = "Deletes the data of all players.";
+        public override string Command { get; } = "deleteeverything";
+        public override string[] Aliases { get; } = Array.Empty<string>();
+        public override string Description { get; } = "Deletes the data of all players.";
     }
 }

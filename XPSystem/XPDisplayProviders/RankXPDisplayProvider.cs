@@ -46,7 +46,7 @@
 
             if (player.HasBadge && !Config.OverrideColor)
             {
-                if (!Enum.TryParse(player.BadgeColor, out color))
+                if (!Enum.TryParse(player.BadgeColor, true, out color))
                 {
                     XPAPI.LogWarn("Could not parse badge color: " + player.BadgeColor);
                     color = badge.Color;

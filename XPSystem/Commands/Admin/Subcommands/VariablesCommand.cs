@@ -5,9 +5,9 @@
     using NorthwoodLib.Pools;
     using XPSystem.API;
 
-    public class VariablesCommand : ICommand
+    public class VariablesCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.variables", out var player))
             {
@@ -40,8 +40,8 @@
             return true;
         }
 
-        public string Command { get; } = "variables";
-        public string[] Aliases { get; } = new[] { "v" };
-        public string Description { get; } = "Shows your variables.";
+        public override string Command { get; } = "variables";
+        public override string[] Aliases { get; } = new[] { "v" };
+        public override string Description { get; } = "Shows your variables.";
     }
 }

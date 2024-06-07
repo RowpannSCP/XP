@@ -4,9 +4,9 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class MultiplierCommand : ICommand
+    public class MultiplierCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!sender.CheckPermissionLS("xp.setmultiplier"))
             {
@@ -16,7 +16,7 @@
 
             if (arguments.Count < 2)
             {
-                response = "Usage: xp setmultiplier <player/global> (player) <multiplier>";
+                response = "Usage: xp setmultiplier global (multiplier) or xp setmultiplier player (player) (multiplier)";
                 return false;
             }
 
@@ -74,8 +74,8 @@
             }
         }
 
-        public string Command { get; } = "multiplier";
-        public string[] Aliases { get; } = new[] { "mult" };
-        public string Description { get; } = "Gets or sets XP multipliers.";
+        public override string Command { get; } = "multiplier";
+        public override string[] Aliases { get; } = new[] { "mult" };
+        public override string Description { get; } = "Gets or sets XP multipliers.";
     }
 }

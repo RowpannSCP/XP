@@ -10,9 +10,9 @@
     using XPSystem.API;
     using XPSystem.Config.Events;
 
-    public class ShowMessageCommand : ICommand
+    public class ShowMessageCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!sender.CheckPermissionLS("xps.showmessage"))
             {
@@ -22,7 +22,7 @@
 
             if (arguments.Count < 1)
             {
-                response = "Usage: showmessage <key> (<subkeys>)";
+                response = "Usage: showmessage (key) or showmessage (key) (subkeys)";
                 return false;
             }
 
@@ -103,8 +103,8 @@
             return true;
         }
 
-        public string Command { get; } = "showmessage";
-        public string[] Aliases { get; } = { "sm" };
-        public string Description { get; } = "Messaging and translation debug tool.";
+        public override string Command { get; } = "showmessage";
+        public override string[] Aliases { get; } = { "sm" };
+        public override string Description { get; } = "Messaging and translation debug tool.";
     }
 }

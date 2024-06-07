@@ -4,9 +4,9 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class PauseCommand : ICommand
+    public class PauseCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!sender.CheckPermissionLS("xps.pause"))
             {
@@ -39,8 +39,8 @@
             return true;
         }
 
-        public string Command { get; } = "pause";
-        public string[] Aliases { get; } = new[] { "p" };
-        public string Description { get; } = "Pause xp gain.";
+        public override string Command { get; } = "pause";
+        public override string[] Aliases { get; } = new[] { "p" };
+        public override string Description { get; } = "Pause xp gain.";
     }
 }

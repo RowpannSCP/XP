@@ -18,7 +18,7 @@
 
             if (arguments.Count < 1)
             {
-                response = "Usage: xp set <amount> or xp set <amount> <player>";
+                response = "Usage: xp set (amount) or xp set (amount) (player)";
                 return false;
             }
 

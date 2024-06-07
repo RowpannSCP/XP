@@ -18,7 +18,7 @@
 
             if (arguments.Count < 1)
             {
-                response = "Usage: xp setlevel <level> or xp setlevel <level> <player>";
+                response = "Usage: xp setlevel (level) or xp setlevel (level) (player)";
                 return false;
             }
 
