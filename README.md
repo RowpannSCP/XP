@@ -25,6 +25,7 @@ Run `xps migrate` in the server console to migrate the old database.
 - Remote admin console
     - `xps get` - Get the xp of a player
     - `xps set` - Sets the xp of a player
+    - `xps setlevel` - Sets the level of a player
     - `xps give` - Adds xp to a player
     - `xps lb` - Gets the leaderboard
     - `xps pause` - Pause xp gain

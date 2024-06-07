@@ -9,7 +9,7 @@
     /// <summary>
     /// Command base for commands that get a database entry for a player from a specific argument.
     /// </summary>
-    public abstract class DatabasePlayerCommand : ICommand
+    public abstract class DatabasePlayerCommand : SanitizedInputCommand
     {
         /// <summary>
         /// Does the thing with the arguments.
@@ -66,11 +66,5 @@
             return false;
 
         }
-
-        public string[] Aliases { get; } = Array.Empty<string>();
-
-        public abstract bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response);
-        public abstract string Command { get; }
-        public abstract string Description { get; }
     }
 }

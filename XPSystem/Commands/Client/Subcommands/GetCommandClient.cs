@@ -4,9 +4,9 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class GetCommandClient : ICommand
+    public class GetCommandClient : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!XPPlayer.TryGet(sender, out var player))
             {
@@ -20,8 +20,8 @@
             return true;
         }
 
-        public string Command { get; } = "get";
-        public string[] Aliases { get; } = Array.Empty<string>();
-        public string Description { get; } = "Get your level and XP.";
+        public override string Command { get; } = "get";
+        public override string[] Aliases { get; } = Array.Empty<string>();
+        public override string Description { get; } = "Get your level and XP.";
     }
 }

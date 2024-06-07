@@ -18,12 +18,12 @@
 
             if (arguments.Count < 1)
             {
-                response = "Usage: xp set <amount> or xp set <player> <amount>";
+                response = "Usage: xp set (amount) or xp set (amount) (player)";
                 return false;
             }
 
             var amountString = arguments.At(0);
-            if (!int.TryParse(amountString, out int amount))
+            if (!int.TryParse(amountString, out int amount) || amount < 0)
             {
                 response = $"Invalid amount: {amountString}.";
                 return false;
@@ -36,7 +36,7 @@
 
             playerInfo.XP = amount;
 
-            response = $"Set {amount} XP to {playerId.ToString()} ({nickname}).";
+            response = $"Set {playerId.ToString()} ({nickname})'s XP to {amount}.";
             return true;
         }
 

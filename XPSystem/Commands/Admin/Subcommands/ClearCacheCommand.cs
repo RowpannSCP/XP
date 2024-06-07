@@ -5,9 +5,9 @@
     using XPSystem.API;
     using XPSystem.API.StorageProviders;
 
-    public class ClearCacheCommand : ICommand
+    public class ClearCacheCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!sender.CheckPermissionLS("xps.admin.clearcache"))
             {
@@ -29,8 +29,7 @@
             return true;
         }
 
-        public string Command { get; } = "clearcache";
-        public string[] Aliases { get; } = Array.Empty<string>();
-        public string Description { get; } = "Clears the storage providers cache.";
+        public override string Command { get; } = "clearcache";
+        public override string Description { get; } = "Clears the storage providers cache.";
     }
 }

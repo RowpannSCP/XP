@@ -11,6 +11,7 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Release Bundled|Any CPU = Release Bundled|Any CPU
 		Debug EXILED|Any CPU = Debug EXILED|Any CPU
 		Release EXILED|Any CPU = Release EXILED|Any CPU
 	EndGlobalSection
@@ -19,6 +20,8 @@ Global
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Release|Any CPU.Build.0 = Release|Any CPU
+        {628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Release Bundled|Any CPU.ActiveCfg = Release Bundled|Any CPU
+        {628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Release Bundled|Any CPU.Build.0 = Release Bundled|Any CPU
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Debug EXILED|Any CPU.ActiveCfg = Debug EXILED|Any CPU
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Debug EXILED|Any CPU.Build.0 = Debug EXILED|Any CPU
 		{628E5A4F-FB0C-43D8-8927-4BD86231B91F}.Release EXILED|Any CPU.ActiveCfg = Release EXILED|Any CPU
@@ -27,6 +30,8 @@ Global
 		{A2ACC669-758C-43DC-8360-4F70845B8512}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2ACC669-758C-43DC-8360-4F70845B8512}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2ACC669-758C-43DC-8360-4F70845B8512}.Release|Any CPU.Build.0 = Release|Any CPU
+        {A2ACC669-758C-43DC-8360-4F70845B8512}.Release Bundled|Any CPU.ActiveCfg = Release Bundled|Any CPU
+        {A2ACC669-758C-43DC-8360-4F70845B8512}.Release Bundled|Any CPU.Build.0 = Release Bundled|Any CPU
 		{A2ACC669-758C-43DC-8360-4F70845B8512}.Debug EXILED|Any CPU.ActiveCfg = Debug|Any CPU
 		{A2ACC669-758C-43DC-8360-4F70845B8512}.Debug EXILED|Any CPU.Build.0 = Debug|Any CPU
 		{A2ACC669-758C-43DC-8360-4F70845B8512}.Release EXILED|Any CPU.ActiveCfg = Debug|Any CPU

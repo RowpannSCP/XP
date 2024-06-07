@@ -70,7 +70,7 @@
         /// <summary>
         /// Gets whether or not the player is connected to the server.
         /// </summary>
-        public bool IsConnected => Hub.gameObject != null;
+        public bool IsConnected => GetIsConnectedSafe();
 
         /// <summary>
         /// Gets whether or not the player has do not track enabled.
@@ -289,6 +289,19 @@
             else
             {
                 Hub.nicknameSync.DisplayName = nick;
+            }
+        }
+
+        // Because unity do be like that
+        private bool GetIsConnectedSafe()
+        {
+            try
+            {
+                return Hub.gameObject != null;
+            }
+            catch (NullReferenceException)
+            {
+                return false;
             }
         }
 

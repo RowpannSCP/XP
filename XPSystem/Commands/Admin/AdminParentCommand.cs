@@ -15,6 +15,7 @@
             RegisterCommand(new GetCommandAdmin());
             RegisterCommand(new GiveCommand());
             RegisterCommand(new SetCommand());
+            RegisterCommand(new SetLevelCommand());
             RegisterCommand(new LeaderboardCommandAdmin());
             RegisterCommand(new PauseCommand());
             RegisterCommand(new RefreshCommand());

@@ -7,9 +7,9 @@
     using XPSystem.API.Legacy;
     using static API.XPAPI;
 
-    public class MigrateCommand : ICommand
+    public class MigrateCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             string path;
             if (arguments.Count < 1)
@@ -46,8 +46,8 @@
             return true;
         }
 
-        public string Command { get; } = "migrate";
-        public string[] Aliases { get; } = Array.Empty<string>();
-        public string Description { get; } = "Imports data from the old XPSystem database.";
+        public override string Command { get; } = "migrate";
+        public override string[] Aliases { get; } = Array.Empty<string>();
+        public override string Description { get; } = "Imports data from the old XPSystem database.";
     }
 }

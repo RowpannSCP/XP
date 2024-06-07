@@ -31,6 +31,7 @@
             string format = !player.HasBadge || player.HasHiddenBadge
                 ? Config.BadgeStructureNoBadge
                 : Config.BadgeStructure;
+            Misc.PlayerInfoColorTypes color = Misc.PlayerInfoColorTypes.White;
 
             foreach (var kvp in Config.SortedBadges)
             {
@@ -38,10 +39,20 @@
                     break;
 
                 badge = kvp.Value;
+                color = kvp.Value.Color;
             }
 
             if (badge == null)
                 return null;
+
+            if (player.HasBadge && !Config.OverrideColor)
+            {
+                if (!Enum.TryParse(player.BadgeColor, true, out color))
+                {
+                    XPAPI.LogWarn("Could not parse badge color: " + player.BadgeColor);
+                    color = badge.Color;
+                }
+            }
 
             return new Badge()
             {
@@ -49,7 +60,7 @@
                     .Replace("%lvl%", playerInfo.Level.ToString())
                     .Replace("%badge%", badge.Text)
                     .Replace("%oldbadge%", player.BadgeText),
-                Color = badge.Color
+                Color = color
             };
         }
 
@@ -113,6 +124,9 @@
 
             [Description("See above, just for people who dont have a badge. If empty, badgestructure will be used instead.")]
             public string BadgeStructureNoBadge { get; set; } = "%badge%";
+
+            [Description("Override color if the user already has a badge?")]
+            public bool OverrideColor { get; set; } = false;
 
             [Description("Required for VSR compliance.")]
             public bool SkipGlobalBadges { get; set; } = true;

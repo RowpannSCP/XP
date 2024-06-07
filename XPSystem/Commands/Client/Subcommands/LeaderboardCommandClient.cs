@@ -4,9 +4,9 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class LeaderboardCommandClient : ICommand
+    public class LeaderboardCommandClient : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             XPAPI.EnsureStorageProviderValid();
 
@@ -37,8 +37,8 @@
             return true;
         }
 
-        public string Command { get; } = "leaderboard";
-        public string[] Aliases { get; } = new[] { "lb" };
-        public string Description { get; } = "Get the top players.";
+        public override string Command { get; } = "leaderboard";
+        public override string[] Aliases { get; } = new[] { "lb" };
+        public override string Description { get; } = "Get the top players.";
     }
 }

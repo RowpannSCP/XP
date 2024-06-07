@@ -4,9 +4,9 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class RefreshCommand : ICommand
+    public class RefreshCommand : SanitizedInputCommand
     {
-        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+        public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!sender.CheckPermissionLS("xps.refresh"))
             {
@@ -20,8 +20,8 @@
             return true;
         }
 
-        public string Command { get; } = "refresh";
-        public string[] Aliases { get; } = new[] { "r" };
-        public string Description { get; } = "Refreshes all xp displays.";
+        public override string Command { get; } = "refresh";
+        public override string[] Aliases { get; } = new[] { "r" };
+        public override string Description { get; } = "Refreshes all xp displays.";
     }
 }
