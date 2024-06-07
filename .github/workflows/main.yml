@@ -49,6 +49,11 @@ jobs:
         shell: pwsh
         run: |
           msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release" /p:Platform="Any CPU"
+          
+      - name: Build nwapi bundled
+        shell: pwsh
+        run: |
+          msbuild.exe ${{ github.workspace }}/XPSystem.sln /p:Configuration="Release Bundled" /p:Platform="Any CPU"
 
       - name: Build exiled
         shell: pwsh
@@ -70,6 +75,7 @@ jobs:
         run: |
           New-Item -Path '${{ github.workspace }}/bin' -Type Directory
           Copy-Item -Path '${{ github.workspace }}/XPSystem/bin/Release/XPSystem.dll' -Destination '${{ github.workspace }}/bin/XPSystem-nw.dll'
+          Copy-Item -Path '${{ github.workspace }}/XPSystem/bin/Release Bundled/XPSystem.dll' -Destination '${{ github.workspace }}/bin/XPSystem-nw-bundled.dll'
           Copy-Item -Path '${{ github.workspace }}/XPSystem/bin/Release EXILED/XPSystem.dll' -Destination '${{ github.workspace }}/bin/XPSystem-EXILED.dll'
 
       - name: Get branch name

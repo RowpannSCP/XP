@@ -39,6 +39,7 @@
                     break;
 
                 badge = kvp.Value;
+                color = kvp.Value.Color;
             }
 
             if (badge == null)

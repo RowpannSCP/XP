@@ -36,6 +36,30 @@
         <WarningLevel>4</WarningLevel>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Bundled|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release Bundled\</OutputPath>
+        <DefineConstants>TRACE;STORENICKS</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <WeaverConfiguration>
+            <Costura>
+                <IncludeAssemblies>
+                    0Harmony
+                    LiteDB
+                    MySqlConnector
+                    System.Threading.Tasks.Extensions
+                    System.Buffers
+                    System.Numerics.Vectors
+                    Microsoft.Extensions.Logging.Abstractions
+                    System.Diagnostics.DiagnosticSource
+                </IncludeAssemblies>
+            </Costura>
+        </WeaverConfiguration>
+    </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug EXILED|AnyCPU' ">
       <DebugSymbols>true</DebugSymbols>
       <DebugType>full</DebugType>

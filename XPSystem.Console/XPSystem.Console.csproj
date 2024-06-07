@@ -38,6 +38,9 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Prefer32bit>false</Prefer32bit>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Bundled|AnyCPU' ">
+      <OutputPath>bin\Release Bundled\</OutputPath>
+    </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>..\packages\EXILED.8.8.1\lib\net48\Assembly-CSharp-Publicized.dll</HintPath>
