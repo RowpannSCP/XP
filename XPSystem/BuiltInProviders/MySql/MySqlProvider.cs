@@ -124,9 +124,13 @@
 #endif
                 $") VALUES ({playerInfo.Player.Id}, {playerInfo.XP}" +
 #if STORENICKS
-                $",{(playerInfo.Nickname == null ? "NULL" : $"'{playerInfo.Nickname}'")}" +
+                ",@nickname" +
 #endif
                 ")";
+#if STORENICKS
+            command.Parameters.AddWithValue("@nickname", playerInfo.Nickname ?? "NULL");
+#endif
+
             command.ExecuteNonQuery();
         }
 
