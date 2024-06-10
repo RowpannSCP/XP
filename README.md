@@ -2,16 +2,16 @@
  A not so basic, customisable leveling system for SCP: SL.
 Features include:
 - Badges based on level
-- Level in Nickname
+- Level in nickname
 - Lots of ways to earn xp
-- Customizable Hints
+- Customizable messages for leveling
 - Some other stuff I cannot be bothered to write
 
 You can always request more features by messaging me on discord: `moddedmcplayer`
 
 # Installation
 Drag and drop plugin into the plugins folder. <br>
-Make sure you have harmony (0Harmony.dll) in the dependencies folder.
+Use -nw-bundled instead of -nw if you are getting an error regarding missing 0Harmony.
 ### NWAPI version also requires
 - https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest
 
@@ -35,6 +35,7 @@ Run `xps migrate` in the server console to migrate the old database.
 - Server console
     - `xps deleteeverything` - Deletes everything
     - `xps migrate` - Migrates old database
+    - `xp_mysqltest` - Tests the mysql connection (only works if using mysql storage provider)
 ## Notes
 - Due to limitations with subkeys and my lack of willingness to make a complex system to handle this,
 XPECLimitedDicts cooldown will be combined when the default item is used,

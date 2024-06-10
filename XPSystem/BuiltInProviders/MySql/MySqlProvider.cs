@@ -118,7 +118,15 @@
 
             using var command = connection.CreateCommand();
             command.CommandText =
-                $"REPLACE INTO {GetTableName(playerInfo.Player.AuthType)} (id, xp) VALUES ({playerInfo.Player.Id}, {playerInfo.XP})";
+                $"REPLACE INTO {GetTableName(playerInfo.Player.AuthType)} (id, xp" +
+#if STORENICKS
+                ",nickname" +
+#endif
+                $") VALUES ({playerInfo.Player.Id}, {playerInfo.XP}" +
+#if STORENICKS
+                $",{(playerInfo.Nickname == null ? "NULL" : $"'{playerInfo.Nickname}'")}" +
+#endif
+                ")";
             command.ExecuteNonQuery();
         }
 
