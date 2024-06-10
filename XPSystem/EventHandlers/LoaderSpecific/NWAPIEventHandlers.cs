@@ -2,6 +2,7 @@
 {
     using InventorySystem.Items;
     using InventorySystem.Items.Pickups;
+    using MEC;
     using PlayerRoles;
     using PlayerStatsSystem;
     using PluginAPI.Core;
@@ -19,8 +20,8 @@
         public override void UnregisterEvents(Main plugin) =>
             EventManager.UnregisterEvents(plugin, this);
 
-        [PluginEvent(ServerEventType.PlayerJoined)]
-        private void PlayerJoined(Player player) => OnPlayerJoined(player);
+        [PluginEvent(ServerEventType.PlayerJoined)] // playerid null immediately after joining
+        private void PlayerJoined(Player player) => Timing.CallDelayed(.5f, () => OnPlayerJoined(player));
 
         [PluginEvent(ServerEventType.PlayerLeft)]
         private void PlayerLeaving(Player player) => OnPlayerLeft(player);
@@ -64,7 +65,13 @@
         private void OnPlayerUsedItem(Player player, ItemBase item) => OnPlayerUsedItem(player, item.ItemTypeId);
 
         [PluginEvent(ServerEventType.PlayerSpawn)]
-        private void OnSpawn(Player player, RoleTypeId role) => OnPlayerSpawned(player);
+        private void OnSpawn(Player player, RoleTypeId role)
+        {
+            if (string.IsNullOrWhiteSpace(player.UserId))
+                return;
+
+            OnPlayerSpawned(player);
+        }
 
         [PluginEvent(ServerEventType.PlayerEscape)]
         private void OnPlayerEscaped(Player player, RoleTypeId role) => OnPlayerEscaped(player);

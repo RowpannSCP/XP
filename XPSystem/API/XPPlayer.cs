@@ -177,9 +177,16 @@
             IsNPC = CheckNPC(referenceHub);
 
             if (UserId.TryParseUserId(out var playerId))
+            {
                 PlayerId = playerId;
+            }
             else if (!IsNPC)
-                LogWarn("PlayerId could not be parsed for player " + DisplayedName);
+            {
+                LogWarn("PlayerId "
+                        + (string.IsNullOrWhiteSpace(UserId) ? "(empty)" : UserId)
+                        + " could not be parsed for player "
+                        + DisplayedName);
+            }
 
             PlayersValue.Add(referenceHub, this);
         }

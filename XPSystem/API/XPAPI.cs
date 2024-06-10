@@ -254,10 +254,9 @@
         /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
         public static void UpdateNickname(XPPlayer player, PlayerInfoWrapper playerInfo = null)
         {
-            EnsureStorageProviderValid();
-
-            playerInfo ??= StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+            playerInfo ??= GetPlayerInfo(player);
             playerInfo.PlayerInfo.Nickname = player.DisplayedName;
+
             StorageProvider.SetPlayerInfo(playerInfo);
             LogDebug("Updated nick of " + player.PlayerId + " to " + player.DisplayedName);
         }
@@ -280,15 +279,13 @@
             if (amount == 0)
                 return false;
 
-            EnsureStorageProviderValid();
-
             if (!force && (XPGainPaused || player.DNT) || player.IsNPC)
                 return false;
 
             if (!force)
                 player.PlayerId.EnsureValid();
 
-            playerInfo ??= StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+            playerInfo ??= GetPlayerInfo(player.PlayerId);
 
             AddXP(playerInfo, amount, player);
             return true;
@@ -401,9 +398,7 @@
             if (xpecItem == null || xpecItem.Amount == 0 || player.DNT || XPGainPaused)
                 return false;
 
-            EnsureStorageProviderValid();
-
-            var playerInfo = StorageProvider.GetPlayerInfoAndCreateOfNotExist(player.PlayerId);
+            var playerInfo = GetPlayerInfo(player.PlayerId);
             AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
 
             string message = xpecItem.Translation;
