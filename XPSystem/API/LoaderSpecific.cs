@@ -114,7 +114,7 @@
 #if EXILED
             Exiled.API.Features.Player.Get(hub)?.IsNPC == true;
 #else
-            true;
+            false;
 #endif
 
         public static void LogDebug(string message)
