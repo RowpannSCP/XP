@@ -122,8 +122,8 @@
         {
             if (IsNull(ev.Player))
                 return;
-            
-            TryAddXPAndDisplayMessage(ev.Player, "throw", ev.Projectile.Type);
+
+            TryAddXPAndDisplayMessage(ev.Player, "throw", ev.Projectile.ProjectileType);
         }
 
         private void PlayerInteractingDoor(InteractingDoorEventArgs ev)
