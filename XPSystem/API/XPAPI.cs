@@ -402,7 +402,7 @@
             AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
 
             string message = xpecItem.Translation;
-            if (Config.UseAddedXPTemplate)
+            if (message != null && Config.UseAddedXPTemplate)
             {
                 message = Config.AddedXPTemplate
                     .Replace("%message%", message)
