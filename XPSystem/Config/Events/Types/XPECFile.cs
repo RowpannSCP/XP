@@ -12,11 +12,34 @@
     public abstract class XPECFile
     {
         /// <summary>
+        /// The key of the file.
+        /// Set by <see cref="XPECManager"/> upon loading.
+        /// </summary>
+        internal string Key;
+
+        /// <summary>
         /// Gets an item with the specified keys.
+        /// Call base to log key usage.
         /// </summary>
         /// <param name="keys">The keys of the item.</param>
         /// <returns>The item.</returns>
-        public abstract XPECItem Get(params object[] keys);
+        public virtual XPECItem Get(params object[] keys)
+        {
+            if (Config.Debug || Config.LogXPGainedMethods)
+            {
+                string fullKey = $"{Key}/{string.Join("/", keys ?? Array.Empty<object>())}";
+                LogDebug("Key retrieved: " + fullKey);
+
+                if (Config.LogXPGainedMethods)
+                {
+                    XPECManager.KeyUsage[fullKey] = XPECManager.KeyUsage.TryGetValue(fullKey, out int count)
+                        ? count + 1
+                        : 1;
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Applies the contents of the specified parser to this file.

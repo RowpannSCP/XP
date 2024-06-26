@@ -183,7 +183,6 @@
             RoleTypeId.Overwatch
         };
 
-        public static bool LogKeys = false;
         public static Dictionary<string, int> KeyUsage = new();
 
         /// <summary>
@@ -252,14 +251,6 @@
             var file = GetFile(key, role);
             var item = file?.Get(subkeys);
 
-            if (item != null && LogKeys)
-            {
-                string fullKey = $"{key}/{string.Join("/", subkeys ?? Array.Empty<object>())}";
-                KeyUsage[fullKey] = KeyUsage.TryGetValue(fullKey, out int count)
-                        ? count + 1
-                        : 1;
-            }
-
             return item;
         }
 
@@ -292,6 +283,7 @@
                         .Replace(".yml", "")
                         .TrimStart('/');
 
+                    deserialized.Key = key;
                     collection.Files.Add(key, deserialized);
                 }
                 catch (Exception e)
@@ -315,6 +307,7 @@
                         continue;
                     }
 
+                    needed.Value.Key = needed.Key;
                     collection.Files.Add(needed);
                     File.WriteAllText(GetFilePath(needed.Key, dir), Serializer.Serialize(needed.Value));
 

@@ -105,7 +105,7 @@
             XPPlayer.PlayersValue.Clear();
         }
 
-        protected void OnPlayedDied(XPPlayer player, XPPlayer attacker) => attacker.TryAddXPAndDisplayMessage("kill", player.Role);
+        protected void OnPlayedDied(XPPlayer attacker, RoleTypeId targetRole) => attacker.TryAddXPAndDisplayMessage("kill", targetRole);
         protected void OnPlayerUpgradedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("upgrade", item);
         protected void OnPlayerPickedUpItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("pickup", item);
         protected void OnPlayerDroppedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("drop", item);

@@ -41,10 +41,9 @@
                 return false;
             }
 
-            object[] subkeys = null;
+            List<object> subkeys = new List<object>();
             if (arguments.Count > 1)
             {
-                List<object> subkeyList = new();
                 var types = file.ParametersTypes;
                 var subkeysStrings = arguments
                     .Skip(1)
@@ -55,20 +54,25 @@
                     var @string = subkeysStrings[i];
                     if (types.Length <= i)
                     {
-                        subkeyList.Add(@string);
+                        subkeys.Add(@string);
                         continue;
                     }
 
+                    bool success = false;
                     Exception e = null;
                     var argTypes = types[i];
                     foreach (var type in argTypes)
                     {
                         try
                         {
-                            var converted = type.IsEnum ? Enum.Parse(type, @string, true) : Convert.ChangeType(@string, type);
+                            var converted = type.IsEnum
+                                ? Enum.Parse(type, @string, true)
+                                : Convert.ChangeType(@string, type);
+
                             if (converted != null)
                             {
-                                subkeyList.Add(converted);
+                                subkeys.Add(converted);
+                                success = true;
                                 break;
                             }
                         }
@@ -78,15 +82,16 @@
                         }
                     }
 
-                    response =
-                        $"Could not convert argument at {i}: {@string} to any of the specified types, last error {e?.ToString() ?? "null"}";
-                    return false;
+                    if (!success)
+                    {
+                        response =
+                            $"Could not convert argument at {i}: {@string} to any of the specified types, last error {e?.ToString() ?? "null"}";
+                        return false;
+                    }
                 }
-
-                subkeys = subkeyList.ToArray();
             }
 
-            var item = file.Get(subkeys);
+            var item = file.Get(subkeys.ToArray());
             if (item == null)
             {
                 response = "Item null.";
@@ -95,9 +100,7 @@
 
             var sb = StringBuilderPool.Shared.Rent();
             foreach (var property in item.GetType().GetProperties())
-            {
                 sb.AppendLine($"{property.Name}: {property.GetValue(item)}");
-            }
 
             response = StringBuilderPool.Shared.ToStringReturn(sb);
             return true;
