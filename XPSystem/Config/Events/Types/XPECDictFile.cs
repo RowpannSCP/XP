@@ -17,6 +17,7 @@
         /// <inheritdoc />
         public override XPECItem Get(params object[] keys)
         {
+            base.Get(keys);
             if (keys == null || keys.Length == 0)
                 return Default;
 

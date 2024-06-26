@@ -42,7 +42,7 @@
             if (IsNull(player) || IsNull(attacker))
                 return;
 
-            OnPlayedDied(player, attacker);
+            OnPlayedDied(attacker, player.Role);
         }
 
         [PluginEvent(ServerEventType.Scp914PickupUpgraded)]

@@ -8,6 +8,10 @@
         public XPECItem Item { get; set; }
 
         /// <inheritdoc />
-        public override XPECItem Get(params object[] keys) => Item;
+        public override XPECItem Get(params object[] keys)
+        {
+            base.Get(keys);
+            return Item;
+        }
     }
 }
