@@ -1,4 +1,4 @@
-﻿namespace XPSystem.Commands.User
+﻿namespace XPSystem.Commands.Client
 {
     using System;
     using System.Linq;

@@ -406,9 +406,15 @@
             {
                 message = Config.AddedXPTemplate
                     .Replace("%message%", message)
-                    .Replace("%currentxp%", playerInfo.XP.ToString())
+                    .Replace("%currentxp%", (Config.UseTotalXP
+                        ? playerInfo.XP
+                        : playerInfo.XP - playerInfo._levelNeededXP)
+                        .ToString())
                     .Replace("%currentlevel%", playerInfo.Level.ToString())
-                    .Replace("%neededxp%", playerInfo.NeededXP.ToString())
+                    .Replace("%neededxp%", (Config.UseTotalXP
+                        ? playerInfo.NeededXP
+                        : playerInfo.NeededXP - playerInfo._levelNeededXP)
+                        .ToString())
                     .Replace("%nextlevel%", (playerInfo.Level + 1).ToString());
             }
 

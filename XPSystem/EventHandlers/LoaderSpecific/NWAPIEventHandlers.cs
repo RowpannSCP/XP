@@ -4,6 +4,7 @@
     using InventorySystem.Items.Pickups;
     using MEC;
     using PlayerRoles;
+    using PlayerRoles.Ragdolls;
     using PlayerStatsSystem;
     using PluginAPI.Core;
     using PluginAPI.Core.Attributes;
@@ -36,7 +37,7 @@
         [PluginEvent(ServerEventType.RoundRestart)]
         private void RoundRestarting() => OnRoundRestarting();
 
-        [PluginEvent(ServerEventType.PlayerDeath)]
+        [PluginEvent(ServerEventType.PlayerDying)]
         private void PlayerDied(Player player, Player attacker, DamageHandlerBase damageHandler)
         {
             if (IsNull(player) || IsNull(attacker))
@@ -75,6 +76,9 @@
 
         [PluginEvent(ServerEventType.PlayerEscape)]
         private void OnPlayerEscaped(Player player, RoleTypeId role) => OnPlayerEscaped(player);
+
+        [PluginEvent(ServerEventType.Scp049ResurrectBody)]
+        public void OnScp049ResurrectBody(Player player, Player target, BasicRagdoll body) => OnPlayerResurrected(player);
     }
 #endif
 }

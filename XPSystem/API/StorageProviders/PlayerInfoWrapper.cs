@@ -57,6 +57,7 @@
         }
 
         private int _level;
+        internal int _levelNeededXP;
         private int _lastCalculatedLevelXP;
 
         /// <summary>
@@ -69,7 +70,7 @@
                 if (_lastCalculatedLevelXP != XP)
                 {
                     _lastCalculatedLevelXP = XP;
-                    _level = LevelCalculator.GetLevel(XP);
+                    _level = LevelCalculator.GetLevel(XP, out _levelNeededXP);
                 }
 
                 return _level;

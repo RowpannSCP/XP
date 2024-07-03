@@ -113,5 +113,6 @@
 
         protected void OnPlayerSpawned(XPPlayer player) => player.TryAddXPAndDisplayMessage("spawn");
         protected void OnPlayerEscaped(XPPlayer player) => player.TryAddXPAndDisplayMessage("escape");
+        protected void OnPlayerResurrected(XPPlayer scp049) => scp049.TryAddXPAndDisplayMessage("resurrect");
     }
 }

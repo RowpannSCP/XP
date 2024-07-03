@@ -123,6 +123,14 @@
                     Translation = "Your team won!"
                 }
             },
+            ["resurrect"] = new XPECItemFile()
+            {
+                Item = new ()
+                {
+                    Amount = 20,
+                    Translation = "You resurrected a body as SCP-049!"
+                }
+            },
 #if EXILED
             ["throw"] = new XPECDictFile<Exiled.API.Enums.ProjectileType>()
             {

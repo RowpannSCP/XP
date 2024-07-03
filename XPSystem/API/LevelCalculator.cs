@@ -45,16 +45,18 @@
         /// <returns>The level reached.</returns>
         public static int GetLevel(PlayerInfo playerInfo)
         {
-            return GetLevel(playerInfo.XP);
+            return GetLevel(playerInfo.XP, out _);
         }
 
         /// <summary>
         /// Gets the level reached with the specified amount of XP.
         /// </summary>
         /// <param name="xp">The amount of XP.</param>
+        /// <param name="xpNeededCurrent">The amount needed for the current level.</param>
         /// <returns>The level reached.</returns>
-        public static int GetLevel(int xp)
+        public static int GetLevel(int xp, out int xpNeededCurrent)
         {
+            xpNeededCurrent = 0;
             if (xp < 0)
                 return 0;
 
@@ -62,6 +64,7 @@
                 return int.MaxValue;
 
             int level = 0;
+            int totalNeeded = 0;
             int xpPerLevel = (int)Config.XPPerLevel;
 
             if (_xpNeededForLevel.Any() && xp > _firstIncreaseXP)
@@ -71,13 +74,17 @@
                     if (kvp.Value.neededXP > xp)
                         break;
 
-                    level = (int)kvp.Key;
                     xp -= kvp.Value.neededXP;
+
+                    level = (int)kvp.Key;
                     xpPerLevel = kvp.Value.xpPerLevel;
+                    totalNeeded = kvp.Value.neededXP;
                 }
             }
 
-            return level + (xp / xpPerLevel);
+            int over = (xp / xpPerLevel);
+            xpNeededCurrent = totalNeeded + (over * xpPerLevel);
+            return level + over;
         }
 
         /// <summary>

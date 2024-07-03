@@ -3,6 +3,7 @@
     using System;
     using Exiled.Events.EventArgs.Interfaces;
     using Exiled.Events.EventArgs.Player;
+    using Exiled.Events.EventArgs.Scp049;
     using Exiled.Events.EventArgs.Scp914;
     using Exiled.Events.EventArgs.Server;
     using XPSystem.API;
@@ -28,6 +29,8 @@
             Exiled.Events.Handlers.Player.Spawned += PlayerSpawned;
             Exiled.Events.Handlers.Player.Escaping += PlayerEscaping;
 
+            Exiled.Events.Handlers.Scp049.FinishingRecall += Scp049FinishingRecall;
+
             Exiled.Events.Handlers.Player.ThrownProjectile += PlayerThrown;
             Exiled.Events.Handlers.Player.InteractingDoor += PlayerInteractingDoor;
             Exiled.Events.Handlers.Player.ActivatingGenerator += PlayerActivatingGenerator;
@@ -49,6 +52,8 @@
             Exiled.Events.Handlers.Player.UsedItem -= PlayerUsedItem;
             Exiled.Events.Handlers.Player.Spawned -= PlayerSpawned;
             Exiled.Events.Handlers.Player.Escaping -= PlayerEscaping;
+
+            Exiled.Events.Handlers.Scp049.FinishingRecall -= Scp049FinishingRecall;
 
             Exiled.Events.Handlers.Player.ThrownProjectile -= PlayerThrown;
             Exiled.Events.Handlers.Player.InteractingDoor -= PlayerInteractingDoor;
@@ -116,6 +121,14 @@
                 return;
 
             OnPlayerEscaped(ev.Player);
+        }
+
+        private void Scp049FinishingRecall(FinishingRecallEventArgs ev)
+        {
+            if (!ev.IsAllowed)
+                return;
+
+            OnPlayerResurrected(ev.Player);
         }
 
         private void PlayerThrown(ThrownProjectileEventArgs ev)

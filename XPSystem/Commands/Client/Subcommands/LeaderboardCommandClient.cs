@@ -4,7 +4,7 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class LeaderboardCommandClient : SanitizedInputCommand
+    public class LeaderboardCommandClient : SanitizedInputCommand, IAliasableCommand
     {
         public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
@@ -37,8 +37,9 @@
             return true;
         }
 
-        public override string Command { get; } = "leaderboard";
-        public override string[] Aliases { get; } = new[] { "lb" };
+        public string CommandOverride { get; set; } = "leaderboard";
+        public override string Command => CommandOverride;
+        public override string[] Aliases { get; } = Array.Empty<string>();
         public override string Description { get; } = "Get the top players.";
     }
 }

@@ -176,6 +176,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="API\Badge.cs" />
         <Compile Include="API\DisplayProviders\IXPDisplayProvider.cs" />
         <Compile Include="API\DisplayProviders\IXPDisplayProviderConfig.cs" />
         <Compile Include="API\DisplayProviders\SyncVarXPDisplayProvider.cs" />
@@ -217,8 +218,10 @@
         <Compile Include="Commands\Admin\Subcommands\SetLevelCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\ShowMessageCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\VariablesCommand.cs" />
+        <Compile Include="Commands\Client\ClientAliasManager.cs" />
         <Compile Include="Commands\Client\Subcommands\GetCommandClient.cs" />
         <Compile Include="Commands\Client\Subcommands\LeaderboardCommandClient.cs" />
+        <Compile Include="Commands\IAliasableCommand.cs" />
         <Compile Include="Commands\Console\ConsoleParentCommand.cs" />
         <Compile Include="Commands\Console\Subcommands\DeleteEverythingCommand.cs" />
         <Compile Include="Commands\Console\Subcommands\MigrateCommand.cs" />
@@ -237,7 +240,6 @@
         <Compile Include="Config\Events\XPECLimitTracker.cs" />
         <Compile Include="Config\Events\XPECManager.cs" />
         <Compile Include="Config\ExiledConfig.cs" />
-        <Compile Include="Config\Models\Badge.cs" />
         <Compile Include="Config\NwAPIConfig.cs" />
         <Compile Include="Config\UninitializedConfig.cs" />
         <Compile Include="Config\YamlConverters\CommentGatheringTypeInspector.cs" />

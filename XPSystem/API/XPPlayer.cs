@@ -270,12 +270,12 @@
             if (fakeSyncVar)
             {
                 SendFakeSyncVars(typeof(ServerRoles), nameof(ServerRoles.Network_myText), badge.Text);
-                SendFakeSyncVars(typeof(ServerRoles), nameof(ServerRoles.Network_myColor), badge.Color.ToString().ToLower());
+                SendFakeSyncVars(typeof(ServerRoles), nameof(ServerRoles.Network_myColor), badge.Color);
             }
             else
             {
                 Hub.serverRoles.SetText(badge.Text);
-                Hub.serverRoles.SetColor(badge.Color.ToString().ToLower());
+                Hub.serverRoles.SetColor(badge.Color);
             }
         }
 

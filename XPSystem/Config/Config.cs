@@ -47,6 +47,9 @@
         [Description("When enabled, template used for messages that modify xp. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
         public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
 
+        [Description("Whether or not to use the total xp instead of onky the xp required for the next level. Requires extra calculations.")]
+        public bool UseTotalXP { get; set; } = true;
+
         [Description("Whether or not to show a message to a player if they advance a level.")]
         public bool ShowAddedLVL { get; set; } = true;
 
@@ -64,6 +67,12 @@
 
         [Description("Prepended to all messages.")]
         public string TextSuffix { get; set; } = "";
+
+        [Description("An alias for the client to view their own xp. Empty to disable.")]
+        public string ClientGetCommandAlias { get; set; } = "";
+
+        [Description("An alias for the client to view the leaderboard. Empty to disable.")]
+        public string ClientLeaderboardCommandAlias { get; set; } = "";
 
         [Description("The assembly qualified type name of the storage provider to use (default: XPSystem.BuiltInProviders.LiteDB.LiteDBProvider) (not assembly qualified because it's built-in, unlike yours)." +
                      "Available, but I will not help you with: XPSystem.BuiltInProviders.MySql.MySqlProvider")]

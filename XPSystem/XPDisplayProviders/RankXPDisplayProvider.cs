@@ -19,7 +19,7 @@
         protected override (Type typeName, string methodName, Func<XPPlayer, Badge, object> getFakeSyncVar, Func<XPPlayer, object> getResyncVar)[] SyncVars { get; } =
         {
             (typeof(ServerRoles), nameof(ServerRoles.Network_myText), (_, obj) => obj.Text, player => player.BadgeText),
-            (typeof(ServerRoles), nameof(ServerRoles.Network_myColor), (_, obj) => obj.Color.ToString().ToLower(), player => player.BadgeColor)
+            (typeof(ServerRoles), nameof(ServerRoles.Network_myColor), (_, obj) => obj.Color, player => player.BadgeColor)
         };
 
         protected override Badge CreateObject(XPPlayer player, PlayerInfoWrapper playerInfo)
@@ -31,7 +31,7 @@
             string format = !player.HasBadge || player.HasHiddenBadge
                 ? Config.BadgeStructureNoBadge
                 : Config.BadgeStructure;
-            Misc.PlayerInfoColorTypes color = Misc.PlayerInfoColorTypes.White;
+            string color = "default";
 
             foreach (var kvp in Config.SortedBadges)
             {
@@ -46,13 +46,7 @@
                 return null;
 
             if (player.HasBadge && !Config.OverrideColor)
-            {
-                if (!Enum.TryParse(player.BadgeColor, true, out color))
-                {
-                    XPAPI.LogWarn("Could not parse badge color: " + player.BadgeColor);
-                    color = badge.Color;
-                }
-            }
+                color = player.BadgeColor;
 
             return new Badge()
             {
@@ -81,6 +75,15 @@
                 return true;
 
             return !(player.HasHiddenBadge && (player == target || target.CanViewHiddenBadge));
+        }
+
+        public override void Enable()
+        {
+            base.Enable();
+
+            Config.DNTBadge.ValidateColor();
+            foreach (var kvp in Config.Badges)
+                kvp.Value.ValidateColor();
         }
 
         internal static class HiddenBadgePatch
@@ -141,7 +144,7 @@
             public Badge DNTBadge { get; set; } = new()
             {
                 Text = "(DNT) anonymous man????",
-                Color = Misc.PlayerInfoColorTypes.Nickel
+                Color = Misc.PlayerInfoColorTypes.Nickel.ToString()
             };
 
             private Dictionary<int, Badge> _sortedBadges;
@@ -156,27 +159,27 @@
                 [0] = new Badge
                 {
                     Text = "Visitor",
-                    Color = Misc.PlayerInfoColorTypes.Cyan
+                    Color = Misc.PlayerInfoColorTypes.Cyan.ToString()
                 },
                 [1] = new Badge
                 {
                     Text = "Junior",
-                    Color = Misc.PlayerInfoColorTypes.Orange
+                    Color = Misc.PlayerInfoColorTypes.Orange.ToString()
                 },
                 [5] = new Badge
                 {
                     Text = "Senior",
-                    Color = Misc.PlayerInfoColorTypes.Yellow
+                    Color = Misc.PlayerInfoColorTypes.Yellow.ToString()
                 },
                 [10] = new Badge
                 {
                     Text = "Veteran",
-                    Color = Misc.PlayerInfoColorTypes.Red
+                    Color = Misc.PlayerInfoColorTypes.Red.ToString()
                 },
                 [50] = new Badge
                 {
                     Text = "Nerd",
-                    Color = Misc.PlayerInfoColorTypes.Lime
+                    Color = Misc.PlayerInfoColorTypes.Lime.ToString()
                 }
             };
         }
