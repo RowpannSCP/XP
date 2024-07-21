@@ -25,7 +25,12 @@
         protected override Badge CreateObject(XPPlayer player, PlayerInfoWrapper playerInfo)
         {
             if (player.DNT)
+            {
+                if (player.HasBadge && !player.HasHiddenBadge)
+                    return null;
+
                 return Config.DNTBadge;
+            }
 
             Badge badge = null;
             string format = !player.HasBadge || player.HasHiddenBadge
@@ -106,7 +111,7 @@
                 {
                     if (provider is RankXPDisplayProvider rankProvider && rankProvider.Config.PatchBadgeCommands)
                     {
-                        Timing.CallDelayed(.5f, () =>
+                        Timing.CallDelayed(.5f + XPAPI.Config.ExtraDelay, () =>
                         {
                             rankProvider.RefreshOf(instance._hub);
                         });

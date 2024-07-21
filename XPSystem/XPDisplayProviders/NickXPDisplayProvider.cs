@@ -33,7 +33,7 @@
                 {
                     if (provider is NickXPDisplayProvider nickProvider && nickProvider.Config.PatchNickCommand)
                     {
-                        Timing.CallDelayed(.5f, () =>
+                        Timing.CallDelayed(.5f + XPAPI.Config.ExtraDelay, () =>
                         {
                             nickProvider.RefreshOf(__instance._hub);
                         });

@@ -1,14 +1,47 @@
 ﻿namespace XPSystem.API
 {
-    using System.Collections.Generic;
-    using System.Linq;
+    using System;
+    using NCalc;
     using XPSystem.API.StorageProviders.Models;
     using static XPAPI;
 
     public static class LevelCalculator
     {
-        private static readonly Dictionary<uint, (int xpPerLevel, int neededXP)> _xpNeededForLevel = new();
-        private static int _firstIncreaseXP = 0;
+        /// <summary>
+        /// Gets the <see cref="Expression"/> used to calculate the level.
+        /// </summary>
+        public static Expression Expression { get; private set; }
+
+        /// <summary>
+        /// Gets the inverse of the <see cref="Expression"/>. Used to calculate the XP needed for a level.
+        /// </summary>
+        public static Expression InverseExpression { get; private set; }
+
+        /// <summary>
+        /// Gets the level of the specified <see cref="PlayerInfo"/>.
+        /// </summary>
+        /// <param name="playerInfo">The player info.</param>
+        /// <returns>The level reached.</returns>
+        public static int GetLevel(PlayerInfo playerInfo) => GetLevel(playerInfo.XP);
+
+        /// <summary>
+        /// Gets the level reached with the specified amount of XP.
+        /// </summary>
+        /// <param name="xp">The amount of XP.</param>
+        /// <returns>The level reached.</returns>
+        public static int GetLevel(int xp)
+        {
+            try
+            {
+                Expression.Parameters["xp"] = xp;
+                return Convert.ToInt32(Expression.Evaluate() ?? 0);
+            }
+            catch (Exception e)
+            {
+                LogError($"Error calculating level: {e}");
+                return 0;
+            }
+        }
 
         /// <summary>
         /// Gets the XP needed for the specified level.
@@ -17,105 +50,45 @@
         /// <returns>The XP needed.</returns>
         public static int GetXP(int level)
         {
-            if (level <= 0)
-                return 0;
-
-            int xp = 0;
-            int xpPerLevel = (int)Config.XPPerLevel;
-
-            if (_xpNeededForLevel.Any())
+            try
             {
-                foreach (var kvp in _xpNeededForLevel)
-                {
-                    if (kvp.Key > level)
-                        break;
+                InverseExpression.Parameters["level"] = level;
+                return Convert.ToInt32(InverseExpression.Evaluate() ?? 0);
+            }
+            catch (Exception e)
+            {
+                LogError($"Error calculating XP: {e}");
+                return 0;
+            }
+        }
 
-                    xp += kvp.Value.neededXP;
-                    xpPerLevel = kvp.Value.xpPerLevel;
-                }
+        /// <summary>
+        /// Initializes the <see cref="Expression"/>.
+        /// </summary>
+        public static void Init()
+        {
+            try
+            {
+                Expression = new Expression(Config.LevelFunction);
+            }
+            catch (Exception e)
+            {
+                LogError($"Error initializing level function: {e}");
             }
 
-            return xp + (level * xpPerLevel);
-        }
-
-        /// <summary>
-        /// Gets the level of the specified <see cref="PlayerInfo"/>.
-        /// </summary>
-        /// <param name="playerInfo">The player info.</param>
-        /// <returns>The level reached.</returns>
-        public static int GetLevel(PlayerInfo playerInfo)
-        {
-            return GetLevel(playerInfo.XP, out _);
-        }
-
-        /// <summary>
-        /// Gets the level reached with the specified amount of XP.
-        /// </summary>
-        /// <param name="xp">The amount of XP.</param>
-        /// <param name="xpNeededCurrent">The amount needed for the current level.</param>
-        /// <returns>The level reached.</returns>
-        public static int GetLevel(int xp, out int xpNeededCurrent)
-        {
-            xpNeededCurrent = 0;
-            if (xp < 0)
-                return 0;
-
-            if (Config.XPPerLevel == 0)
-                return int.MaxValue;
-
-            int level = 0;
-            int totalNeeded = 0;
-            int xpPerLevel = (int)Config.XPPerLevel;
-
-            if (_xpNeededForLevel.Any() && xp > _firstIncreaseXP)
+            try
             {
-                foreach (var kvp in _xpNeededForLevel)
-                {
-                    if (kvp.Value.neededXP > xp)
-                        break;
-
-                    xp -= kvp.Value.neededXP;
-
-                    level = (int)kvp.Key;
-                    xpPerLevel = kvp.Value.xpPerLevel;
-                    totalNeeded = kvp.Value.neededXP;
-                }
+                InverseExpression = new Expression(Config.XPFunction);
+            }
+            catch (Exception e)
+            {
+                LogError($"Error initializing inverse level function: {e}");
             }
 
-            int over = (xp / xpPerLevel);
-            xpNeededCurrent = totalNeeded + (over * xpPerLevel);
-            return level + over;
-        }
-
-        /// <summary>
-        /// Does some precalculation.
-        /// Called on config change.
-        /// </summary>
-        public static void Precalculate()
-        {
-            _xpNeededForLevel.Clear();
-
-            bool first = true;
-            int alreadyRequiredXP = 0;
-            int previousLevelStart = 0;
-            int previousXPPerLevel = (int)Config.XPPerLevel;
-
-            foreach (var kvp in Config.XPPerLevelExtra.OrderBy(x => x.Key))
+            foreach (var kvp in Config.AdditionalFunctionParameters)
             {
-                int key = (int)kvp.Key;
-                int xpPerLevel = (int)(Config.XPPerLevel + kvp.Value);
-                alreadyRequiredXP += previousXPPerLevel * (key - previousLevelStart);
-
-                if (first)
-                {
-                    _firstIncreaseXP = alreadyRequiredXP;
-                    first = false;
-                }
-
-                _xpNeededForLevel[kvp.Key] = (xpPerLevel, alreadyRequiredXP);
-
-                previousLevelStart = key;
-                previousXPPerLevel = xpPerLevel;
+                Expression.Parameters[kvp.Key] = kvp.Value;
+                InverseExpression.Parameters[kvp.Key] = kvp.Value;
             }
         }
     }

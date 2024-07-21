@@ -28,13 +28,12 @@
             }
 
             response = null;
-            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out var playerInfo, out var playerId,
-                    out string nickname))
+            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out var playerInfo, out var playerId))
                 return false;
 
             playerInfo.XP += amount;
 
-            response = $"Gave {amount} XP to {playerId.ToString()} ({nickname}).";
+            response = $"Gave {amount} XP to {playerId.ToString()} ({playerInfo.Nickname}).";
             return true;
         }
 

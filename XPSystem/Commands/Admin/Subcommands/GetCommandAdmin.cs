@@ -17,11 +17,10 @@
             XPAPI.EnsureStorageProviderValid();
 
             response = null;
-            if (!DoThingWithArgs(ref arguments, 0, player, ref response, out var playerInfo, out var playerId,
-                    out string nickname))
+            if (!DoThingWithArgs(ref arguments, 0, player, ref response, out var playerInfo, out var playerId))
                 return false;
 
-            response = $"{playerId.ToString()} ({nickname})] XP: {playerInfo.XP} (Level {playerInfo.Level})";
+            response = $"{playerId.ToString()} ({playerInfo.Nickname})] XP: {playerInfo.XP} (Level {playerInfo.Level})";
             return true;
         }
 

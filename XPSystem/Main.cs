@@ -5,6 +5,7 @@
     using System.IO;
     using System.Linq;
     using HarmonyLib;
+    using NCalc;
     using XPSystem.API;
     using XPSystem.API.Legacy;
     using XPSystem.API.StorageProviders;
@@ -157,7 +158,7 @@
                 Directory.CreateDirectory(eventConfigsFolder);
                 XPECManager.Load(eventConfigsFolder);
 
-                LevelCalculator.Precalculate();
+                LevelCalculator.Init();
                 DisplayProviders.Enable();
             }
             catch (Exception e)

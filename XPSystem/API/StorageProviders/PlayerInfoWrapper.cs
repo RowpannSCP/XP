@@ -34,30 +34,51 @@
             set => AddXP(this, value - XP);
         }
 
-        private int _neededXP;
-        private int _lastCalculatedNeededXP;
-        private int _lastCalculatedNeededReload = -1;
+        private int _neededXPNext;
+        private int _lastCalculatedNeededNext;
+        private int _lastCalculatedNeededNextReload = -1;
 
         /// <summary>
         /// Gets the amount of XP needed for the next level.
         /// </summary>
-        public int NeededXP
+        public int NeededXPNext
         {
             get
             {
-                if (_lastCalculatedNeededXP != XP || _lastCalculatedNeededReload != Main.Reload)
+                if (_lastCalculatedNeededNext != XP || _lastCalculatedNeededNextReload != Main.Reload)
                 {
-                    _lastCalculatedNeededXP = XP;
-                    _lastCalculatedNeededReload = Main.Reload;
-                    _neededXP = LevelCalculator.GetXP(Level + 1);
+                    _lastCalculatedNeededNext = XP;
+                    _lastCalculatedNeededNextReload = Main.Reload;
+                    _neededXPNext = LevelCalculator.GetXP(Level + 1);
                 }
 
-                return _neededXP;
+                return _neededXPNext;
+            }
+        }
+        
+        private int _neededXPCurrent;
+        private int _lastCalculatedNeededCurrent;
+        private int _lastCalculatedNeededCurrentReload = -1;
+        
+        /// <summary>
+        /// Gets the amount of XP needed for the current level.
+        /// </summary>
+        public int NeededXPCurrent
+        {
+            get
+            {
+                if (_lastCalculatedNeededCurrent != XP || _lastCalculatedNeededCurrentReload != Main.Reload)
+                {
+                    _lastCalculatedNeededCurrent = XP;
+                    _lastCalculatedNeededCurrentReload = Main.Reload;
+                    _neededXPCurrent = LevelCalculator.GetXP(Level);
+                }
+
+                return _neededXPCurrent;
             }
         }
 
         private int _level;
-        internal int _levelNeededXP;
         private int _lastCalculatedLevelXP;
 
         /// <summary>
@@ -70,15 +91,18 @@
                 if (_lastCalculatedLevelXP != XP)
                 {
                     _lastCalculatedLevelXP = XP;
-                    _level = LevelCalculator.GetLevel(XP, out _levelNeededXP);
+                    _level = LevelCalculator.GetLevel(XP);
                 }
 
                 return _level;
             }
             set
             {
-                XP = LevelCalculator.GetXP(value);
+                int xp =  LevelCalculator.GetXP(value);
+
                 _level = value;
+                _lastCalculatedLevelXP = xp;
+                XP = xp;
             }
         }
 

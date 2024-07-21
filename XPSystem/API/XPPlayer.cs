@@ -120,6 +120,11 @@
         public RoleTypeId Role => Hub.roleManager.CurrentRole.RoleTypeId;
 
         /// <summary>
+        /// Gets the <see cref="RoundSummary.LeadingTeam"/> of the player's team.
+        /// </summary>
+        public RoundSummary.LeadingTeam LeadingTeam => Role.GetTeam().GetLeadingTeam();
+
+        /// <summary>
         /// Gets or sets the player's XP multiplier.
         /// All XP added by methods (all built-in except for directly via non-wrapper) that respect this value will be multiplied by this value.
         /// </summary>

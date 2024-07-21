@@ -21,12 +21,10 @@
         /// <param name="response">The response to be sent back to the player.</param>
         /// <param name="playerInfo">The targeted player's info, if found, otherwise default.</param>
         /// <param name="playerId">The targeted player's id, if found, otherwise 0.</param>
-        /// <param name="nickname">The targeted player's nickname, if found, otherwise null.</param>
         /// <returns>Whether the operation was successful (whether or not to return immediately after).</returns>
         /// <remarks>If the argument count and the target player's argument position don't match, the sender will become the targeted player.</remarks>
-        protected bool DoThingWithArgs(ref ArraySegment<string> arguments, byte targetPlayerArgumentIndex, XPPlayer player, ref string response, out PlayerInfoWrapper playerInfo, out PlayerId playerId, out string nickname)
+        protected bool DoThingWithArgs(ref ArraySegment<string> arguments, byte targetPlayerArgumentIndex, XPPlayer player, ref string response, out PlayerInfoWrapper playerInfo, out PlayerId playerId)
         {
-            nickname = null;
             playerId = default;
             playerInfo = default;
 
@@ -38,7 +36,6 @@
                 if (XPPlayer.TryGet(arg, out player))
                 {
                     playerId = player.PlayerId;
-                    nickname = player.Nickname;
                 }
                 else
                 {
@@ -48,15 +45,12 @@
                         response = "Invalid player.";
                         return false;
                     }
-
-                    nickname = "OFFLINE";
                 }
             }
             // Player not specified, use sender.
             else
             {
                 playerId = player.PlayerId;
-                nickname = "You";
             }
 
             if (XPAPI.StorageProvider.TryGetPlayerInfo(playerId, out playerInfo))

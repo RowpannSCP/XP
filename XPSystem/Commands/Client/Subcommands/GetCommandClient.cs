@@ -16,7 +16,7 @@
 
             var log = player.GetPlayerInfo();
 
-            response = $"LVL: {log.Level} | XP: {log.XP}";
+            response = $"LVL: {log.Level} | XP: {log.XP} | Needed XP: {log.NeededXPNext}";
             return true;
         }
 

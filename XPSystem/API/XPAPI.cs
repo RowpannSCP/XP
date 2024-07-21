@@ -93,11 +93,6 @@
         public static bool XPGainPaused { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the global XP multiplier.
-        /// </summary>
-        public static float GlobalXPMultiplier { get; set; } = 1f;
-
-        /// <summary>
         /// Prints a debug message, if debug is enabled.
         /// Not too different from your loader's LogDebug.
         /// </summary>
@@ -310,7 +305,7 @@
                     floatAmount *= player.XPMultiplier;
 
                 if (connected || Config.GlobalXPMultiplierForNonOnline)
-                    floatAmount *= GlobalXPMultiplier;
+                    floatAmount *= Config.GlobalXPMultiplier;
             }
 
             amount = (int)floatAmount;
@@ -408,12 +403,12 @@
                     .Replace("%message%", message)
                     .Replace("%currentxp%", (Config.UseTotalXP
                         ? playerInfo.XP
-                        : playerInfo.XP - playerInfo._levelNeededXP)
+                        : playerInfo.XP - playerInfo.NeededXPCurrent)
                         .ToString())
                     .Replace("%currentlevel%", playerInfo.Level.ToString())
                     .Replace("%neededxp%", (Config.UseTotalXP
-                        ? playerInfo.NeededXP
-                        : playerInfo.NeededXP - playerInfo._levelNeededXP)
+                        ? playerInfo.NeededXPNext
+                        : playerInfo.NeededXPNext - playerInfo.NeededXPCurrent)
                         .ToString())
                     .Replace("%nextlevel%", (playerInfo.Level + 1).ToString());
             }
