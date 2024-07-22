@@ -57,7 +57,7 @@
                     return;
                 }
 
-                Timing.CallDelayed(.5f, () =>
+                Timing.CallDelayed(.5f + Config.ExtraDelay, () =>
                 {
                     var playerInfo = player.GetPlayerInfo();
                     XPPlayerJoined.Invoke(player, playerInfo);
@@ -84,7 +84,10 @@
         {
             var roundwin = XPECManager.GetItem("win");
             foreach (var kvp in XPPlayer.Players)
-                kvp.Value.AddXPAndDisplayMessage(roundwin);
+            {
+                if (kvp.Value.LeadingTeam == leadingTeam)
+                    kvp.Value.AddXPAndDisplayMessage(roundwin);
+            }
 
             if (Config.LogXPGainedMethods)
             {
@@ -113,5 +116,6 @@
 
         protected void OnPlayerSpawned(XPPlayer player) => player.TryAddXPAndDisplayMessage("spawn");
         protected void OnPlayerEscaped(XPPlayer player) => player.TryAddXPAndDisplayMessage("escape");
+        protected void OnPlayerResurrected(XPPlayer scp049) => scp049.TryAddXPAndDisplayMessage("resurrect");
     }
 }

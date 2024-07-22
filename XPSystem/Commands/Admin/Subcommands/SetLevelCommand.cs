@@ -30,13 +30,12 @@
             }
 
             response = null;
-            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out var playerInfo, out var playerId,
-                    out string nickname))
+            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out var playerInfo, out var playerId))
                 return false;
 
             playerInfo.Level = level;
 
-            response = $"Set {playerId.ToString()} ({nickname})'s level to {level}.";
+            response = $"Set {playerId.ToString()} ({playerInfo.Nickname})'s level to {level}.";
             return true;
         }
 

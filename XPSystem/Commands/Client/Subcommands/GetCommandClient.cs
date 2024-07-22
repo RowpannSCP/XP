@@ -4,7 +4,7 @@
     using CommandSystem;
     using XPSystem.API;
 
-    public class GetCommandClient : SanitizedInputCommand
+    public class GetCommandClient : SanitizedInputCommand, IAliasableCommand
     {
         public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
@@ -16,11 +16,12 @@
 
             var log = player.GetPlayerInfo();
 
-            response = $"LVL: {log.Level} | XP: {log.XP}";
+            response = $"LVL: {log.Level} | XP: {log.XP} | Needed XP: {log.NeededXPNext}";
             return true;
         }
 
-        public override string Command { get; } = "get";
+        public string CommandOverride { get; set; } = "get";
+        public override string Command => CommandOverride;
         public override string[] Aliases { get; } = Array.Empty<string>();
         public override string Description { get; } = "Get your level and XP.";
     }

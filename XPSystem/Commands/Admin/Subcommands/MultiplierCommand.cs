@@ -21,18 +21,18 @@
             }
 
             float multiplier;
-            switch (arguments.At(0))
+            switch (arguments.At(0).ToLower())
             {
                 case "g":
                 case "global":
                     if (!float.TryParse(arguments.At(1), out multiplier))
                     {
-                        response = $"Global multiplier: {XPAPI.GlobalXPMultiplier}.";
+                        response = $"Global multiplier: {XPAPI.Config.GlobalXPMultiplier}.";
                         return true;
                     }
 
-                    XPAPI.GlobalXPMultiplier = multiplier;
-                    response = $"Global XP multiplier set to {multiplier}.";
+                    XPAPI.Config.GlobalXPMultiplier = multiplier;
+                    response = $"Global XP multiplier temporarily set to {multiplier}.";
                     return true;
                 case "p":
                 case "player":

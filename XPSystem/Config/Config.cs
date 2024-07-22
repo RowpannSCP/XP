@@ -9,21 +9,32 @@
         [Description("Print debug messages?")]
         public bool Debug { get; set; } = false;
 
-        [Description("The amount of XP required for each level.")]
-        public uint XPPerLevel { get; set; } = 100;
+        [Description("The function to calculate level for given xp. Parameter: xp. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
+        public string LevelFunction { get; set; } = "Floor(-50 + Sqrt(2450 + a * xp))";
+
+        [Description("The function to calculate xp needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
+        public string XPFunction { get; set; } = "Ceiling((level^2 + 100 * level + 50) / a)";
+
+        [Description("Additional parameters for the level/xp functions.")]
+        public Dictionary<string, double> AdditionalFunctionParameters { get; set; } = new()
+        {
+            { "a", 2 },
+        };
+
+        [Description("Override xp required for specific levels. Key: level, Value: xp.")]
+        public Dictionary<int, int> LevelXPOverrides { get; set; } = new()
+        {
+            [0] = 0
+        };
+
+        [Description("A global XP multiplier.")]
+        public float GlobalXPMultiplier { get; set; } = 1f;
 
         [Description("Whether or not the global XP multiplier should apply to xp given to people that aren't online (via commands, etc.).")]
         public bool GlobalXPMultiplierForNonOnline { get; set; } = true;
 
         [Description("Whether or not the global XP multiplier should apply to xp removed.")]
         public bool XPMultiplierForXPLoss { get; set; } = false;
-
-        [Description("The amount of XP required for each level in addition to XPPerLevel, starting at the specified level." +
-                     "Example: 10: 100, starting from level 10 to the next entry, XPPerLevel + 100XP will be required for each level.")]
-        public Dictionary<uint, uint> XPPerLevelExtra { get; set; } = new()
-        {
-            [10] = 100,
-        };
 
         [Description("Path to the event configs folder, relative to the ExtendedConfigPath.")]
         public string EventConfigsFolder { get; set; } = "XPEventConfigs";
@@ -37,6 +48,9 @@
         [Description("The maximum amount of entries that may be retrieved with the client leaderboard command.")]
         public byte LeaderboardMaxLength { get; set; } = 10;
 
+        [Description("Additional update delay for XP Display providers. Increasing may help when it only works for some players.")]
+        public float ExtraDelay { get; set; } = 0f;
+
         [Description("The message to show to players who have DNT enabled.")]
         public string DNTMessage { get; set; } =
             "We can't track your stats while you have DNT enabled in your game options!";
@@ -46,6 +60,9 @@
 
         [Description("When enabled, template used for messages that modify xp. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
         public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
+
+        [Description("Whether or not to use the total xp instead of only the xp required for the next level. Requires extra calculations if false.")]
+        public bool UseTotalXP { get; set; } = true;
 
         [Description("Whether or not to show a message to a player if they advance a level.")]
         public bool ShowAddedLVL { get; set; } = true;
@@ -64,6 +81,12 @@
 
         [Description("Prepended to all messages.")]
         public string TextSuffix { get; set; } = "";
+
+        [Description("An alias for the client to view their own xp. Empty to disable.")]
+        public string ClientGetCommandAlias { get; set; } = "";
+
+        [Description("An alias for the client to view the leaderboard. Empty to disable.")]
+        public string ClientLeaderboardCommandAlias { get; set; } = "";
 
         [Description("The assembly qualified type name of the storage provider to use (default: XPSystem.BuiltInProviders.LiteDB.LiteDBProvider) (not assembly qualified because it's built-in, unlike yours)." +
                      "Available, but I will not help you with: XPSystem.BuiltInProviders.MySql.MySqlProvider")]

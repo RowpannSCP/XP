@@ -8,6 +8,7 @@
     using XPSystem.API;
     using XPSystem.API.Legacy;
     using XPSystem.API.StorageProviders;
+    using XPSystem.Commands.Client;
     using XPSystem.Config;
     using XPSystem.Config.Events;
     using XPSystem.EventHandlers;
@@ -20,13 +21,18 @@
         : Exiled.API.Features.Plugin<ExiledConfig>
 #endif
     {
-        public const string VersionString = "2.0.5";
+        public const string VersionString = "2.0.6";
 
         /// <summary>
         /// This number is increased every time the plugin is reloaded.
         /// Store last calculated value to check if recalculation is needed.
         /// </summary>
         public static int Reload = 0;
+
+        /// <summary>
+        /// Invoked when <see cref="Reload"/> is incremented.
+        /// </summary>
+        public static event Action Reloaded = delegate { };
 
 #if EXILED
         private static readonly int[] _splitVersion = VersionString
@@ -76,6 +82,7 @@
             PluginEnabled = true;
 
             LiteDBMigrator.CheckMigration();
+            ClientAliasManager.RegisterAliases();
 
 #if STORENICKS
             LogInfo("STORENICKS");
@@ -96,11 +103,12 @@
             PluginEnabled = false;
             _eventHandlers.UnregisterEvents(this);
 
-            SetStorageProvider((IStorageProvider)null);
-            MessagingProvider = null;
-
             DisplayProviders.DisableAll();
             XPECLimitTracker.Disable();
+            ClientAliasManager.UnregisterAliases();
+
+            SetStorageProvider((IStorageProvider)null);
+            MessagingProvider = null;
 
             XPECManager.Default.Files.Clear();
             XPECManager.Overrides.Clear();
@@ -143,8 +151,6 @@
             {
                 Directory.CreateDirectory(Config.ExtendedConfigPath);
 
-                Reload++;
-
                 SetStorageProvider(Config.StorageProvider);
                 SetDisplayProviders(Config.AdditionalDisplayProviders);
 
@@ -154,8 +160,11 @@
                 Directory.CreateDirectory(eventConfigsFolder);
                 XPECManager.Load(eventConfigsFolder);
 
-                LevelCalculator.Precalculate();
+                LevelCalculator.Init();
                 DisplayProviders.Enable();
+
+                Reload++;
+                Reloaded.Invoke();
             }
             catch (Exception e)
             {

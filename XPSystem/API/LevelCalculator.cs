@@ -1,114 +1,117 @@
 ﻿namespace XPSystem.API
 {
+    using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using Flee.PublicTypes;
     using XPSystem.API.StorageProviders.Models;
     using static XPAPI;
 
     public static class LevelCalculator
     {
-        private static readonly Dictionary<uint, (int xpPerLevel, int neededXP)> _xpNeededForLevel = new();
-        private static int _firstIncreaseXP = 0;
+        private static Dictionary<int, int> XPLevelOverrides { get; } = new();
 
         /// <summary>
-        /// Gets the XP needed for the specified level.
+        /// Gets the <see cref="ExpressionContext"/> used for the <see cref="Expression"/>s.
         /// </summary>
-        /// <param name="level">The level.</param>
-        /// <returns>The XP needed.</returns>
-        public static int GetXP(int level)
-        {
-            if (level <= 0)
-                return 0;
+        public static ExpressionContext Context { get; private set; }
 
-            int xp = 0;
-            int xpPerLevel = (int)Config.XPPerLevel;
+        /// <summary>
+        /// Gets the <see cref="IGenericExpression{T}"/> used to calculate the level.
+        /// </summary>
+        public static IGenericExpression<double> Expression { get; private set; }
 
-            if (_xpNeededForLevel.Any())
-            {
-                foreach (var kvp in _xpNeededForLevel)
-                {
-                    if (kvp.Key > level)
-                        break;
-
-                    xp += kvp.Value.neededXP;
-                    xpPerLevel = kvp.Value.xpPerLevel;
-                }
-            }
-
-            return xp + (level * xpPerLevel);
-        }
+        /// <summary>
+        /// Gets the inverse of the <see cref="Expression"/>. Used to calculate the XP needed for a level.
+        /// </summary>
+        public static IGenericExpression<double> InverseExpression { get; private set; }
 
         /// <summary>
         /// Gets the level of the specified <see cref="PlayerInfo"/>.
         /// </summary>
         /// <param name="playerInfo">The player info.</param>
         /// <returns>The level reached.</returns>
-        public static int GetLevel(PlayerInfo playerInfo)
-        {
-            return GetLevel(playerInfo.XP);
-        }
+        public static int GetLevel(PlayerInfo playerInfo) => GetLevel(playerInfo.XP);
 
         /// <summary>
         /// Gets the level reached with the specified amount of XP.
         /// </summary>
         /// <param name="xp">The amount of XP.</param>
+        /// <param name="throw">Whether to throw an exception if an error occurs.</param>
         /// <returns>The level reached.</returns>
-        public static int GetLevel(int xp)
+        public static int GetLevel(int xp, bool @throw = false)
         {
-            if (xp < 0)
-                return 0;
+            if (XPLevelOverrides.TryGetValue(xp, out int level))
+                return level;
 
-            if (Config.XPPerLevel == 0)
-                return int.MaxValue;
-
-            int level = 0;
-            int xpPerLevel = (int)Config.XPPerLevel;
-
-            if (_xpNeededForLevel.Any() && xp > _firstIncreaseXP)
+            try
             {
-                foreach (var kvp in _xpNeededForLevel)
-                {
-                    if (kvp.Value.neededXP > xp)
-                        break;
-
-                    level = (int)kvp.Key;
-                    xp -= kvp.Value.neededXP;
-                    xpPerLevel = kvp.Value.xpPerLevel;
-                }
+                Context.Variables["xp"] = xp;
+                return Convert.ToInt32(Expression.Evaluate());
             }
-
-            return level + (xp / xpPerLevel);
+            catch (Exception e) when (!@throw)
+            {
+                LogError($"Error calculating level: {e}");
+                return 0;
+            }
         }
 
         /// <summary>
-        /// Does some precalculation.
-        /// Called on config change.
+        /// Gets the XP needed for the specified level.
         /// </summary>
-        public static void Precalculate()
+        /// <param name="level">The level.</param>
+        /// <param name="throw">Whether to throw an exception if an error occurs.</param>
+        /// <returns>The XP needed.</returns>
+        public static int GetXP(int level, bool @throw = false)
         {
-            _xpNeededForLevel.Clear();
+            if (Config.LevelXPOverrides.TryGetValue(level, out int xp))
+                return xp;
 
-            bool first = true;
-            int alreadyRequiredXP = 0;
-            int previousLevelStart = 0;
-            int previousXPPerLevel = (int)Config.XPPerLevel;
-
-            foreach (var kvp in Config.XPPerLevelExtra.OrderBy(x => x.Key))
+            try
             {
-                int key = (int)kvp.Key;
-                int xpPerLevel = (int)(Config.XPPerLevel + kvp.Value);
-                alreadyRequiredXP += previousXPPerLevel * (key - previousLevelStart);
+                Context.Variables["level"] = level;
+                return Convert.ToInt32(InverseExpression.Evaluate());
+            }
+            catch (Exception e) when (!@throw)
+            {
+                LogError($"Error calculating XP: {e}");
+                return 0;
+            }
+        }
 
-                if (first)
-                {
-                    _firstIncreaseXP = alreadyRequiredXP;
-                    first = false;
-                }
+        /// <summary>
+        /// Initializes the <see cref="Expression"/>.
+        /// </summary>
+        public static void Init()
+        {
+            foreach (var kvp in Config.LevelXPOverrides)
+                XPLevelOverrides[kvp.Value] = kvp.Key;
 
-                _xpNeededForLevel[kvp.Key] = (xpPerLevel, alreadyRequiredXP);
+            Context = new ExpressionContext();
+            Context.Options.IntegersAsDoubles = true;
+            Context.Imports.AddType(typeof(Math));
 
-                previousLevelStart = key;
-                previousXPPerLevel = xpPerLevel;
+            Context.Variables.Add("xp", 0);
+            Context.Variables.Add("level", 0);
+
+            foreach (var kvp in Config.AdditionalFunctionParameters)
+                Context.Variables.Add(kvp.Key, kvp.Value);
+
+            try
+            {
+                Expression = Context.CompileGeneric<double>(Config.LevelFunction);
+            }
+            catch (Exception e)
+            {
+                LogError($"Error initializing level function: {e}");
+            }
+
+            try
+            {
+                InverseExpression = Context.CompileGeneric<double>(Config.XPFunction);
+            }
+            catch (Exception e)
+            {
+                LogError($"Error initializing inverse level function: {e}");
             }
         }
     }

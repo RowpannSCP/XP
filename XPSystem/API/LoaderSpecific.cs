@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -70,6 +69,24 @@
             return item.Category;
 #endif
         }
+
+        /// <summary>
+        /// Gets the corresponding <see cref="RoundSummary.LeadingTeam"/> from a <see cref="Team"/>.
+        /// </summary>
+        /// <param name="team">The <see cref="Team"/> to get the leading team from.</param>
+        /// <returns>The corresponding <see cref="RoundSummary.LeadingTeam"/>.</returns>
+        public static RoundSummary.LeadingTeam GetLeadingTeam(this Team team) =>
+#if EXILED
+            (RoundSummary.LeadingTeam)Exiled.API.Extensions.RoleExtensions.GetLeadingTeam(team);
+#else
+            team switch
+        {
+            Team.ClassD or Team.ChaosInsurgency => RoundSummary.LeadingTeam.ChaosInsurgency,
+            Team.FoundationForces or Team.Scientists => RoundSummary.LeadingTeam.FacilityForces,
+            Team.SCPs => RoundSummary.LeadingTeam.Anomalies,
+            _ => RoundSummary.LeadingTeam.Draw,
+        };
+#endif
 
         /// <summary>
         /// Checks if a sender has a permission.

@@ -12,16 +12,18 @@
 
         public override void LoadGeneratedCommands()
         {
+            RegisterCommand(new CalculateCommand());
+            RegisterCommand(new ClearCacheCommand());
             RegisterCommand(new GetCommandAdmin());
             RegisterCommand(new GiveCommand());
-            RegisterCommand(new SetCommand());
-            RegisterCommand(new SetLevelCommand());
             RegisterCommand(new LeaderboardCommandAdmin());
+            RegisterCommand(new MultiplierCommand());
             RegisterCommand(new PauseCommand());
             RegisterCommand(new RefreshCommand());
+            RegisterCommand(new SetCommand());
+            RegisterCommand(new SetLevelCommand());
             RegisterCommand(new ShowMessageCommand());
             RegisterCommand(new VariablesCommand());
-            RegisterCommand(new MultiplierCommand());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
