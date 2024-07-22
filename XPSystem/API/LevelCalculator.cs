@@ -1,16 +1,19 @@
 ﻿namespace XPSystem.API
 {
     using System;
+    using System.Collections.Generic;
     using Flee.PublicTypes;
     using XPSystem.API.StorageProviders.Models;
     using static XPAPI;
 
     public static class LevelCalculator
     {
+        private static Dictionary<int, int> XPLevelOverrides { get; } = new();
+
         /// <summary>
         /// Gets the <see cref="ExpressionContext"/> used for the <see cref="Expression"/>s.
         /// </summary>
-        public static readonly ExpressionContext Context = new ExpressionContext();
+        public static ExpressionContext Context { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="IGenericExpression{T}"/> used to calculate the level.
@@ -37,6 +40,9 @@
         /// <returns>The level reached.</returns>
         public static int GetLevel(int xp, bool @throw = false)
         {
+            if (XPLevelOverrides.TryGetValue(xp, out int level))
+                return level;
+
             try
             {
                 Context.Variables["xp"] = xp;
@@ -57,6 +63,9 @@
         /// <returns>The XP needed.</returns>
         public static int GetXP(int level, bool @throw = false)
         {
+            if (Config.LevelXPOverrides.TryGetValue(level, out int xp))
+                return xp;
+
             try
             {
                 Context.Variables["level"] = level;
@@ -74,6 +83,10 @@
         /// </summary>
         public static void Init()
         {
+            foreach (var kvp in Config.LevelXPOverrides)
+                XPLevelOverrides[kvp.Value] = kvp.Key;
+
+            Context = new ExpressionContext();
             Context.Options.IntegersAsDoubles = true;
             Context.Imports.AddType(typeof(Math));
 

@@ -9,16 +9,22 @@
         [Description("Print debug messages?")]
         public bool Debug { get; set; } = false;
 
-        [Description("The function to calculate level for given xp. Parameter: xp. Available functions: https://ncalc.github.io/ncalc/articles/functions.html.")]
-        public string LevelFunction { get; set; } = "if(xp < 1, 0, Floor(-50 + Sqrt(2450 + 2 * xp)))";
+        [Description("The function to calculate level for given xp. Parameter: xp. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
+        public string LevelFunction { get; set; } = "Floor(-50 + Sqrt(2450 + a * xp))";
 
-        [Description("The function to calculate xp needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://ncalc.github.io/ncalc/articles/functions.html.")]
-        public string XPFunction { get; set; } = "if(level < 1, 0, Ceiling((level^2 + 100 * level + 50) / 2))";
+        [Description("The function to calculate xp needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
+        public string XPFunction { get; set; } = "Ceiling((level^2 + 100 * level + 50) / a)";
 
         [Description("Additional parameters for the level/xp functions.")]
         public Dictionary<string, double> AdditionalFunctionParameters { get; set; } = new()
         {
-            { "a", 1 },
+            { "a", 2 },
+        };
+
+        [Description("Override xp required for specific levels. Key: level, Value: xp.")]
+        public Dictionary<int, int> LevelXPOverrides { get; set; } = new()
+        {
+            [0] = 0
         };
 
         [Description("A global XP multiplier.")]
@@ -55,7 +61,7 @@
         [Description("When enabled, template used for messages that modify xp. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
         public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
 
-        [Description("Whether or not to use the total xp instead of only the xp required for the next level. Requires extra calculations.")]
+        [Description("Whether or not to use the total xp instead of only the xp required for the next level. Requires extra calculations if false.")]
         public bool UseTotalXP { get; set; } = true;
 
         [Description("Whether or not to show a message to a player if they advance a level.")]

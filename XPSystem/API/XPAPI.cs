@@ -401,16 +401,25 @@
             {
                 message = Config.AddedXPTemplate
                     .Replace("%message%", message)
-                    .Replace("%currentxp%", (Config.UseTotalXP
-                        ? playerInfo.XP
-                        : playerInfo.XP - playerInfo.NeededXPCurrent)
-                        .ToString())
                     .Replace("%currentlevel%", playerInfo.Level.ToString())
-                    .Replace("%neededxp%", (Config.UseTotalXP
-                        ? playerInfo.NeededXPNext
-                        : playerInfo.NeededXPNext - playerInfo.NeededXPCurrent)
-                        .ToString())
                     .Replace("%nextlevel%", (playerInfo.Level + 1).ToString());
+
+                if (Config.UseTotalXP)
+                {
+                    message = message
+                        .Replace("%currentxp%", playerInfo.XP.ToString())
+                        .Replace("%neededxp%", playerInfo.NeededXPNext.ToString());
+                }
+                else
+                {
+                    message = message
+                        .Replace("%currentxp%",
+                            (playerInfo.XP - playerInfo.NeededXPCurrent)
+                            .ToString())
+                        .Replace("%neededxp%",
+                            (playerInfo.NeededXPNext - playerInfo.NeededXPCurrent)
+                            .ToString());
+                }
             }
 
             DisplayMessage(player, message);

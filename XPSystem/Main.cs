@@ -29,6 +29,11 @@
         /// </summary>
         public static int Reload = 0;
 
+        /// <summary>
+        /// Invoked when <see cref="Reload"/> is incremented.
+        /// </summary>
+        public static event Action Reloaded = delegate { };
+
 #if EXILED
         private static readonly int[] _splitVersion = VersionString
             .Split('.')
@@ -146,8 +151,6 @@
             {
                 Directory.CreateDirectory(Config.ExtendedConfigPath);
 
-                Reload++;
-
                 SetStorageProvider(Config.StorageProvider);
                 SetDisplayProviders(Config.AdditionalDisplayProviders);
 
@@ -159,6 +162,9 @@
 
                 LevelCalculator.Init();
                 DisplayProviders.Enable();
+
+                Reload++;
+                Reloaded.Invoke();
             }
             catch (Exception e)
             {
