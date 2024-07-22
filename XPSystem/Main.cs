@@ -5,7 +5,6 @@
     using System.IO;
     using System.Linq;
     using HarmonyLib;
-    using NCalc;
     using XPSystem.API;
     using XPSystem.API.Legacy;
     using XPSystem.API.StorageProviders;

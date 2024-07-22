@@ -128,12 +128,13 @@
 
             LevelCalculator.Init();
             // initial calls very slow
-            LevelCalculator.GetLevel(0);
-            LevelCalculator.GetXP(0);
+            LevelCalculator.GetLevel(1);
+            LevelCalculator.GetXP(1);
 
             Console.ForegroundColor = ConsoleColor.White;
 
             int level = -1;
+            int level2 = -1;
             int xp = -1;
             foreach ((int level, int xp) kvp in new[]
                      {
@@ -183,7 +184,7 @@
                         throw new Exception("XP mismatch.");
 
                     stopwatchLevel2.Restart();
-                    int level2 = LevelCalculator.GetLevel(xp);
+                    level2 = LevelCalculator.GetLevel(xp);
                     stopwatchLevel2.Stop();
 
                     if (level2 != level)
@@ -195,8 +196,10 @@
 
                     Console.Write("Failed (");
                     Console.Write(level);
-                    Console.Write(" <=> ");
+                    Console.Write(" => ");
                     Console.Write(xp);
+                    Console.Write(" => ");
+                    Console.Write(level2);
                     Console.Write("): ");
                     Console.WriteLine(e);
 

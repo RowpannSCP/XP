@@ -1,21 +1,26 @@
 ﻿namespace XPSystem.API
 {
     using System;
-    using NCalc;
+    using Flee.PublicTypes;
     using XPSystem.API.StorageProviders.Models;
     using static XPAPI;
 
     public static class LevelCalculator
     {
         /// <summary>
-        /// Gets the <see cref="Expression"/> used to calculate the level.
+        /// Gets the <see cref="ExpressionContext"/> used for the <see cref="Expression"/>s.
         /// </summary>
-        public static Expression Expression { get; private set; }
+        public static readonly ExpressionContext Context = new ExpressionContext();
+
+        /// <summary>
+        /// Gets the <see cref="IGenericExpression{T}"/> used to calculate the level.
+        /// </summary>
+        public static IGenericExpression<double> Expression { get; private set; }
 
         /// <summary>
         /// Gets the inverse of the <see cref="Expression"/>. Used to calculate the XP needed for a level.
         /// </summary>
-        public static Expression InverseExpression { get; private set; }
+        public static IGenericExpression<double> InverseExpression { get; private set; }
 
         /// <summary>
         /// Gets the level of the specified <see cref="PlayerInfo"/>.
@@ -28,15 +33,16 @@
         /// Gets the level reached with the specified amount of XP.
         /// </summary>
         /// <param name="xp">The amount of XP.</param>
+        /// <param name="throw">Whether to throw an exception if an error occurs.</param>
         /// <returns>The level reached.</returns>
-        public static int GetLevel(int xp)
+        public static int GetLevel(int xp, bool @throw = false)
         {
             try
             {
-                Expression.Parameters["xp"] = xp;
-                return Convert.ToInt32(Expression.Evaluate() ?? 0);
+                Context.Variables["xp"] = xp;
+                return Convert.ToInt32(Expression.Evaluate());
             }
-            catch (Exception e)
+            catch (Exception e) when (!@throw)
             {
                 LogError($"Error calculating level: {e}");
                 return 0;
@@ -47,15 +53,16 @@
         /// Gets the XP needed for the specified level.
         /// </summary>
         /// <param name="level">The level.</param>
+        /// <param name="throw">Whether to throw an exception if an error occurs.</param>
         /// <returns>The XP needed.</returns>
-        public static int GetXP(int level)
+        public static int GetXP(int level, bool @throw = false)
         {
             try
             {
-                InverseExpression.Parameters["level"] = level;
-                return Convert.ToInt32(InverseExpression.Evaluate() ?? 0);
+                Context.Variables["level"] = level;
+                return Convert.ToInt32(InverseExpression.Evaluate());
             }
-            catch (Exception e)
+            catch (Exception e) when (!@throw)
             {
                 LogError($"Error calculating XP: {e}");
                 return 0;
@@ -67,9 +74,18 @@
         /// </summary>
         public static void Init()
         {
+            Context.Options.IntegersAsDoubles = true;
+            Context.Imports.AddType(typeof(Math));
+
+            Context.Variables.Add("xp", 0);
+            Context.Variables.Add("level", 0);
+
+            foreach (var kvp in Config.AdditionalFunctionParameters)
+                Context.Variables.Add(kvp.Key, kvp.Value);
+
             try
             {
-                Expression = new Expression(Config.LevelFunction);
+                Expression = Context.CompileGeneric<double>(Config.LevelFunction);
             }
             catch (Exception e)
             {
@@ -78,17 +94,11 @@
 
             try
             {
-                InverseExpression = new Expression(Config.XPFunction);
+                InverseExpression = Context.CompileGeneric<double>(Config.XPFunction);
             }
             catch (Exception e)
             {
                 LogError($"Error initializing inverse level function: {e}");
-            }
-
-            foreach (var kvp in Config.AdditionalFunctionParameters)
-            {
-                Expression.Parameters[kvp.Key] = kvp.Value;
-                InverseExpression.Parameters[kvp.Key] = kvp.Value;
             }
         }
     }

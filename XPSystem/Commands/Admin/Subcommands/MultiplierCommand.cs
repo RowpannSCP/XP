@@ -21,7 +21,7 @@
             }
 
             float multiplier;
-            switch (arguments.At(0))
+            switch (arguments.At(0).ToLower())
             {
                 case "g":
                 case "global":

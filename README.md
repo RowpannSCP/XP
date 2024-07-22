@@ -33,6 +33,7 @@ Run `xps migrate` in the server console to migrate the old database.
     - `xps clearcache` - Clears the storage providers cache
     - `xps showmessage` - Messaging and translation debug tool
     - `xps multiplier` - Get or (temporarily) set xp multipliers
+    - `xps calculate` - Calculate the xp required for a level, and vice versa
 - Server console
     - `xps deleteeverything` - Deletes everything
     - `xps migrate` - Migrates old database

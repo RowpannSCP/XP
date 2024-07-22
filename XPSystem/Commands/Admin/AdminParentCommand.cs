@@ -12,6 +12,7 @@
 
         public override void LoadGeneratedCommands()
         {
+            RegisterCommand(new CalculateCommand());
             RegisterCommand(new ClearCacheCommand());
             RegisterCommand(new GetCommandAdmin());
             RegisterCommand(new GiveCommand());

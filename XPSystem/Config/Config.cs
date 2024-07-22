@@ -10,10 +10,10 @@
         public bool Debug { get; set; } = false;
 
         [Description("The function to calculate level for given xp. Parameter: xp. Available functions: https://ncalc.github.io/ncalc/articles/functions.html.")]
-        public string LevelFunction { get; set; } = "if(xp = 0, 0, a * Floor(-50 + Sqrt(2450 + 2 * xp)))";
+        public string LevelFunction { get; set; } = "if(xp < 1, 0, Floor(-50 + Sqrt(2450 + 2 * xp)))";
 
         [Description("The function to calculate xp needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://ncalc.github.io/ncalc/articles/functions.html.")]
-        public string XPFunction { get; set; } = "if(level = 0, 0, a * (level**2 + 100 * level + 50) / 2)";
+        public string XPFunction { get; set; } = "if(level < 1, 0, Ceiling((level^2 + 100 * level + 50) / 2))";
 
         [Description("Additional parameters for the level/xp functions.")]
         public Dictionary<string, double> AdditionalFunctionParameters { get; set; } = new()
