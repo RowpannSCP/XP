@@ -6,14 +6,14 @@ on:
       - master
       - release
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   EXILED_REFERENCES_URL: https://misaka-zerotwo.github.io/SL-References/Dev.zip
   EXILED_REFERENCES: ${{ github.workspace }}/refs
   NWAPIPERMSYSTEM_URL: https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest/download/NWAPIPermissionSystem.dll
-
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
 
 jobs:
   main:
