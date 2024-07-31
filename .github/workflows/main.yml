@@ -11,6 +11,10 @@ env:
   EXILED_REFERENCES: ${{ github.workspace }}/refs
   NWAPIPERMSYSTEM_URL: https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest/download/NWAPIPermissionSystem.dll
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   main:
     runs-on: windows-latest
