@@ -164,27 +164,27 @@
                 [0] = new Badge
                 {
                     Text = "Visitor",
-                    Color = Misc.PlayerInfoColorTypes.Cyan.ToString()
+                    Color = Misc.PlayerInfoColorTypes.Cyan.ToString().ToLower()
                 },
                 [1] = new Badge
                 {
                     Text = "Junior",
-                    Color = Misc.PlayerInfoColorTypes.Orange.ToString()
+                    Color = Misc.PlayerInfoColorTypes.Orange.ToString().ToLower()
                 },
                 [5] = new Badge
                 {
                     Text = "Senior",
-                    Color = Misc.PlayerInfoColorTypes.Yellow.ToString()
+                    Color = Misc.PlayerInfoColorTypes.Yellow.ToString().ToLower()
                 },
                 [10] = new Badge
                 {
                     Text = "Veteran",
-                    Color = Misc.PlayerInfoColorTypes.Red.ToString()
+                    Color = Misc.PlayerInfoColorTypes.Red.ToString().ToLower()
                 },
                 [50] = new Badge
                 {
                     Text = "Nerd",
-                    Color = Misc.PlayerInfoColorTypes.Lime.ToString()
+                    Color = Misc.PlayerInfoColorTypes.Lime.ToString().ToLower()
                 }
             };
         }

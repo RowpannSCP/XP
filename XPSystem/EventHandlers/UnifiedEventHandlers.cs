@@ -82,6 +82,9 @@
 
         protected void OnRoundEnded(RoundSummary.LeadingTeam leadingTeam)
         {
+            if (!Config.XPAfterRoundEnd)
+                XPGainPaused = true;
+
             var roundwin = XPECManager.GetItem("win");
             foreach (var kvp in XPPlayer.Players)
             {
