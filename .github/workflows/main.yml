@@ -117,7 +117,7 @@ jobs:
           }
 
       - uses: ncipollo/release-action@v1.13.0
-        if: ${{ env.newversion == 'true' }}
+        if: ${{ env.newversion == 'true' || steps.get_branch.outputs.branch == 'master' }}
         with:
           artifacts: "${{ github.workspace }}/bin/*"
           generateReleaseNotes: true
