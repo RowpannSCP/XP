@@ -111,7 +111,14 @@
             OnPlayerPickedUpItem(ev.Player, ev.Item.Category);
         }
 
-        private void PlayerDroppedItem(DroppedItemEventArgs ev) => OnPlayerDroppedItem(ev.Player, ev.Pickup.Type.GetCategory());
+        private void PlayerDroppedItem(DroppedItemEventArgs ev)
+        {
+            if (IsNull(ev.Pickup))
+                return;
+
+            OnPlayerDroppedItem(ev.Player, ev.Pickup.Type.GetCategory());
+        }
+
         private void PlayerUsedItem(UsedItemEventArgs ev) => OnPlayerUsedItem(ev.Player, ev.Item.Type);
         private void PlayerSpawned(SpawnedEventArgs ev) => OnPlayerSpawned(ev.Player);
 

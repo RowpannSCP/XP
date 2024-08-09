@@ -9,6 +9,7 @@
     public static class LevelCalculator
     {
         private static Dictionary<int, int> XPLevelOverrides { get; } = new();
+        private static int MinLevel = int.MinValue;
 
         /// <summary>
         /// Gets the <see cref="ExpressionContext"/> used for the <see cref="Expression"/>s.
@@ -46,13 +47,15 @@
             try
             {
                 Context.Variables["xp"] = xp;
-                return Convert.ToInt32(Expression.Evaluate());
+                level = Convert.ToInt32(Expression.Evaluate());
             }
             catch (Exception e) when (!@throw)
             {
                 LogError($"Error calculating level: {e}");
                 return 0;
             }
+
+            return Math.Max(level, MinLevel);
         }
 
         /// <summary>
@@ -84,7 +87,12 @@
         public static void Init()
         {
             foreach (var kvp in Config.LevelXPOverrides)
+            {
                 XPLevelOverrides[kvp.Value] = kvp.Key;
+
+                if (kvp.Value <= 0 && kvp.Key > MinLevel)
+                    MinLevel = kvp.Key;
+            }
 
             Context = new ExpressionContext();
             Context.Options.IntegersAsDoubles = true;

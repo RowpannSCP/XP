@@ -27,6 +27,9 @@
             [0] = 0
         };
 
+        [Description("Whether or not to pause xp gain when the round ends.")]
+        public bool XPAfterRoundEnd { get; set; } = true;
+
         [Description("A global XP multiplier.")]
         public float GlobalXPMultiplier { get; set; } = 1f;
 
