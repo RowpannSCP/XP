@@ -205,6 +205,11 @@
         <Compile Include="API\XPAPI.cs" />
         <Compile Include="API\XPExtensions.cs" />
         <Compile Include="API\XPPlayer.cs" />
+        <Compile Include="BuiltInProviders\Display\Patch\MyNickPatchXPDisplayProvider.cs" />
+        <Compile Include="BuiltInProviders\Display\Patch\NickPatchXPDisplayProvider.cs" />
+        <Compile Include="BuiltInProviders\Display\Patch\RankSetXPDisplayProvider.cs" />
+        <Compile Include="BuiltInProviders\Display\SyncVar\NickXPDisplayProvider.cs" />
+        <Compile Include="BuiltInProviders\Display\SyncVar\RankXPDisplayProvider.cs" />
         <Compile Include="BuiltInProviders\LiteDB\LiteDBPlayerInfo.cs" />
         <Compile Include="BuiltInProviders\LiteDB\LiteDBProvider.cs" />
         <Compile Include="BuiltInProviders\MySql\MySqlProvider.cs" />
@@ -257,8 +262,6 @@
         <Compile Include="MessagingProviders.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="XPDisplayProviders\NickXPDisplayProvider.cs" />
-        <Compile Include="XPDisplayProviders\RankXPDisplayProvider.cs" />
     </ItemGroup>
 
     <ItemGroup>

@@ -50,12 +50,12 @@
         /// <summary>
         /// <see cref="RefreshTo"/> implementation when enabled.
         /// </summary>
-        protected abstract void RefreshToEnabled(XPPlayer player);
+        protected virtual void RefreshToEnabled(XPPlayer player) {}
 
         /// <summary>
         /// <see cref="RefreshTo"/> implementation when disabled.
         /// </summary>
-        protected abstract void RefreshToDisabled(XPPlayer player);
+        protected virtual void RefreshToDisabled(XPPlayer player) {}
 
         /// See <see cref="XPDisplayProviderCollection.RefreshTo"/>.
         public virtual void RefreshTo(XPPlayer player)
@@ -77,12 +77,12 @@
         /// <summary>
         /// <see cref="RefreshOf"/> implementation when enabled.
         /// </summary>
-        protected abstract void RefreshOfEnabled(XPPlayer player, PlayerInfoWrapper playerInfo);
+        protected virtual void RefreshOfEnabled(XPPlayer player, PlayerInfoWrapper playerInfo) {}
 
         /// <summary>
         /// <see cref="RefreshOf"/> implementation when disabled.
         /// </summary>
-        protected abstract void RefreshOfDisabled(XPPlayer player);
+        protected virtual void RefreshOfDisabled(XPPlayer player) {}
 
         /// See <see cref="XPDisplayProviderCollection.RefreshTo"/>.
         public virtual void RefreshOf(XPPlayer player, PlayerInfoWrapper playerInfo = null)

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using CommandSystem;
     using Hints;
     using Mirror;
@@ -178,8 +179,16 @@
             if (referenceHub == null)
                 throw new ArgumentNullException(nameof(referenceHub));
 
+#if DEBUG
+            if (referenceHub == ReferenceHub.HostHub)
+            {
+                var stackTrace = new StackTrace();
+                LogInfo("XPPlayer for Dedicated Server was created: " + stackTrace);
+            }
+#endif
+
             Hub = referenceHub;
-            IsNPC = CheckNPC(referenceHub);
+            IsNPC = referenceHub == ReferenceHub.HostHub || CheckNPC(referenceHub);
 
             if (UserId.TryParseUserId(out var playerId))
             {

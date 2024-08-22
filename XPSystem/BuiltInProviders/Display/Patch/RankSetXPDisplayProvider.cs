@@ -1,29 +1,29 @@
-﻿namespace XPSystem.XPDisplayProviders
+﻿namespace XPSystem.BuiltInProviders.Display.Patch
 {
-    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
     using HarmonyLib;
     using MEC;
     using XPSystem.API;
-    using XPSystem.API.DisplayProviders;
     using XPSystem.API.StorageProviders;
     using XPSystem.Config.Models;
+    using XPSystem.EventHandlers;
     using YamlDotNet.Serialization;
 
-    public class RankXPDisplayProvider : SyncVarXPDisplayProvider<RankXPDisplayProvider.RankConfig, Badge>
+    public class RankSetXPDisplayProvider : XPDisplayProvider<RankSetXPDisplayProvider.RankConfig>
     {
-        protected override string VariableKey { get; } = "RankXPDisplayProvider_badge";
+        public override void RefreshAll() {}
+        public override void RefreshTo(XPPlayer player) {}
 
-        protected override (Type typeName, string methodName, Func<XPPlayer, Badge, object> getFakeSyncVar, Func<XPPlayer, object> getResyncVar)[] SyncVars { get; } =
+        private Badge GetBadge(XPPlayer player, PlayerInfoWrapper playerInfo)
         {
-            (typeof(ServerRoles), nameof(ServerRoles.Network_myText), (_, obj) => obj.Text, player => player.BadgeText),
-            (typeof(ServerRoles), nameof(ServerRoles.Network_myColor), (_, obj) => obj.Color, player => player.BadgeColor)
-        };
+            if (Config.SkipGlobalBadges && player.HasGlobalBadge)
+                return null;
 
-        protected override Badge CreateObject(XPPlayer player, PlayerInfoWrapper playerInfo)
-        {
+            if (!Config.EditBadgeHiding && player.HasHiddenBadge)
+                return null;
+
             if (player.DNT)
             {
                 if (player.HasBadge && !player.HasHiddenBadge)
@@ -50,7 +50,7 @@
             if (badge == null)
                 return null;
 
-            if (player.HasBadge && !Config.OverrideColor)
+            if (player.HasBadge && !player.HasHiddenBadge && !Config.OverrideColor)
                 color = player.BadgeColor;
 
             return new Badge()
@@ -63,23 +63,14 @@
             };
         }
 
-        protected override bool ShouldEdit(XPPlayer player)
+        private void Refresh(XPPlayer player, PlayerInfoWrapper playerInfo = null)
         {
-            if (Config.SkipGlobalBadges && player.HasGlobalBadge)
-                return false;
+            var badge = GetBadge(player, playerInfo ?? XPAPI.GetPlayerInfo(player));
+            if (badge == null)
+                return;
 
-            if (!Config.EditBadgeHiding && player.HasHiddenBadge)
-                return false;
-
-            return true;
-        }
-
-        protected override bool ShouldShowTo(XPPlayer player, XPPlayer target)
-        {
-            if (!Config.EditBadgeHiding)
-                return true;
-
-            return !(player.HasHiddenBadge && (player == target || target.CanViewHiddenBadge));
+            player.Hub.serverRoles.Network_myText = badge.Text;
+            player.Hub.serverRoles.Network_myColor = badge.Color;
         }
 
         public override void Enable()
@@ -89,6 +80,22 @@
             Config.DNTBadge.ValidateColor();
             foreach (var kvp in Config.Badges)
                 kvp.Value.ValidateColor();
+            
+            UnifiedEventHandlers.XPPlayerJoined += PlayerJoin;
+        }
+
+        public override void Disable()
+        {
+            UnifiedEventHandlers.XPPlayerJoined -= PlayerJoin;
+            base.Disable();
+        }
+
+        private void PlayerJoin(XPPlayer player, PlayerInfoWrapper playerInfo)
+        {
+            Timing.CallDelayed(1f, () =>
+            {
+                Refresh(player, playerInfo);
+            });
         }
 
         internal static class HiddenBadgePatch
@@ -109,11 +116,11 @@
             {
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
                 {
-                    if (provider is RankXPDisplayProvider rankProvider && rankProvider.Config.PatchBadgeCommands)
+                    if (provider is RankSetXPDisplayProvider rankProvider && rankProvider.Config.Enabled && rankProvider.Config.PatchBadgeCommands)
                     {
                         Timing.CallDelayed(.5f + XPAPI.Config.ExtraDelay, () =>
                         {
-                            rankProvider.RefreshOf(instance._hub);
+                            rankProvider.Refresh(instance._hub);
                         });
 
                         return;
