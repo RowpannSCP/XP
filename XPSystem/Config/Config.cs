@@ -10,15 +10,15 @@
         public bool Debug { get; set; } = false;
 
         [Description("The function to calculate level for given xp. Parameter: xp. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
-        public string LevelFunction { get; set; } = "Floor(-50 + Sqrt(2450 + a * xp))";
+        public string LevelFunction { get; set; } = "Ceiling(-50 + Sqrt((4 * xp / a) + 9800) / 2)";
 
         [Description("The function to calculate xp needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
-        public string XPFunction { get; set; } = "Ceiling((level^2 + 100 * level + 50) / a)";
+        public string XPFunction { get; set; } = "Ceiling((level^2 + 100 * level + 50) * a)";
 
         [Description("Additional parameters for the level/xp functions.")]
         public Dictionary<string, double> AdditionalFunctionParameters { get; set; } = new()
         {
-            { "a", 2 },
+            { "a", 1 },
         };
 
         [Description("Override xp required for specific levels. Key: level, Value: xp.")]
