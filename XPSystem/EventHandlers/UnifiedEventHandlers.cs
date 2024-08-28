@@ -112,6 +112,8 @@
         }
 
         protected void OnPlayedDied(XPPlayer attacker, RoleTypeId targetRole) => attacker.TryAddXPAndDisplayMessage("kill", targetRole);
+        
+        protected void OnDeath(XPPlayer player, RoleTypeId targetRole) => player.TryAddXPAndDisplayMessage("death", targetRole);
         protected void OnPlayerUpgradedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("upgrade", item);
         protected void OnPlayerPickedUpItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("pickup", item);
         protected void OnPlayerDroppedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("drop", item);

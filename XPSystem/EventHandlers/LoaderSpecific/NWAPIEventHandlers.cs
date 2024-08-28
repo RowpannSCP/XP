@@ -44,6 +44,7 @@
                 return;
 
             OnPlayedDied(attacker, player.Role);
+            OnDeath(player, player.Role);
         }
 
         [PluginEvent(ServerEventType.Scp914PickupUpgraded)]

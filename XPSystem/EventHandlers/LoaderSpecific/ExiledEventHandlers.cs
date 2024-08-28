@@ -83,6 +83,7 @@
                 return;
 
             OnPlayedDied(ev.Attacker, ev.TargetOldRole);
+            OnDeath(ev.Player, ev.TargetOldRole);
         }
 
         private void PlayerUpgradingPickup(UpgradingPickupEventArgs ev)
