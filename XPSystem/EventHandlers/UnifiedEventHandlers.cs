@@ -111,9 +111,16 @@
             XPPlayer.PlayersValue.Clear();
         }
 
-        protected void OnPlayedDied(XPPlayer attacker, RoleTypeId targetRole) => attacker.TryAddXPAndDisplayMessage("kill", targetRole);
-        
-        protected void OnDeath(XPPlayer player, RoleTypeId targetRole) => player.TryAddXPAndDisplayMessage("death", targetRole);
+        protected void OnPlayedDied(XPPlayer attacker, XPPlayer target, RoleTypeId? targetRole = null)
+        {
+            targetRole ??= target.Role;
+
+            if (attacker != target)
+                attacker.TryAddXPAndDisplayMessage("kill", targetRole);
+
+            target.TryAddXPAndDisplayMessage("death", targetRole);
+        }
+
         protected void OnPlayerUpgradedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("upgrade", item);
         protected void OnPlayerPickedUpItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("pickup", item);
         protected void OnPlayerDroppedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("drop", item);

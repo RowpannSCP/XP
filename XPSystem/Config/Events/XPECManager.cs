@@ -35,19 +35,7 @@
             },
             ["death"] = new XPECDictFile<RoleTypeId>()
             {
-                Default = new XPECItem()
-                {
-                    Amount = -5,
-                    Translation = "You died!"
-                },
-                Items = new ()
-                {
-                    [RoleTypeId.Scp049] = new ()
-                    {
-                        Amount = -20,
-                        Translation = "You died as SCP 049!"
-                    }
-                }
+                Default = null
             },
             ["upgrade"] = new XPECDictFile<ItemCategory>()
             {
