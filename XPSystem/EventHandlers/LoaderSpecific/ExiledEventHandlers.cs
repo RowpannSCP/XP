@@ -82,7 +82,7 @@
             if (IsNull(ev.Player) || IsNull(ev.Attacker))
                 return;
 
-            OnPlayedDied(ev.Attacker, ev.Attacker, ev.TargetOldRole);
+            OnPlayedDied(ev.Attacker, ev.Player, ev.TargetOldRole);
         }
 
         private void PlayerUpgradingPickup(UpgradingPickupEventArgs ev)
