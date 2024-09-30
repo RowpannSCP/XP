@@ -1,4 +1,4 @@
-﻿namespace XPSystem.EventHandlers.LoaderSpecific
+namespace XPSystem.EventHandlers.LoaderSpecific
 {
     using System;
     using Exiled.Events.EventArgs.Interfaces;
@@ -120,7 +120,12 @@
         }
 
         private void PlayerUsedItem(UsedItemEventArgs ev) => OnPlayerUsedItem(ev.Player, ev.Item.Type);
-        private void PlayerSpawned(SpawnedEventArgs ev) => OnPlayerSpawned(ev.Player);
+        private void PlayerSpawned(SpawnedEventArgs ev)
+        {
+            if (!ev.Player.IsVerified)
+                return;
+            OnPlayerSpawned(ev.Player);
+        }
 
         private void PlayerEscaping(EscapingEventArgs ev)
         {
