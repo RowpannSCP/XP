@@ -6,6 +6,10 @@ on:
       - master
       - release
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   EXILED_REFERENCES_URL: https://misaka-zerotwo.github.io/SL-References/Dev.zip
   EXILED_REFERENCES: ${{ github.workspace }}/refs
@@ -117,7 +121,7 @@ jobs:
           }
 
       - uses: ncipollo/release-action@v1.13.0
-        if: ${{ env.newversion == 'true' }}
+        if: ${{ env.newversion == 'true' || steps.get_branch.outputs.branch == 'master' }}
         with:
           artifacts: "${{ github.workspace }}/bin/*"
           generateReleaseNotes: true

@@ -1,4 +1,4 @@
-﻿namespace XPSystem.EventHandlers.LoaderSpecific
+namespace XPSystem.EventHandlers.LoaderSpecific
 {
     using System;
     using Exiled.Events.EventArgs.Interfaces;
@@ -82,7 +82,7 @@
             if (IsNull(ev.Player) || IsNull(ev.Attacker))
                 return;
 
-            OnPlayedDied(ev.Attacker, ev.TargetOldRole);
+            OnPlayedDied(ev.Attacker, ev.Player, ev.TargetOldRole);
         }
 
         private void PlayerUpgradingPickup(UpgradingPickupEventArgs ev)
@@ -111,9 +111,21 @@
             OnPlayerPickedUpItem(ev.Player, ev.Item.Category);
         }
 
-        private void PlayerDroppedItem(DroppedItemEventArgs ev) => OnPlayerDroppedItem(ev.Player, ev.Pickup.Type.GetCategory());
+        private void PlayerDroppedItem(DroppedItemEventArgs ev)
+        {
+            if (IsNull(ev.Player) || IsNull(ev.Pickup))
+                return;
+
+            OnPlayerDroppedItem(ev.Player, ev.Pickup.Type.GetCategory());
+        }
+
         private void PlayerUsedItem(UsedItemEventArgs ev) => OnPlayerUsedItem(ev.Player, ev.Item.Type);
-        private void PlayerSpawned(SpawnedEventArgs ev) => OnPlayerSpawned(ev.Player);
+        private void PlayerSpawned(SpawnedEventArgs ev)
+        {
+            if (!ev.Player.IsVerified)
+                return;
+            OnPlayerSpawned(ev.Player);
+        }
 
         private void PlayerEscaping(EscapingEventArgs ev)
         {

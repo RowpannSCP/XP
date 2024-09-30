@@ -33,6 +33,10 @@
                     }
                 }
             },
+            ["death"] = new XPECDictFile<RoleTypeId>()
+            {
+                Default = null
+            },
             ["upgrade"] = new XPECDictFile<ItemCategory>()
             {
                 Default = new XPECItem()

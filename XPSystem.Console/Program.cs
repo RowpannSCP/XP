@@ -139,8 +139,8 @@
             foreach ((int level, int xp) kvp in new[]
                      {
                          (0, 0),
-                         (1, 76),
-                         (446, 121783),
+                         (1, 151),
+                         (1245, 1674575),
                          (random.Next(0, 100), -1),
                          (random.Next(100, 1000), -1),
                          (random.Next(1000, 1000), -1),

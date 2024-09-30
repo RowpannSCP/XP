@@ -363,10 +363,7 @@
                 return false;
 
             var file = XPECManager.GetFile(key, player.Role);
-            if (file == null)
-                return false;
-
-            var item = file.Get(subkeys);
+            var item = file?.Get(subkeys);
             if (item == null)
                 return false;
 
