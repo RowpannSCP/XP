@@ -460,9 +460,12 @@
             if (@string == null)
                 return false;
 
-            var split = @string.Split('@');
+            string[] split = @string.Split('@');
             if (split.Length != 2)
+            {
+                LogDebug("Failed to parse UserId (length != 2):" + @string);
                 return false;
+            }
 
             switch (split[1].ToLower())
             {
@@ -476,11 +479,15 @@
                     playerId.AuthType = AuthType.Northwood;
                     break;
                 default:
+                    LogDebug("Failed to parse UserId (unknown authType):" + @string);
                     return false;
             }
 
             if (!ulong.TryParse(split[0], out ulong ulongId))
+            {
+                LogDebug("Failed to parse UserId (not number):" + @string);
                 return false;
+            }
 
             playerId.Id = ulongId;
             return true;
