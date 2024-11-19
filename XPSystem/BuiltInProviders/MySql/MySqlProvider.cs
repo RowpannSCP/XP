@@ -51,7 +51,7 @@
 
                 while (reader.Read())
                 {
-                    topPlayers.Add(FromReader(new PlayerId
+                    topPlayers.Add(FromReader(new IPlayerId
                     {
                         AuthType = authType,
                         Id = (ulong)reader.GetInt64(0)
@@ -65,7 +65,7 @@
                 .Select(x => new PlayerInfoWrapper(x));
         }
 
-        protected override bool TryGetPlayerInfoNoCache(PlayerId playerId, out PlayerInfo playerInfo)
+        protected override bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo)
         {
             using var connection = GetConnection();
             using var command = connection.CreateCommand();
@@ -84,7 +84,7 @@
             return true;
         }
 
-        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(PlayerId playerId)
+        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId playerId)
         {
             using var connection = GetConnection();
             using var command = connection.CreateCommand();
@@ -134,7 +134,7 @@
             command.ExecuteNonQuery();
         }
 
-        protected override bool DeletePlayerInfoNoCache(PlayerId playerId)
+        protected override bool DeletePlayerInfoNoCache(IPlayerId playerId)
         {
             using var connection = GetConnection();
             using var command = connection.CreateCommand();
@@ -156,7 +156,7 @@
             }
         }
 
-        private PlayerInfo FromReader(PlayerId playerId, MySqlDataReader reader)
+        private PlayerInfo FromReader(IPlayerId playerId, MySqlDataReader reader)
         {
             return new PlayerInfo
             {

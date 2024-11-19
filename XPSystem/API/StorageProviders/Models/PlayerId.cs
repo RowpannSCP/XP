@@ -1,32 +1,32 @@
 ﻿namespace XPSystem.API.StorageProviders.Models
 {
     using XPSystem.API.Enums;
-    using XPSystem.API.Exceptions;
 
-    public struct PlayerId
+    /// <summary>
+    /// Represents a player identifier.
+    /// </summary>
+    /// <typeparam name="T">The type of the identifier.</typeparam>
+    public interface IPlayerId<T> : IPlayerId
     {
-        public AuthType AuthType { get; set; }
-        public ulong Id { get; set; }
-
         /// <summary>
-        /// Gets a value indicating whether or not this <see cref="PlayerId"/> is valid.
-        /// AddXP will throw if this is true, unless forced.
+        /// The <see cref="AuthType"/>-specific identifier of the player.
         /// </summary>
-        public bool IsValid => Id != 0;
+        public T Id { get; }
+    }
 
+    /// <summary>
+    /// Non-generic <see cref="IPlayerId{T}"/>>.
+    /// </summary>
+    public interface IPlayerId
+    {
         /// <summary>
-        /// Throws an <see cref="InvalidPlayerIdException"/> if this <see cref="PlayerId"/> is not valid.
+        /// The <see cref="XPSystem.API.Enums.AuthType"/> of the <see cref="IPlayerId{T}"/>.
         /// </summary>
-        /// <exception cref="InvalidPlayerIdException">This <see cref="PlayerId"/> is not valid.</exception>
-        public void EnsureValid()
-        {
-            if (!IsValid)
-                throw new InvalidPlayerIdException();
-        }
+        public AuthType AuthType { get; }
 
         /// <summary>
         /// Returns Id@AuthType.
         /// </summary>
-        public override string ToString() => $"{Id}@{AuthType.ToString().ToLower()}";
+        public string ToString();
     }
 }

@@ -23,7 +23,7 @@
         /// <param name="playerId">The targeted player's id, if found, otherwise 0.</param>
         /// <returns>Whether the operation was successful (whether or not to return immediately after).</returns>
         /// <remarks>If the argument count and the target player's argument position don't match, the sender will become the targeted player.</remarks>
-        protected bool DoThingWithArgs(ref ArraySegment<string> arguments, byte targetPlayerArgumentIndex, XPPlayer player, ref string response, out PlayerInfoWrapper playerInfo, out PlayerId playerId)
+        protected bool DoThingWithArgs(ref ArraySegment<string> arguments, byte targetPlayerArgumentIndex, XPPlayer player, ref string response, out PlayerInfoWrapper playerInfo, out IPlayerId playerId)
         {
             playerId = default;
             playerInfo = default;

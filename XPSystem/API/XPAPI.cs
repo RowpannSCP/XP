@@ -228,9 +228,9 @@
         /// Gets the player info of a player.
         /// Will create a new one if it doesn't exist.
         /// </summary>
-        /// <param name="playerId">The <see cref="PlayerId"/> of the player to get the info of.</param>
+        /// <param name="playerId">The <see cref="IPlayerId"/> of the player to get the info of.</param>
         /// <returns>The <see cref="PlayerInfoWrapper"/> belonging to the player.</returns>
-        public static PlayerInfoWrapper GetPlayerInfo(PlayerId playerId)
+        public static PlayerInfoWrapper GetPlayerInfo(IPlayerId playerId)
         {
             EnsureStorageProviderValid();
             return StorageProvider.GetPlayerInfoAndCreateOfNotExist(playerId);
@@ -270,8 +270,7 @@
         /// <param name="force">Whether to force the addition of XP, <br/>
         /// even if <see cref="XPGainPaused"/> <br/>
         /// or the player has <see cref="XPPlayer.DNT"/> enabled <br/>
-        /// or <see cref="XPPlayer.IsNPC"/> is true, <br/>
-        /// or the <see cref="XPPlayer.PlayerId"/> is not <see cref="PlayerId.IsValid"/>.</param>
+        /// or <see cref="XPPlayer.IsNPC"/> is true.</param>
         /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
         /// <returns>Whether or not the XP was added.</returns>
         public static bool AddXP(XPPlayer player, int amount, bool force = false, PlayerInfoWrapper playerInfo = null)
@@ -281,9 +280,6 @@
 
             if (!force && (XPGainPaused || player.DNT) || player.IsNPC)
                 return false;
-
-            if (!force)
-                player.PlayerId.EnsureValid();
 
             playerInfo ??= GetPlayerInfo(player.PlayerId);
 
@@ -449,48 +445,52 @@
         }
 
         /// <summary>
-        /// Attempts to parse a string into a <see cref="PlayerId"/>.
+        /// Attempts to parse a string into a <see cref="IPlayerId"/>.
         /// </summary>
         /// <param name="string">The string to parse.</param>
-        /// <param name="playerId">The equivalent <see cref="PlayerId"/>.</param>
+        /// <param name="playerId">The equivalent <see cref="IPlayerId"/>.</param>
         /// <returns>Whether or not the parsing was successful.</returns>
-        public static bool TryParseUserId(string @string, out PlayerId playerId)
+        public static bool TryParseUserId(string @string, out IPlayerId playerId)
         {
-            playerId = default;
+            playerId = null;
             if (@string == null)
                 return false;
 
             string[] split = @string.Split('@');
             if (split.Length != 2)
             {
-                LogDebug("Failed to parse UserId (length != 2):" + @string);
+                LogDebug("Failed to parse UserId (length != 2)");
                 return false;
+            }
+
+            IPlayerId createNumberPlayerId(string toParseNumber, AuthType authType)
+            {
+                if (!ulong.TryParse(toParseNumber, out ulong ulongId))
+                {
+                    LogDebug("Failed to parse UserId (not number)");
+                    return null;
+                }
+
+                return new NumberPlayerId(ulongId, authType);
             }
 
             switch (split[1].ToLower())
             {
                 case "steam":
-                    playerId.AuthType = AuthType.Steam;
+                    playerId = createNumberPlayerId(split[0], AuthType.Steam);
                     break;
                 case "discord":
-                    playerId.AuthType = AuthType.Discord;
+                    playerId = createNumberPlayerId(split[0], AuthType.Discord);
                     break;
                 case "northwood":
-                    playerId.AuthType = AuthType.Northwood;
+                    playerId = new StringPlayerId(split[0], AuthType.Northwood);
                     break;
                 default:
-                    LogDebug("Failed to parse UserId (unknown authType):" + @string);
+                    LogDebug("Failed to parse UserId (unknown authType):" + split[1]);
                     return false;
             }
 
-            if (!ulong.TryParse(split[0], out ulong ulongId))
-            {
-                LogDebug("Failed to parse UserId (not number):" + @string);
-                return false;
-            }
-
-            playerId.Id = ulongId;
-            return true;
+            return playerId != null;
         }
 
         /// <summary>
