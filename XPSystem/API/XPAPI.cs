@@ -93,6 +93,11 @@
         public static bool XPGainPaused { get; set; } = false;
 
         /// <summary>
+        /// Gets invoke when a player levels up.
+        /// </summary>
+        public static event Action<XPPlayer, int, int> PlayerLevelUp = delegate { };
+
+        /// <summary>
         /// Prints a debug message, if debug is enabled.
         /// Not too different from your loader's LogDebug.
         /// </summary>
@@ -314,7 +319,7 @@
             StorageProvider.SetPlayerInfo(playerInfo);
 
             if (connected && playerInfo.Level != prevLevel)
-                HandleLevelUp(player, playerInfo);
+                HandleLevelUp(player, playerInfo, prevLevel);
 
             return true;
         }
@@ -429,7 +434,8 @@
         /// </summary>
         /// <param name="player">The player that leveled up.</param>
         /// <param name="wrapper">The <see cref="PlayerInfoWrapper"/> belonging to the player.</param>
-        public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper)
+        /// <param name="prevLevel">The previous level the player had.</param>
+        public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper, int prevLevel)
         {
             DisplayProviders.RefreshOf(player);
 
@@ -438,6 +444,8 @@
                 player.DisplayMessage(Config.AddedLVLMessage.Replace("%level%",
                     wrapper.Level.ToString()));
             }
+
+            PlayerLevelUp.Invoke(player, wrapper.Level, prevLevel);
         }
 
         /// <summary>
