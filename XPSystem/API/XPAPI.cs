@@ -450,7 +450,7 @@
         /// <param name="string">The string to parse.</param>
         /// <param name="playerId">The equivalent <see cref="IPlayerId"/>.</param>
         /// <returns>Whether or not the parsing was successful.</returns>
-        public static bool TryParseUserId(string @string, out IPlayerId playerId)
+        public static bool TryParseUserId(string @string, out IPlayerId<object> playerId)
         {
             playerId = null;
             if (@string == null)
@@ -463,7 +463,7 @@
                 return false;
             }
 
-            IPlayerId createNumberPlayerId(string toParseNumber, AuthType authType)
+            IPlayerId<object> createNumberPlayerId(string toParseNumber, AuthType authType)
             {
                 if (!ulong.TryParse(toParseNumber, out ulong ulongId))
                 {
@@ -471,7 +471,7 @@
                     return null;
                 }
 
-                return new NumberPlayerId(ulongId, authType);
+                return (IPlayerId<object>)new NumberPlayerId(ulongId, authType);
             }
 
             switch (split[1].ToLower())

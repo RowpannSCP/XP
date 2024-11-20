@@ -10,7 +10,7 @@
     public static class XPExtensions
     {
         /// <inheritdoc cref="XPAPI.TryParseUserId"/>
-        public static bool TryParseUserId(this string @string, out IPlayerId playerId) => XPAPI.TryParseUserId(@string, out playerId);
+        public static bool TryParseUserId(this string @string, out IPlayerId<object> playerId) => XPAPI.TryParseUserId(@string, out playerId);
 
         /// <inheritdoc cref="XPAPI.FormatLeaderboard"/>
         public static string FormatLeaderboard(this IEnumerable<PlayerInfoWrapper> players) => XPAPI.FormatLeaderboard(players);

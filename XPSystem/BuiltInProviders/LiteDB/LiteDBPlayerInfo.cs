@@ -9,7 +9,13 @@
         [BsonId]
         public ulong Id { get; set; }
 
-        protected override IPlayerId toPlayerId(AuthType authType) => new NumberPlayerId(Id, authType);
+        public override T SetId<T>(object id)
+        {
+            Id = (ulong)id;
+            return (T)(object)this;
+        }
+
+        protected override IPlayerId<object> toPlayerId(AuthType authType) => (IPlayerId<object>)new NumberPlayerId(Id, authType);
     }
 
     public class LiteDBStringPlayerInfo : LiteDBPlayerInfo
@@ -17,7 +23,13 @@
         [BsonId]
         public string Id { get; set; }
 
-        protected override IPlayerId toPlayerId(AuthType authType) => new StringPlayerId(Id, authType);
+        public override T SetId<T>(object id)
+        {
+            Id = (string)id;
+            return (T)(object)this;
+        }
+
+        protected override IPlayerId<object> toPlayerId(AuthType authType) => new StringPlayerId(Id, authType);
     }
 
     public abstract class LiteDBPlayerInfo
@@ -27,7 +39,9 @@
         public string Nickname { get; set; }
 #endif
 
-        protected abstract IPlayerId toPlayerId(AuthType authType);
+        public abstract T SetId<T>(object id) where T : LiteDBPlayerInfo;
+
+        protected abstract IPlayerId<object> toPlayerId(AuthType authType);
         public PlayerInfo ToPlayerInfo(AuthType authType)
         {
             return new PlayerInfo

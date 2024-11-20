@@ -49,17 +49,18 @@
             database = null;
         }
 
-        public LiteDBPlayerInfo TryGetPlayerInfo(IPlayerId playerId)
+        public LiteDBPlayerInfo TryGetPlayerInfo(IPlayerId playerId) => TryGetPlayerInfo<LiteDBPlayerInfo>(playerId);
+        public T TryGetPlayerInfo<T>(IPlayerId playerId) where T : LiteDBPlayerInfo
         {
             switch (playerId.AuthType)
             {
                 // FindById no work; BsonValue converts ulong to decimal, key is different; retarded conversion
                 case AuthType.Steam when playerId is NumberPlayerId numberPlayerId:
-                    return SteamCollection.FindOne(x => x.Id == numberPlayerId.Id);
+                    return (T)(object)SteamCollection.FindOne(x => x.Id == numberPlayerId.Id);
                 case AuthType.Discord when playerId is NumberPlayerId numberPlayerId:
-                    return DiscordCollection.FindOne(x => x.Id == numberPlayerId.Id);
+                    return (T)(object)DiscordCollection.FindOne(x => x.Id == numberPlayerId.Id);
                 case AuthType.Northwood when playerId is StringPlayerId stringPlayerId:
-                    return NWCollection.FindOne(x => x.Id == stringPlayerId.Id);
+                    return (T)(object)NWCollection.FindOne(x => x.Id == stringPlayerId.Id);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null);
             }
@@ -81,31 +82,29 @@
         protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId playerId)
         {
             var existing = TryGetPlayerInfo(playerId);
-            if (existing == null)
+            if (existing != null)
+                return existing.ToPlayerInfo(playerId.AuthType);
+
+            switch (playerId.AuthType)
             {
-                switch (playerId.AuthType)
-                {
-                    // FindById no work; BsonValue converts ulong to decimal, key is different; retarded conversion
-                    case AuthType.Steam when playerId is NumberPlayerId numberPlayerId:
-                        return SteamCollection.FindOne(x => x.Id == numberPlayerId.Id);
-                    case AuthType.Discord when playerId is NumberPlayerId numberPlayerId:
-                        return DiscordCollection.FindOne(x => x.Id == numberPlayerId.Id);
-                    case AuthType.Northwood when playerId is StringPlayerId stringPlayerId:
-                        return NWCollection.FindOne(x => x.Id == stringPlayerId.Id);
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null);
-                }
-
-                existing = new LiteDBPlayerInfo()
-                {
-                    Id = playerId.Id,
-                    XP = 0
-                };
-
-                collection.Insert(existing);
+                case AuthType.Steam:
+                    return GetPlayerInfoAndCreateOfNotExistNoCache(playerId, SteamCollection);
+                case AuthType.Discord:
+                    return GetPlayerInfoAndCreateOfNotExistNoCache(playerId, DiscordCollection);
+                case AuthType.Northwood:
+                    return GetPlayerInfoAndCreateOfNotExistNoCache(playerId, NWCollection);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null);
             }
-
-            return existing.ToPlayerInfo(playerId.AuthType);
+        }
+        protected PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache<T>(IPlayerId playerId, ILiteCollection<T> collection) where T : LiteDBPlayerInfo, new()
+        {
+            var info = new T()
+            {
+                XP = 0
+            }.SetId<T>(playerId.GetId());
+            collection.Insert(info);
+            return info.ToPlayerInfo(playerId.AuthType);
         }
 
         public override IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count)
@@ -137,19 +136,33 @@
 
         protected override void SetPlayerInfoNoCache(PlayerInfo playerInfo)
         {
-            var collection = GetCollection(playerInfo.Player);
-            var existing = collection.FindOne(x => x.Id == playerInfo.Player.Id);
-
+            switch (playerInfo.Player.AuthType)
+            {
+                case AuthType.Steam:
+                    SetPlayerInfoNoCache(playerInfo, SteamCollection);
+                    break;
+                case AuthType.Discord:
+                    SetPlayerInfoNoCache(playerInfo, DiscordCollection);
+                    break;
+                case AuthType.Northwood:
+                    SetPlayerInfoNoCache(playerInfo, NWCollection);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(playerInfo.Player.AuthType), playerInfo.Player.AuthType, null);
+            }
+        }
+        protected void SetPlayerInfoNoCache<T>(PlayerInfo playerInfo, ILiteCollection<T> collection) where T : LiteDBPlayerInfo, new()
+        {
+            var existing = TryGetPlayerInfo<T>(playerInfo.Player);
             if (existing == null)
             {
-                collection.Insert(new LiteDBPlayerInfo()
+                collection.Insert(new T()
                 {
-                    Id = playerInfo.Player.Id,
                     XP = playerInfo.XP,
 #if STORENICKS
                     Nickname = playerInfo.Nickname
 #endif
-                });
+                }.SetId<T>(playerInfo.Player.Id));
             }
             else
             {
@@ -163,8 +176,17 @@
 
         protected override bool DeletePlayerInfoNoCache(IPlayerId playerId)
         {
-            var collection = GetCollection(playerId);
-            return collection.Delete(playerId.Id);
+            switch (playerId.AuthType)
+            {
+                case AuthType.Steam when playerId is NumberPlayerId numberPlayerId:
+                    return SteamCollection.Delete(numberPlayerId.Id);
+                case AuthType.Discord when playerId is NumberPlayerId numberPlayerId:
+                    return DiscordCollection.Delete(numberPlayerId.Id);
+                case AuthType.Northwood when playerId is StringPlayerId stringPlayerId:
+                    return NWCollection.Delete(stringPlayerId.Id);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null);
+            }
         }
 
         protected override void DeleteAllPlayerInfoNoCache()

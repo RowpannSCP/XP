@@ -6,7 +6,7 @@
     /// Represents a player identifier.
     /// </summary>
     /// <typeparam name="T">The type of the identifier.</typeparam>
-    public interface IPlayerId<T> : IPlayerId
+    public interface IPlayerId<out T> : IPlayerId
     {
         /// <summary>
         /// The <see cref="AuthType"/>-specific identifier of the player.

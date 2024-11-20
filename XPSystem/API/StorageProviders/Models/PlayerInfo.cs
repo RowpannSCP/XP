@@ -6,7 +6,7 @@
     /// </summary>
     public class PlayerInfo
     {
-        public IPlayerId Player { get; set; }
+        public IPlayerId<object> Player { get; set; }
         public int XP { get; set; }
 #if STORENICKS
         public string Nickname { get; set; }

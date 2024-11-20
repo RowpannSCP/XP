@@ -216,6 +216,7 @@
         <Compile Include="BuiltInProviders\LiteDB\LiteDBProvider.cs" />
         <Compile Include="BuiltInProviders\MySql\MySqlProvider.cs" />
         <Compile Include="BuiltInProviders\MySql\MySqlTestCommand.cs" />
+        <Compile Include="BuiltInProviders\PlayerIdExtensions.cs" />
         <Compile Include="Commands\Admin\DatabasePlayerCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\CalculateCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\ClearCacheCommand.cs" />

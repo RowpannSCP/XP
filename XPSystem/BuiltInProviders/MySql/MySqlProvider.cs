@@ -23,7 +23,7 @@
                 using var command = connection.CreateCommand();
                 command.CommandText =
                     $"CREATE TABLE IF NOT EXISTS {GetTableName(authType)} (" +
-                    "id BIGINT UNSIGNED PRIMARY KEY," +
+                    (authType == AuthType.Northwood ? "id VARCHAR(32) PRIMARY KEY" : "id BIGINT UNSIGNED PRIMARY KEY,") +
                     "xp int UNSIGNED NOT NULL DEFAULT 0" +
 #if STORENICKS
                     ",nickname VARCHAR(64)" +
@@ -139,7 +139,7 @@
             using var connection = GetConnection();
             using var command = connection.CreateCommand();
 
-            command.CommandText = $"DELETE FROM {GetTableName(playerId.AuthType)} WHERE id = {playerId.Id}";
+            command.CommandText = $"DELETE FROM {GetTableName(playerId.AuthType)} WHERE id = {playerId.GetId()}";
 
             return command.ExecuteNonQuery() > 0;
         }
@@ -156,11 +156,11 @@
             }
         }
 
-        private PlayerInfo FromReader(IPlayerId playerId, MySqlDataReader reader)
+        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId playerId = null, AuthType? authType = null)
         {
             return new PlayerInfo
             {
-                Player = playerId,
+                Player = (IPlayerId<object>)playerId,
                 XP = reader.GetInt32(1),
 #if STORENICKS
                 Nickname = reader.IsDBNull(2) ? null : reader.GetString(2)
