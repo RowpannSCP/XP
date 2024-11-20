@@ -11,11 +11,11 @@
     {
         void Initialize();
         void Dispose();
-        bool TryGetPlayerInfo(PlayerId playerId, out PlayerInfoWrapper playerInfo);
-        PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(PlayerId playerId);
+        bool TryGetPlayerInfo(IPlayerId<object> playerId, out PlayerInfoWrapper playerInfo);
+        PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(IPlayerId<object> playerId);
         IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count);
         void SetPlayerInfo(PlayerInfoWrapper playerInfo);
-        bool DeletePlayerInfo(PlayerId playerId);
+        bool DeletePlayerInfo(IPlayerId<object> playerId);
         void DeleteAllPlayerInfo();
     }
 }
