@@ -23,8 +23,8 @@
                 using var command = connection.CreateCommand();
                 command.CommandText =
                     $"CREATE TABLE IF NOT EXISTS {GetTableName(authType)} (" +
-                    (authType == AuthType.Northwood ? "id VARCHAR(32) PRIMARY KEY" : "id BIGINT UNSIGNED PRIMARY KEY,") +
-                    "xp int UNSIGNED NOT NULL DEFAULT 0" +
+                    (authType == AuthType.Northwood ? "id VARCHAR(32) PRIMARY KEY" : "id BIGINT UNSIGNED PRIMARY KEY") +
+                    ",xp int UNSIGNED NOT NULL DEFAULT 0" +
 #if STORENICKS
                     ",nickname VARCHAR(64)" +
 #endif
