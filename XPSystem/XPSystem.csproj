@@ -196,8 +196,10 @@
         <Compile Include="API\LevelCalculator.cs" />
         <Compile Include="API\LoaderSpecific.cs" />
         <Compile Include="API\StorageProviders\IStorageProvider.cs" />
-        <Compile Include="API\StorageProviders\Models\PlayerId.cs" />
+        <Compile Include="API\StorageProviders\Models\NumberPlayerId.cs" />
+        <Compile Include="API\StorageProviders\Models\IPlayerId.cs" />
         <Compile Include="API\StorageProviders\Models\PlayerInfo.cs" />
+        <Compile Include="API\StorageProviders\Models\StringPlayerId.cs" />
         <Compile Include="API\StorageProviders\PlayerInfoWrapper.cs" />
         <Compile Include="API\StorageProviders\StorageProvider.cs" />
         <Compile Include="API\Variables\Variable.cs" />
@@ -214,6 +216,7 @@
         <Compile Include="BuiltInProviders\LiteDB\LiteDBProvider.cs" />
         <Compile Include="BuiltInProviders\MySql\MySqlProvider.cs" />
         <Compile Include="BuiltInProviders\MySql\MySqlTestCommand.cs" />
+        <Compile Include="BuiltInProviders\PlayerIdExtensions.cs" />
         <Compile Include="Commands\Admin\DatabasePlayerCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\CalculateCommand.cs" />
         <Compile Include="Commands\Admin\Subcommands\ClearCacheCommand.cs" />
