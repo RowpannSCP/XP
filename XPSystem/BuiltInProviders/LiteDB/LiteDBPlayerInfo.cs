@@ -15,7 +15,7 @@
             return (T)(object)this;
         }
 
-        protected override IPlayerId<object> toPlayerId(AuthType authType) => (IPlayerId<object>)new NumberPlayerId(Id, authType);
+        protected override IPlayerId<object> toPlayerId(AuthType authType) => new NumberPlayerId(Id, authType);
     }
 
     public class LiteDBStringPlayerInfo : LiteDBPlayerInfo

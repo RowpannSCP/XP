@@ -5,14 +5,18 @@
     /// <summary>
     /// Represents an identifier that uses numbers (ex. SteamIds).
     /// </summary>
-    public class NumberPlayerId : IPlayerId<ulong>
+    public readonly struct NumberPlayerId : IPlayerId<ulong>, IPlayerId<object>
     {
         /// <inheritdoc />
         public ulong Id { get; }
+
         /// <inheritdoc />
+        object IPlayerId<object>.Id => Id;
+
+        /// <inheritdoc cref="IPlayerId{T}.AuthType" />
         public AuthType AuthType { get; }
 
-        /// <inheritdoc cref="IPlayerId.ToString" />
+        /// <inheritdoc cref="IPlayerId{T}.ToString" />
         public override string ToString() => $"{Id}@{AuthType.ToString().ToLower()}";
 
         public NumberPlayerId(ulong id, AuthType authType)

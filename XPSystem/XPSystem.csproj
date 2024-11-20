@@ -197,7 +197,7 @@
         <Compile Include="API\LoaderSpecific.cs" />
         <Compile Include="API\StorageProviders\IStorageProvider.cs" />
         <Compile Include="API\StorageProviders\Models\NumberPlayerId.cs" />
-        <Compile Include="API\StorageProviders\Models\PlayerId.cs" />
+        <Compile Include="API\StorageProviders\Models\IPlayerId.cs" />
         <Compile Include="API\StorageProviders\Models\PlayerInfo.cs" />
         <Compile Include="API\StorageProviders\Models\StringPlayerId.cs" />
         <Compile Include="API\StorageProviders\PlayerInfoWrapper.cs" />

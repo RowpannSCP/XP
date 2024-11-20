@@ -18,7 +18,7 @@
         /// </summary>
         public virtual void Dispose() => ClearCache();
 
-        public virtual bool TryGetPlayerInfo(IPlayerId playerId, out PlayerInfoWrapper playerInfo)
+        public virtual bool TryGetPlayerInfo(IPlayerId<object> playerId, out PlayerInfoWrapper playerInfo)
         {
             if (TryGetFromCache(playerId, out playerInfo))
                 return true;
@@ -28,7 +28,7 @@
             return result;
         }
 
-        public virtual PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(IPlayerId playerId)
+        public virtual PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(IPlayerId<object> playerId)
         {
             if (TryGetFromCache(playerId, out var playerInfo))
                 return playerInfo;
@@ -44,7 +44,7 @@
             SetPlayerInfoNoCache(playerInfo);
         }
 
-        public virtual bool DeletePlayerInfo(IPlayerId playerId)
+        public virtual bool DeletePlayerInfo(IPlayerId<object> playerId)
         {
             if (XPPlayer.TryGet(playerId, out var player))
                 player.Variables.Remove(VariableKey);
@@ -58,7 +58,7 @@
             DeleteAllPlayerInfoNoCache();
         }
 
-        protected virtual bool TryGetFromCache(IPlayerId playerId, out PlayerInfoWrapper playerInfo)
+        protected virtual bool TryGetFromCache(IPlayerId<object> playerId, out PlayerInfoWrapper playerInfo)
         {
             playerInfo = null;
 
@@ -95,10 +95,10 @@
 
         public abstract void Initialize();
         public abstract IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count);
-        protected abstract bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo);
-        protected abstract PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId playerId);
+        protected abstract bool TryGetPlayerInfoNoCache(IPlayerId<object> playerId, out PlayerInfo playerInfo);
+        protected abstract PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId<object> playerId);
         protected abstract void SetPlayerInfoNoCache(PlayerInfo playerInfo);
-        protected abstract bool DeletePlayerInfoNoCache(IPlayerId playerId);
+        protected abstract bool DeletePlayerInfoNoCache(IPlayerId<object> playerId);
         protected abstract void DeleteAllPlayerInfoNoCache();
 
         /// <summary>

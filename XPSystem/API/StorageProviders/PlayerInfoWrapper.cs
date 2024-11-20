@@ -16,9 +16,9 @@
         public readonly PlayerInfo PlayerInfo;
 
         /// <summary>
-        /// Gets the <see cref="IPlayerId"/> of the player the <see cref="PlayerInfo"/> belongs to.
+        /// Gets the <see cref="IPlayerId{T}"/> of the player the <see cref="PlayerInfo"/> belongs to.
         /// </summary>
-        public IPlayerId Player => PlayerInfo.Player;
+        public IPlayerId<object> Player => PlayerInfo.Player;
 
         /// <summary>
         /// Gets the stored nickname of the player.

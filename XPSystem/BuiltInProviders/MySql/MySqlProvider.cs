@@ -48,14 +48,9 @@
                 command.CommandText = $"SELECT * FROM {GetTableName(authType)} ORDER BY xp DESC LIMIT {count}";
 
                 using var reader = command.ExecuteReader();
-
                 while (reader.Read())
                 {
-                    topPlayers.Add(FromReader(new IPlayerId
-                    {
-                        AuthType = authType,
-                        Id = (ulong)reader.GetInt64(0)
-                    }, reader));
+                    topPlayers.Add(FromReader(reader, null, authType));
                 }
             }
 
@@ -65,7 +60,7 @@
                 .Select(x => new PlayerInfoWrapper(x));
         }
 
-        protected override bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo)
+        protected override bool TryGetPlayerInfoNoCache(IPlayerId<object> playerId, out PlayerInfo playerInfo)
         {
             using var connection = GetConnection();
             using var command = connection.CreateCommand();
@@ -80,11 +75,11 @@
                 return false;
             }
 
-            playerInfo = FromReader(playerId, reader);
+            playerInfo = FromReader(reader, playerId);
             return true;
         }
 
-        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId playerId)
+        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId<object> playerId)
         {
             using var connection = GetConnection();
             using var command = connection.CreateCommand();
@@ -109,7 +104,7 @@
             }
 
             reader.Read();
-            return FromReader(playerId, reader);
+            return FromReader(reader, playerId);
         }
 
         protected override void SetPlayerInfoNoCache(PlayerInfo playerInfo)
@@ -134,7 +129,7 @@
             command.ExecuteNonQuery();
         }
 
-        protected override bool DeletePlayerInfoNoCache(IPlayerId playerId)
+        protected override bool DeletePlayerInfoNoCache(IPlayerId<object> playerId)
         {
             using var connection = GetConnection();
             using var command = connection.CreateCommand();
@@ -156,11 +151,31 @@
             }
         }
 
-        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId playerId = null, AuthType? authType = null)
+        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId<object> playerId = null, AuthType? authType = null)
         {
+            if (playerId == null)
+            {
+                switch (authType)
+                {
+                    case AuthType.Steam:
+                        playerId = new NumberPlayerId(reader.GetUInt64(0), AuthType.Steam);
+                        break;
+                    case AuthType.Discord:
+                        playerId = new NumberPlayerId(reader.GetUInt64(0), AuthType.Discord);
+                        break;
+                    case AuthType.Northwood:
+                        playerId = new StringPlayerId(reader.GetString(0), AuthType.Northwood);
+                        break;
+                    case null:
+                        throw new ArgumentNullException(nameof(authType));
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(authType), authType, null);
+                }
+            }
+
             return new PlayerInfo
             {
-                Player = (IPlayerId<object>)playerId,
+                Player = playerId,
                 XP = reader.GetInt32(1),
 #if STORENICKS
                 Nickname = reader.IsDBNull(2) ? null : reader.GetString(2)
