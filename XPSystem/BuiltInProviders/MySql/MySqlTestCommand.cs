@@ -2,6 +2,7 @@
 {
     using System;
     using CommandSystem;
+    using MySqlConnector;
     using XPSystem.API.Enums;
     using XPSystem.Commands;
     using static API.XPAPI;
@@ -21,12 +22,12 @@
 
             try
             {
-                using var connection = mySqlProvider.GetConnection();
-                using var command = connection.CreateCommand();
+                using MySqlConnection connection = mySqlProvider.GetConnection();
+                using MySqlCommand command = connection.CreateCommand();
                 command.CommandText = $"SELECT COUNT(*) FROM {mySqlProvider.GetTableName(AuthType.Steam)}";
 
-                var count = (long)(command.ExecuteScalar()
-                                   ?? throw new NullReferenceException("Query returned null!"));
+                long count = (long)(command.ExecuteScalar()
+                                    ?? throw new NullReferenceException("Query returned null!"));
                 response = $"Query success: {count} player entries in the steam table.";
                 return true;
             }

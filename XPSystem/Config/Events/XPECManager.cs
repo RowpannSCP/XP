@@ -46,10 +46,10 @@
                 },
                 Items = new ()
                 {
-                    [ItemCategory.MicroHID] = new ()
+                    [ItemCategory.SpecialWeapon] = new ()
                     {
                         Amount = 50,
-                        Translation = "You upgraded the micro!"
+                        Translation = "You upgraded a special weapon!"
                     }
                 }
             },
@@ -63,10 +63,10 @@
                 },
                 Items = new ()
                 {
-                    [ItemCategory.MicroHID] = new ()
+                    [ItemCategory.SpecialWeapon] = new ()
                     {
                         Amount = 30,
-                        Translation = "You picked up the micro!"
+                        Translation = "You picked up a special weapon!"
                     }
                 }
             },
@@ -80,10 +80,10 @@
                 },
                 Items = new ()
                 {
-                    [ItemCategory.MicroHID] = new ()
+                    [ItemCategory.SpecialWeapon] = new ()
                     {
                         Amount = 10,
-                        Translation = "You dropped the micro!"
+                        Translation = "You dropped a special weapon!"
                     }
                 }
             },
@@ -204,7 +204,7 @@
         /// <returns>The override collection for the role.</returns>
         public static XPECFileCollection GetCollection(RoleTypeId role = RoleTypeId.None)
         {
-            if (role == RoleTypeId.None || !Overrides.TryGetValue(role, out var collection))
+            if (role == RoleTypeId.None || !Overrides.TryGetValue(role, out XPECFileCollection collection))
                 collection = Default;
 
             return collection;
@@ -218,13 +218,13 @@
         /// <returns>The file, if found, otherwise null.</returns>
         public static XPECFile GetFile(string key, RoleTypeId role = RoleTypeId.None)
         {
-            if (Overrides.TryGetValue(role, out var collection))
+            if (Overrides.TryGetValue(role, out XPECFileCollection collection))
             {
-                if (collection.Files.TryGetValue(key, out var file))
+                if (collection.Files.TryGetValue(key, out XPECFile file))
                     return file;
             }
 
-            if (Default.Files.TryGetValue(key, out var defaultFile))
+            if (Default.Files.TryGetValue(key, out XPECFile defaultFile))
                 return defaultFile;
 
             LogDebug("Could not find XPEC file with key " + key);
@@ -241,7 +241,7 @@
         /// <exception cref="InvalidCastException">Thrown if the file is not of the specified type.</exception>
         public static T GetFile<T>(string key, RoleTypeId role = RoleTypeId.None) where T : XPECFile
         {
-            var file = GetFile(key, role);
+            XPECFile file = GetFile(key, role);
             return file switch
             {
                 null => null,
@@ -260,8 +260,8 @@
         /// <returns>The item, if found, otherwise null.</returns>
         public static XPECItem GetItem(string key, RoleTypeId role = RoleTypeId.None, params object[] subkeys)
         {
-            var file = GetFile(key, role);
-            var item = file?.Get(subkeys);
+            XPECFile file = GetFile(key, role);
+            XPECItem item = file?.Get(subkeys);
 
             return item;
         }
@@ -273,7 +273,7 @@
                 .Where(x => !_skipRoles.Contains(x));
 
             Default = LoadInternal(Path.Combine(dir, "!default"), true);
-            foreach (var role in values)
+            foreach (RoleTypeId role in values)
                 Overrides[role] = LoadInternal(Path.Combine(dir, role.ToString()));
         }
 
@@ -288,7 +288,7 @@
                 try
                 {
                     string data = File.ReadAllText(file);
-                    var deserialized = Deserializer.Deserialize<XPECFile>(data);
+                    XPECFile deserialized = Deserializer.Deserialize<XPECFile>(data);
                     string key = file
                         .Replace("\\", "/")
                         .Replace(dirFormatted, "")
@@ -308,7 +308,7 @@
             {
                 foreach (var needed in NeededFiles)
                 {
-                    if (collection.Files.TryGetValue(needed.Key, out var found))
+                    if (collection.Files.TryGetValue(needed.Key, out XPECFile found))
                     {
                         if (!found.IsEqualType(needed.Value))
                         {

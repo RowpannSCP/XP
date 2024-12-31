@@ -22,7 +22,7 @@
         /// </summary>
         public void Refresh()
         {
-            foreach (var provider in _providers)
+            foreach (IXPDisplayProvider provider in _providers)
                 provider.RefreshAll();
 
             LogDebug("Refreshed all displays");
@@ -35,7 +35,7 @@
         /// <param name="player">The player to refresh the displays for.</param>
         public void RefreshTo(XPPlayer player)
         {
-            foreach (var provider in _providers)
+            foreach (IXPDisplayProvider provider in _providers)
                 provider.RefreshTo(player);
 
             LogDebug($"Refreshed displays to {player.Nickname}");
@@ -51,7 +51,7 @@
         {
             playerInfo ??= player.GetPlayerInfo();
 
-            foreach (var provider in _providers)
+            foreach (IXPDisplayProvider provider in _providers)
                 provider.RefreshOf(player, playerInfo);
 
             LogDebug($"Refreshed displays of {player.Nickname}");
@@ -77,7 +77,7 @@
         /// </summary>
         public void DisableAll()
         {
-            foreach (var provider in _providers)
+            foreach (IXPDisplayProvider provider in _providers)
             {
                 try
                 {
@@ -95,7 +95,7 @@
         /// </summary>
         public void Enable()
         {
-            foreach (var provider in _providers)
+            foreach (IXPDisplayProvider provider in _providers)
             {
                 if (provider.ConfigPropertyInternal?.Enabled == true)
                 {
@@ -117,7 +117,7 @@
         /// <param name="folder">The folder to read and write the configs from.</param>
         public void LoadConfigs(string folder)
         {
-            foreach (var provider in Providers)
+            foreach (IXPDisplayProvider provider in Providers)
             {
                 string name = provider.GetType().Name;
                 string file = Path.Combine(folder, name + ".yml");
@@ -136,7 +136,7 @@
                 }
                 else
                 {
-                    var obj = provider.ConfigPropertyInternal;
+                    IXPDisplayProviderConfig obj = provider.ConfigPropertyInternal;
 
                     File.WriteAllText(file, XPAPI.Serializer.Serialize(obj));
                     provider.ConfigPropertyInternal = obj;

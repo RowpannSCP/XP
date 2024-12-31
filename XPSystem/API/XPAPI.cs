@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Text;
     using NorthwoodLib.Pools;
     using PlayerRoles;
     using XPSystem.API.DisplayProviders;
@@ -174,7 +175,7 @@
                 return;
             }
 
-            if (Main.TryCreate(typeName, out var e, out IStorageProvider provider))
+            if (Main.TryCreate(typeName, out Exception e, out IStorageProvider provider))
             {
                 SetStorageProvider(provider);
                 return;
@@ -207,7 +208,7 @@
             }
             else
             {
-                var obj = provider.ConfigPropertyInternal;
+                object obj = provider.ConfigPropertyInternal;
 
                 File.WriteAllText(file, Serializer.Serialize(obj));
                 provider.ConfigPropertyInternal = obj;
@@ -228,9 +229,9 @@
         /// Gets the player info of a player.
         /// Will create a new one if it doesn't exist.
         /// </summary>
-        /// <param name="playerId">The <see cref="IPlayerId"/> of the player to get the info of.</param>
+        /// <param name="playerId">The <see cref="IPlayerId{T}"/> of the player to get the info of.</param>
         /// <returns>The <see cref="PlayerInfoWrapper"/> belonging to the player.</returns>
-        public static PlayerInfoWrapper GetPlayerInfo(IPlayerId playerId)
+        public static PlayerInfoWrapper GetPlayerInfo(IPlayerId<object> playerId)
         {
             EnsureStorageProviderValid();
             return StorageProvider.GetPlayerInfoAndCreateOfNotExist(playerId);
@@ -363,8 +364,8 @@
             if (!player.IsConnected)
                 return false;
 
-            var file = XPECManager.GetFile(key, player.Role);
-            var item = file?.Get(subkeys);
+            XPECFile file = XPECManager.GetFile(key, player.Role);
+            XPECItem item = file?.Get(subkeys);
             if (item == null)
                 return false;
 
@@ -391,7 +392,7 @@
             if (xpecItem == null || xpecItem.Amount == 0 || player.DNT || XPGainPaused)
                 return false;
 
-            var playerInfo = GetPlayerInfo(player.PlayerId);
+            PlayerInfoWrapper playerInfo = GetPlayerInfo(player.PlayerId);
             AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
 
             string message = xpecItem.Translation;
@@ -445,10 +446,57 @@
         }
 
         /// <summary>
-        /// Attempts to parse a string into a <see cref="IPlayerId"/>.
+        /// Attempts to create a <see cref="IPlayerId{T}"/> from an id and an <see cref="AuthType"/>.
+        /// </summary>
+        /// <param name="id">The id value.</param>
+        /// <param name="authType">The <see cref="AuthType"/> of the id.</param>
+        /// <returns>If successful, the <see cref="IPlayerId{T}"/> created. Otherwise, null.</returns>
+        public static IPlayerId<object> CreateUserId(object id, AuthType authType)
+        {
+            bool EnsureIs<T>(out T obj)
+            {
+                if (id is T t)
+                {
+                    obj = t;
+                    return true;
+                }
+
+                object converted = Convert.ChangeType(id, typeof(T));
+                if (converted is T t2)
+                {
+                    obj = t2;
+                    return true;
+                }
+
+                obj = default;
+                return false;
+            }
+
+            switch (authType)
+            {
+                case AuthType.Steam:
+                case AuthType.Discord:
+                    if (EnsureIs(out ulong ulongId))
+                        return (IPlayerId<object>)new NumberPlayerId(ulongId, authType);
+
+                    LogDebug("UserId creating failed (not ulong)");
+                    return null;
+                case AuthType.Northwood:
+                    if (EnsureIs(out string stringId))
+                        return new StringPlayerId(stringId, authType);
+
+                    LogDebug("UserId creating failed (not string)");
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to parse a string into a <see cref="IPlayerId{T}"/>.
         /// </summary>
         /// <param name="string">The string to parse.</param>
-        /// <param name="playerId">The equivalent <see cref="IPlayerId"/>.</param>
+        /// <param name="playerId">The equivalent <see cref="IPlayerId{T}"/>.</param>
         /// <returns>Whether or not the parsing was successful.</returns>
         public static bool TryParseUserId(string @string, out IPlayerId<object> playerId)
         {
@@ -463,33 +511,14 @@
                 return false;
             }
 
-            IPlayerId<object> createNumberPlayerId(string toParseNumber, AuthType authType)
+            string authTypeString = split[1];
+            if (!Enum.TryParse(authTypeString, true, out AuthType authType))
             {
-                if (!ulong.TryParse(toParseNumber, out ulong ulongId))
-                {
-                    LogDebug("Failed to parse UserId (not number)");
-                    return null;
-                }
-
-                return (IPlayerId<object>)new NumberPlayerId(ulongId, authType);
+                LogDebug("Failed to parse UserId (unknown authType):" + authTypeString);
+                return false;
             }
 
-            switch (split[1].ToLower())
-            {
-                case "steam":
-                    playerId = createNumberPlayerId(split[0], AuthType.Steam);
-                    break;
-                case "discord":
-                    playerId = createNumberPlayerId(split[0], AuthType.Discord);
-                    break;
-                case "northwood":
-                    playerId = new StringPlayerId(split[0], AuthType.Northwood);
-                    break;
-                default:
-                    LogDebug("Failed to parse UserId (unknown authType):" + split[1]);
-                    return false;
-            }
-
+            playerId = CreateUserId(split[0], authType);
             return playerId != null;
         }
 
@@ -500,9 +529,9 @@
         /// <returns>The formatted leaderboard, as a string..</returns>
         public static string FormatLeaderboard(IEnumerable<PlayerInfoWrapper> players)
         {
-            var sb = StringBuilderPool.Shared.Rent();
+            StringBuilder sb = StringBuilderPool.Shared.Rent();
 
-            foreach (var playerInfo in players)
+            foreach (PlayerInfoWrapper playerInfo in players)
             {
 #if STORENICKS
                 sb.AppendLine(string.IsNullOrWhiteSpace(playerInfo.Nickname)
@@ -523,12 +552,12 @@
         /// <returns>The type, formatted into a string.</returns>
         public static string FormatType(Type type)
         {
-            var sb = StringBuilderPool.Shared.Rent();
+            StringBuilder sb = StringBuilderPool.Shared.Rent();
             sb.Append(type.FullName);
             if (type.IsGenericType)
             {
                 sb.Append("<");
-                foreach (var arg in type.GetGenericArguments())
+                foreach (Type arg in type.GetGenericArguments())
                 {
                     sb.Append(FormatType(arg));
                     sb.Append(", ");

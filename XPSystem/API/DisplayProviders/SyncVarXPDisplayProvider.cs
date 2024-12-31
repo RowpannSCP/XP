@@ -41,7 +41,7 @@
                 if (!ShouldEdit(kvp.Value))
                     continue;
 
-                var obj = GetObject(kvp.Value);
+                TObject obj = GetObject(kvp.Value);
                 if (obj == null)
                     continue;
 
@@ -82,7 +82,7 @@
             if (!ShouldEdit(player))
                 return;
 
-            var obj = GetObject(player, playerInfo, true);
+            TObject obj = GetObject(player, playerInfo, true);
             if (obj == null)
                 return;
 

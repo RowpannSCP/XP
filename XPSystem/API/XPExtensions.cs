@@ -22,7 +22,7 @@
         public static ItemCategory GetCategory(this ItemType itemType) => LoaderSpecific.GetCategory(itemType);
 
         /// <inheritdoc cref="XPAPI.GetPlayerInfo(IPlayerId)"/>
-        public static PlayerInfoWrapper GetPlayerInfo(this IPlayerId playerId) => XPAPI.GetPlayerInfo(playerId);
+        public static PlayerInfoWrapper GetPlayerInfo(this IPlayerId<object> playerId) => XPAPI.GetPlayerInfo(playerId);
 
         /// <inheritdoc cref="XPAPI.GetPlayerInfo(XPPlayer)"/>
         public static PlayerInfoWrapper GetPlayerInfo(this XPPlayer player) => XPAPI.GetPlayerInfo(player);

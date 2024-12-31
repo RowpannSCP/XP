@@ -49,8 +49,8 @@
             database = null;
         }
 
-        public LiteDBPlayerInfo TryGetPlayerInfo(IPlayerId playerId) => TryGetPlayerInfo<LiteDBPlayerInfo>(playerId);
-        public T TryGetPlayerInfo<T>(IPlayerId playerId) where T : LiteDBPlayerInfo
+        public LiteDBPlayerInfo TryGetPlayerInfo(IPlayerId<object> playerId) => TryGetPlayerInfo<LiteDBPlayerInfo>(playerId);
+        public T TryGetPlayerInfo<T>(IPlayerId<object> playerId) where T : LiteDBPlayerInfo
         {
             switch (playerId.AuthType)
             {
@@ -66,9 +66,9 @@
             }
         }
 
-        protected override bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo)
+        protected override bool TryGetPlayerInfoNoCache(IPlayerId<object> playerId, out PlayerInfo playerInfo)
         {
-            var existing = TryGetPlayerInfo(playerId);
+            LiteDBPlayerInfo existing = TryGetPlayerInfo(playerId);
             if (existing == null)
             {
                 playerInfo = null;
@@ -79,9 +79,9 @@
             return true;
         }
 
-        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId playerId)
+        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId<object> playerId)
         {
-            var existing = TryGetPlayerInfo(playerId);
+            LiteDBPlayerInfo existing = TryGetPlayerInfo(playerId);
             if (existing != null)
                 return existing.ToPlayerInfo(playerId.AuthType);
 
@@ -97,12 +97,12 @@
                     throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null);
             }
         }
-        protected PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache<T>(IPlayerId playerId, ILiteCollection<T> collection) where T : LiteDBPlayerInfo, new()
+        protected PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache<T>(IPlayerId<object> playerId, ILiteCollection<T> collection) where T : LiteDBPlayerInfo, new()
         {
-            var info = new T()
+            T info = new T()
             {
                 XP = 0
-            }.SetId<T>(playerId.GetId());
+            }.SetId<T>(playerId);
             collection.Insert(info);
             return info.ToPlayerInfo(playerId.AuthType);
         }
@@ -153,7 +153,7 @@
         }
         protected void SetPlayerInfoNoCache<T>(PlayerInfo playerInfo, ILiteCollection<T> collection) where T : LiteDBPlayerInfo, new()
         {
-            var existing = TryGetPlayerInfo<T>(playerInfo.Player);
+            T existing = TryGetPlayerInfo<T>(playerInfo.Player);
             if (existing == null)
             {
                 collection.Insert(new T()
@@ -174,7 +174,7 @@
             }
         }
 
-        protected override bool DeletePlayerInfoNoCache(IPlayerId playerId)
+        protected override bool DeletePlayerInfoNoCache(IPlayerId<object> playerId)
         {
             switch (playerId.AuthType)
             {

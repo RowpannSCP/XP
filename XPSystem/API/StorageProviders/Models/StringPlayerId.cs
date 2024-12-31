@@ -12,7 +12,7 @@
         /// <inheritdoc />
         public AuthType AuthType { get; }
 
-        /// <inheritdoc cref="IPlayerId.ToString" />
+        /// <inheritdoc cref="IPlayerId{T}.ToString" />
         public override string ToString() => $"{Id}@{AuthType.ToString().ToLower()}";
 
         public StringPlayerId(string id, AuthType authType)

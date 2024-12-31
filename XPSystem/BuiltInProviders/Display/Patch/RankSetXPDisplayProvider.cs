@@ -65,7 +65,7 @@
 
         private void Refresh(XPPlayer player, PlayerInfoWrapper playerInfo = null)
         {
-            var badge = GetBadge(player, playerInfo ?? XPAPI.GetPlayerInfo(player));
+            Badge badge = GetBadge(player, playerInfo ?? XPAPI.GetPlayerInfo(player));
             if (badge == null)
                 return;
 
