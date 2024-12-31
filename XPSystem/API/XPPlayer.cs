@@ -180,7 +180,7 @@
                 throw new ArgumentNullException(nameof(referenceHub));
 
 #if DEBUG
-            if (referenceHub == ReferenceHub.HostHub)
+            if (referenceHub.IsHost)
             {
                 var stackTrace = new StackTrace();
                 LogInfo("XPPlayer for Dedicated Server was created: " + stackTrace);
@@ -188,7 +188,7 @@
 #endif
 
             Hub = referenceHub;
-            IsNPC = referenceHub == ReferenceHub.HostHub || CheckNPC(referenceHub);
+            IsNPC = referenceHub.IsHost || CheckNPC(referenceHub);
 
             if (UserId.TryParseUserId(out var playerId))
             {
@@ -212,7 +212,7 @@
         /// <returns>The player.</returns>
         public static XPPlayer Get(ReferenceHub hub)
         {
-            if (Players.TryGetValue(hub, out var player))
+            if (Players.TryGetValue(hub, out XPPlayer player))
                 return player;
 
             player = new XPPlayer(hub);
@@ -251,7 +251,7 @@
             if (string.IsNullOrWhiteSpace(data))
                 return false;
 
-            var hub = GetHub(data);
+            ReferenceHub hub = GetHub(data);
             if (hub == null)
                 return false;
 
@@ -339,7 +339,7 @@
             if (!IsConnected)
                 return;
 
-            var writer = NetworkWriterPool.Get();
+            NetworkWriterPooled writer = NetworkWriterPool.Get();
 
             MakeCustomSyncWriter(behaviorOwner, targetType, CustomSyncVarGenerator, writer);
             Hub.connectionToClient.Send(new EntityStateMessage
@@ -371,7 +371,7 @@
                 return -1;
 
             int count = 0;
-            var writer = NetworkWriterPool.Get();
+            NetworkWriterPooled writer = NetworkWriterPool.Get();
             MakeCustomSyncWriter(Hub.networkIdentity, targetType, CustomSyncVarGenerator, writer);
 
             var message = new EntityStateMessage
@@ -380,7 +380,7 @@
                 payload = writer.ToArraySegment(),
             };
 
-            foreach (var referenceHub in ReferenceHub.AllHubs)
+            foreach (ReferenceHub referenceHub in ReferenceHub.AllHubs)
             {
                 if (skipSelf && referenceHub == Hub)
                     continue;
@@ -416,13 +416,13 @@
                 return -1;
 
             int count = 0;
-            var writer = NetworkWriterPool.Get();
+            NetworkWriterPooled writer = NetworkWriterPool.Get();
             MakeCustomSyncWriter(Hub.networkIdentity, targetType, CustomSyncVarGenerator, writer);
 
             EntityStateMessage message2 = default;
             if (value2 != null)
             {
-                var writer2 = NetworkWriterPool.Get();
+                NetworkWriterPooled writer2 = NetworkWriterPool.Get();
                 MakeCustomSyncWriter(Hub.networkIdentity, targetType, CustomSyncVarGeneratorValue2, writer2);
 
                 message2 = new EntityStateMessage

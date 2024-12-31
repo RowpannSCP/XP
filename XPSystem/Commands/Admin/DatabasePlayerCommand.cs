@@ -31,7 +31,7 @@
             // If player is specified.
             if (arguments.Count > targetPlayerArgumentIndex)
             {
-                var arg = arguments.At(targetPlayerArgumentIndex);
+                string arg = arguments.At(targetPlayerArgumentIndex);
                 // Try to get player by name or user id.
                 if (XPPlayer.TryGet(arg, out player))
                 {
@@ -52,6 +52,12 @@
             else
             {
                 playerId = player.PlayerId;
+            }
+
+            if (player.PlayerId == playerId && player.IsNPC)
+            {
+                response = "Player is not actual player, can't do that.";
+                return false;
             }
 
             if (XPAPI.StorageProvider.TryGetPlayerInfo(playerId, out playerInfo))

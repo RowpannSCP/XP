@@ -56,11 +56,11 @@
             {
                 // FindById no work; BsonValue converts ulong to decimal, key is different; retarded conversion
                 case AuthType.Steam when playerId is NumberPlayerId numberPlayerId:
-                    return (T)(object)SteamCollection.FindOne(x => x.Id == numberPlayerId.Id);
+                    return (T)(object)SteamCollection.FindOne(x => x.Id == numberPlayerId.IdNumber);
                 case AuthType.Discord when playerId is NumberPlayerId numberPlayerId:
-                    return (T)(object)DiscordCollection.FindOne(x => x.Id == numberPlayerId.Id);
+                    return (T)(object)DiscordCollection.FindOne(x => x.Id == numberPlayerId.IdNumber);
                 case AuthType.Northwood when playerId is StringPlayerId stringPlayerId:
-                    return (T)(object)NWCollection.FindOne(x => x.Id == stringPlayerId.Id);
+                    return (T)(object)NWCollection.FindOne(x => x.Id == stringPlayerId.IdString);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null);
             }
@@ -68,7 +68,7 @@
 
         protected override bool TryGetPlayerInfoNoCache(IPlayerId<object> playerId, out PlayerInfo playerInfo)
         {
-            var existing = TryGetPlayerInfo(playerId);
+            LiteDBPlayerInfo existing = TryGetPlayerInfo(playerId);
             if (existing == null)
             {
                 playerInfo = null;
@@ -81,7 +81,7 @@
 
         protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId<object> playerId)
         {
-            var existing = TryGetPlayerInfo(playerId);
+            LiteDBPlayerInfo existing = TryGetPlayerInfo(playerId);
             if (existing != null)
                 return existing.ToPlayerInfo(playerId.AuthType);
 
@@ -99,10 +99,10 @@
         }
         protected PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache<T>(IPlayerId<object> playerId, ILiteCollection<T> collection) where T : LiteDBPlayerInfo, new()
         {
-            var info = new T()
+            T info = new T()
             {
                 XP = 0
-            }.SetId<T>(playerId.GetId());
+            }.SetId<T>(playerId);
             collection.Insert(info);
             return info.ToPlayerInfo(playerId.AuthType);
         }
@@ -153,7 +153,7 @@
         }
         protected void SetPlayerInfoNoCache<T>(PlayerInfo playerInfo, ILiteCollection<T> collection) where T : LiteDBPlayerInfo, new()
         {
-            var existing = TryGetPlayerInfo<T>(playerInfo.Player);
+            T existing = TryGetPlayerInfo<T>(playerInfo.Player);
             if (existing == null)
             {
                 collection.Insert(new T()
@@ -179,11 +179,11 @@
             switch (playerId.AuthType)
             {
                 case AuthType.Steam when playerId is NumberPlayerId numberPlayerId:
-                    return SteamCollection.Delete(numberPlayerId.Id);
+                    return SteamCollection.Delete(numberPlayerId.IdNumber);
                 case AuthType.Discord when playerId is NumberPlayerId numberPlayerId:
-                    return DiscordCollection.Delete(numberPlayerId.Id);
+                    return DiscordCollection.Delete(numberPlayerId.IdNumber);
                 case AuthType.Northwood when playerId is StringPlayerId stringPlayerId:
-                    return NWCollection.Delete(stringPlayerId.Id);
+                    return NWCollection.Delete(stringPlayerId.IdString);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(playerId.AuthType), playerId.AuthType, null);
             }

@@ -23,14 +23,14 @@
             if (TryGetFromCache(playerId, out playerInfo))
                 return true;
 
-            bool result = TryGetPlayerInfoNoCache(playerId, out var playerInfo3);
+            bool result = TryGetPlayerInfoNoCache(playerId, out PlayerInfo playerInfo3);
             playerInfo = playerInfo3;
             return result;
         }
 
         public virtual PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(IPlayerId<object> playerId)
         {
-            if (TryGetFromCache(playerId, out var playerInfo))
+            if (TryGetFromCache(playerId, out PlayerInfoWrapper playerInfo))
                 return playerInfo;
 
             return GetPlayerInfoAndCreateOfNotExistNoCache(playerId);
@@ -38,7 +38,7 @@
 
         public virtual void SetPlayerInfo(PlayerInfoWrapper playerInfo)
         {
-            if (XPPlayer.TryGet(playerInfo.Player, out var player))
+            if (XPPlayer.TryGet(playerInfo.Player, out XPPlayer player))
                 player.Variables.Set(VariableKey, playerInfo);
 
             SetPlayerInfoNoCache(playerInfo);
@@ -46,7 +46,7 @@
 
         public virtual bool DeletePlayerInfo(IPlayerId<object> playerId)
         {
-            if (XPPlayer.TryGet(playerId, out var player))
+            if (XPPlayer.TryGet(playerId, out XPPlayer player))
                 player.Variables.Remove(VariableKey);
 
             return DeletePlayerInfoNoCache(playerId);
@@ -62,7 +62,7 @@
         {
             playerInfo = null;
 
-            if (!XPPlayer.TryGet(playerId, out var player))
+            if (!XPPlayer.TryGet(playerId, out XPPlayer player))
             {
                 LogDebug("Player not in server: " + playerId);
                 playerInfo = null;

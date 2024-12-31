@@ -16,15 +16,15 @@
 
         public override void Initialize()
         {
-            using var connection = GetConnection();
+            using MySqlConnection connection = GetConnection();
 
             foreach (AuthType authType in Enum.GetValues(typeof(AuthType)))
             {
-                using var command = connection.CreateCommand();
+                using MySqlCommand command = connection.CreateCommand();
                 command.CommandText =
                     $"CREATE TABLE IF NOT EXISTS {GetTableName(authType)} (" +
-                    (authType == AuthType.Northwood ? "id VARCHAR(32) PRIMARY KEY" : "id BIGINT UNSIGNED PRIMARY KEY") +
-                    ",xp int UNSIGNED NOT NULL DEFAULT 0" +
+                    (authType == AuthType.Northwood ? "id VARCHAR(32) PRIMARY KEY" : "id BIGINT UNSIGNED PRIMARY KEY,") +
+                    "xp int UNSIGNED NOT NULL DEFAULT 0" +
 #if STORENICKS
                     ",nickname VARCHAR(64)" +
 #endif
@@ -38,19 +38,27 @@
 
         public override IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count)
         {
-            using var connection = GetConnection();
+            using MySqlConnection connection = GetConnection();
 
             List<PlayerInfo> topPlayers = new();
 
             foreach (AuthType authType in Enum.GetValues(typeof(AuthType)))
             {
-                using var command = connection.CreateCommand();
+                using MySqlCommand command = connection.CreateCommand();
                 command.CommandText = $"SELECT * FROM {GetTableName(authType)} ORDER BY xp DESC LIMIT {count}";
 
-                using var reader = command.ExecuteReader();
+                using MySqlDataReader reader = command.ExecuteReader();
+
                 while (reader.Read())
                 {
-                    topPlayers.Add(FromReader(reader, null, authType));
+                    var created = XPAPI.CreateUserId(reader.GetString(0), authType);
+                    if (created == null)
+                    {
+                        XPAPI.LogDebug("MYSQLProvider: GetTopPlayers - Failed to create player id with idstring: " + reader.GetString(0) + " and authtype: " + authType);
+                        continue;
+                    }
+
+                    topPlayers.Add(FromReader(reader, created));
                 }
             }
 
@@ -60,14 +68,14 @@
                 .Select(x => new PlayerInfoWrapper(x));
         }
 
-        protected override bool TryGetPlayerInfoNoCache(IPlayerId<object> playerId, out PlayerInfo playerInfo)
+        protected override bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo)
         {
-            using var connection = GetConnection();
-            using var command = connection.CreateCommand();
+            using MySqlConnection connection = GetConnection();
+            using MySqlCommand command = connection.CreateCommand();
 
             command.CommandText = $"SELECT * FROM {GetTableName(playerId.AuthType)} WHERE id = {playerId.Id}";
 
-            using var reader = command.ExecuteReader();
+            using MySqlDataReader reader = command.ExecuteReader();
 
             if (!reader.Read())
             {
@@ -79,19 +87,19 @@
             return true;
         }
 
-        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId<object> playerId)
+        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId  playerId)
         {
-            using var connection = GetConnection();
-            using var command = connection.CreateCommand();
+            using MySqlConnection connection = GetConnection();
+            using MySqlCommand command = connection.CreateCommand();
 
             command.CommandText = $"SELECT * FROM {GetTableName(playerId.AuthType)} WHERE id = {playerId.Id}";
 
-            using var reader = command.ExecuteReader();
+            using MySqlDataReader reader = command.ExecuteReader();
 
             if (!reader.HasRows)
             {
-                using var insertConnection = GetConnection();
-                using var insertCommand = insertConnection.CreateCommand();
+                using MySqlConnection insertConnection = GetConnection();
+                using MySqlCommand insertCommand = insertConnection.CreateCommand();
                 insertCommand.CommandText =
                     $"INSERT INTO {GetTableName(playerId.AuthType)} (id, xp) VALUES ({playerId.Id}, 0)";
                 insertCommand.ExecuteNonQuery();
@@ -109,9 +117,9 @@
 
         protected override void SetPlayerInfoNoCache(PlayerInfo playerInfo)
         {
-            using var connection = GetConnection();
+            using MySqlConnection connection = GetConnection();
 
-            using var command = connection.CreateCommand();
+            using MySqlCommand command = connection.CreateCommand();
             command.CommandText =
                 $"REPLACE INTO {GetTableName(playerInfo.Player.AuthType)} (id, xp" +
 #if STORENICKS
@@ -129,50 +137,30 @@
             command.ExecuteNonQuery();
         }
 
-        protected override bool DeletePlayerInfoNoCache(IPlayerId<object> playerId)
+        protected override bool DeletePlayerInfoNoCache(IPlayerId  playerId)
         {
-            using var connection = GetConnection();
-            using var command = connection.CreateCommand();
+            using MySqlConnection connection = GetConnection();
+            using MySqlCommand command = connection.CreateCommand();
 
-            command.CommandText = $"DELETE FROM {GetTableName(playerId.AuthType)} WHERE id = {playerId.GetId()}";
+            command.CommandText = $"DELETE FROM {GetTableName(playerId.AuthType)} WHERE id = {playerId.Id}";
 
             return command.ExecuteNonQuery() > 0;
         }
 
         protected override void DeleteAllPlayerInfoNoCache()
         {
-            using var connection = GetConnection();
+            using MySqlConnection connection = GetConnection();
 
             foreach (AuthType authType in Enum.GetValues(typeof(AuthType)))
             {
-                using var command = connection.CreateCommand();
+                using MySqlCommand command = connection.CreateCommand();
                 command.CommandText = $"DELETE FROM {GetTableName(authType)}";
                 command.ExecuteNonQuery();
             }
         }
 
-        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId<object> playerId = null, AuthType? authType = null)
+        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId playerId = null)
         {
-            if (playerId == null)
-            {
-                switch (authType)
-                {
-                    case AuthType.Steam:
-                        playerId = new NumberPlayerId(reader.GetUInt64(0), AuthType.Steam);
-                        break;
-                    case AuthType.Discord:
-                        playerId = new NumberPlayerId(reader.GetUInt64(0), AuthType.Discord);
-                        break;
-                    case AuthType.Northwood:
-                        playerId = new StringPlayerId(reader.GetString(0), AuthType.Northwood);
-                        break;
-                    case null:
-                        throw new ArgumentNullException(nameof(authType));
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(authType), authType, null);
-                }
-            }
-
             return new PlayerInfo
             {
                 Player = playerId,
@@ -183,7 +171,7 @@
             };
         }
 
-        private void Log(object sender, MySqlInfoMessageEventArgs ev) => XPAPI.LogDebug(ev.ToString());
+        private void Log(object sender, MySqlInfoMessageEventArgs ev) => XPAPI.LogDebug("MYSQLProvider: " + ev);
 
         public MySqlConnection GetConnection()
         {

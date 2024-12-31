@@ -3,11 +3,14 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
+    using System.Text;
     using CommandSystem;
     using NorthwoodLib.Pools;
     using PlayerRoles;
     using XPSystem.API;
     using XPSystem.Config.Events;
+    using XPSystem.Config.Events.Types;
 
     public class ShowMessageCommand : SanitizedInputCommand
     {
@@ -26,14 +29,14 @@
             }
 
             string key = arguments.At(0);
-            var role = RoleTypeId.None;
+            RoleTypeId role = RoleTypeId.None;
 
             if (key.StartsWith("default_"))
                 key = key.Substring(8);
-            else if (XPPlayer.TryGet(sender, out var player))
+            else if (XPPlayer.TryGet(sender, out XPPlayer player))
                 role = player.Role;
 
-            var file = XPECManager.GetFile(key, role);
+            XPECFile file = XPECManager.GetFile(key, role);
             if (file == null)
             {
                 response = "No such XPEC file.";
@@ -44,13 +47,13 @@
             if (arguments.Count > 1)
             {
                 var types = file.ParametersTypes;
-                var subkeysStrings = arguments
+                string[] subkeysStrings = arguments
                     .Skip(1)
                     .ToArray();
 
                 for (int i = 0; i < subkeysStrings.Length; i++)
                 {
-                    var @string = subkeysStrings[i];
+                    string @string = subkeysStrings[i];
                     if (types.Length <= i)
                     {
                         subkeys.Add(@string);
@@ -60,11 +63,11 @@
                     bool success = false;
                     Exception e = null;
                     var argTypes = types[i];
-                    foreach (var type in argTypes)
+                    foreach (Type type in argTypes)
                     {
                         try
                         {
-                            var converted = type.IsEnum
+                            object converted = type.IsEnum
                                 ? Enum.Parse(type, @string, true)
                                 : Convert.ChangeType(@string, type);
 
@@ -90,15 +93,15 @@
                 }
             }
 
-            var item = file.Get(subkeys.ToArray());
+            XPECItem item = file.Get(subkeys.ToArray());
             if (item == null)
             {
                 response = "Item null.";
                 return false;
             }
 
-            var sb = StringBuilderPool.Shared.Rent();
-            foreach (var property in item.GetType().GetProperties())
+            StringBuilder sb = StringBuilderPool.Shared.Rent();
+            foreach (PropertyInfo property in item.GetType().GetProperties())
                 sb.AppendLine($"{property.Name}: {property.GetValue(item)}");
 
             response = StringBuilderPool.Shared.ToStringReturn(sb);

@@ -5,23 +5,24 @@
     /// <summary>
     /// Represents an identifier that uses strings (ex. NorthwoodIds).
     /// </summary>
-    public readonly struct StringPlayerId : IPlayerId<string>, IPlayerId<object>
+    public class StringPlayerId : IPlayerId
     {
-        /// <inheritdoc />
-        public string Id { get; }
+        /// <summary>
+        /// The identifier of the player, in string form.
+        /// </summary>
+        public readonly string IdString;
 
         /// <inheritdoc />
-        object IPlayerId<object>.Id => Id;
-
-        /// <inheritdoc cref="IPlayerId{T}.AuthType" />
+        public object Id => IdString;
+        /// <inheritdoc />
         public AuthType AuthType { get; }
 
-        /// <inheritdoc cref="IPlayerId{T}.ToString" />
+        /// <inheritdoc cref="IPlayerId.ToString" />
         public override string ToString() => $"{Id}@{AuthType.ToString().ToLower()}";
 
         public StringPlayerId(string id, AuthType authType)
         {
-            Id = id;
+            IdString = id;
             AuthType = authType;
         }
     }
