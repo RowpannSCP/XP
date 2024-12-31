@@ -40,7 +40,7 @@
         /// <summary>
         /// Gets the player's <see cref="PlayerId"/>.
         /// </summary>
-        public IPlayerId<object> PlayerId { get; }
+        public IPlayerId PlayerId { get; }
 
         /// <summary>
         /// Gets whether or not the player is a npc.
@@ -220,12 +220,12 @@
         }
 
         /// <summary>
-        /// Attempts to get a player using a <see cref="IPlayerId{T}"/>.
+        /// Attempts to get a player using a <see cref="IPlayerId"/>.
         /// </summary>
-        /// <param name="playerId">The <see cref="IPlayerId{T}"/> of the player.</param>
+        /// <param name="playerId">The <see cref="IPlayerId"/> of the player.</param>
         /// <param name="player">The player, if on the server.</param>
         /// <returns>Whether or not the playerid is valid and player is on the server.</returns>
-        public static bool TryGet(IPlayerId<object> playerId, out XPPlayer player)
+        public static bool TryGet(IPlayerId playerId, out XPPlayer player)
         {
             return TryGet(playerId.ToString(), out player);
         }

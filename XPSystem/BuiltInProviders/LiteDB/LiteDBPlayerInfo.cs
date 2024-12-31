@@ -15,7 +15,7 @@
             return (T)(object)this;
         }
 
-        protected override IPlayerId<object> toPlayerId(AuthType authType) => (IPlayerId<object>)new NumberPlayerId(Id, authType);
+        protected override IPlayerId toPlayerId(AuthType authType) => (IPlayerId)new NumberPlayerId(Id, authType);
     }
 
     public class LiteDBStringPlayerInfo : LiteDBPlayerInfo
@@ -29,7 +29,7 @@
             return (T)(object)this;
         }
 
-        protected override IPlayerId<object> toPlayerId(AuthType authType) => new StringPlayerId(Id, authType);
+        protected override IPlayerId toPlayerId(AuthType authType) => new StringPlayerId(Id, authType);
     }
 
     public abstract class LiteDBPlayerInfo
@@ -41,7 +41,7 @@
 
         public abstract T SetId<T>(object id) where T : LiteDBPlayerInfo;
 
-        protected abstract IPlayerId<object> toPlayerId(AuthType authType);
+        protected abstract IPlayerId toPlayerId(AuthType authType);
         public PlayerInfo ToPlayerInfo(AuthType authType)
         {
             return new PlayerInfo

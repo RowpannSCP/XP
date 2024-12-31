@@ -100,6 +100,11 @@
                     {
                         Amount = 5,
                         Translation = "You used a medkit!"
+                    },
+                    [ItemType.SCP1344] = new()
+                    {
+                        Amount = 0,
+                        Translation = "(Can be spammed, disabled)"
                     }
                 }
             },

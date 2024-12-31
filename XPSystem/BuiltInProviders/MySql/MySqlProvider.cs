@@ -68,7 +68,7 @@
                 .Select(x => new PlayerInfoWrapper(x));
         }
 
-        protected override bool TryGetPlayerInfoNoCache(IPlayerId<object> playerId, out PlayerInfo playerInfo)
+        protected override bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo)
         {
             using MySqlConnection connection = GetConnection();
             using MySqlCommand command = connection.CreateCommand();
@@ -87,7 +87,7 @@
             return true;
         }
 
-        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId<object>  playerId)
+        protected override PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId  playerId)
         {
             using MySqlConnection connection = GetConnection();
             using MySqlCommand command = connection.CreateCommand();
@@ -137,7 +137,7 @@
             command.ExecuteNonQuery();
         }
 
-        protected override bool DeletePlayerInfoNoCache(IPlayerId<object>  playerId)
+        protected override bool DeletePlayerInfoNoCache(IPlayerId  playerId)
         {
             using MySqlConnection connection = GetConnection();
             using MySqlCommand command = connection.CreateCommand();
@@ -159,7 +159,7 @@
             }
         }
 
-        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId<object> playerId = null)
+        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId playerId = null)
         {
             return new PlayerInfo
             {

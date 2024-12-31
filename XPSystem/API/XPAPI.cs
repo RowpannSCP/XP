@@ -229,9 +229,9 @@
         /// Gets the player info of a player.
         /// Will create a new one if it doesn't exist.
         /// </summary>
-        /// <param name="playerId">The <see cref="IPlayerId{T}"/> of the player to get the info of.</param>
+        /// <param name="playerId">The <see cref="IPlayerId"/> of the player to get the info of.</param>
         /// <returns>The <see cref="PlayerInfoWrapper"/> belonging to the player.</returns>
-        public static PlayerInfoWrapper GetPlayerInfo(IPlayerId<object> playerId)
+        public static PlayerInfoWrapper GetPlayerInfo(IPlayerId playerId)
         {
             EnsureStorageProviderValid();
             return StorageProvider.GetPlayerInfoAndCreateOfNotExist(playerId);
@@ -446,12 +446,12 @@
         }
 
         /// <summary>
-        /// Attempts to create a <see cref="IPlayerId{T}"/> from an id and an <see cref="AuthType"/>.
+        /// Attempts to create a <see cref="IPlayerId"/> from an id and an <see cref="AuthType"/>.
         /// </summary>
         /// <param name="id">The id value.</param>
         /// <param name="authType">The <see cref="AuthType"/> of the id.</param>
-        /// <returns>If successful, the <see cref="IPlayerId{T}"/> created. Otherwise, null.</returns>
-        public static IPlayerId<object> CreateUserId(object id, AuthType authType)
+        /// <returns>If successful, the <see cref="IPlayerId"/> created. Otherwise, null.</returns>
+        public static IPlayerId CreateUserId(object id, AuthType authType)
         {
             bool EnsureIs<T>(out T obj)
             {
@@ -477,7 +477,7 @@
                 case AuthType.Steam:
                 case AuthType.Discord:
                     if (EnsureIs(out ulong ulongId))
-                        return (IPlayerId<object>)new NumberPlayerId(ulongId, authType);
+                        return (IPlayerId)new NumberPlayerId(ulongId, authType);
 
                     LogDebug("UserId creating failed (not ulong)");
                     return null;
@@ -493,12 +493,12 @@
         }
 
         /// <summary>
-        /// Attempts to parse a string into a <see cref="IPlayerId{T}"/>.
+        /// Attempts to parse a string into a <see cref="IPlayerId"/>.
         /// </summary>
         /// <param name="string">The string to parse.</param>
-        /// <param name="playerId">The equivalent <see cref="IPlayerId{T}"/>.</param>
+        /// <param name="playerId">The equivalent <see cref="IPlayerId"/>.</param>
         /// <returns>Whether or not the parsing was successful.</returns>
-        public static bool TryParseUserId(string @string, out IPlayerId<object> playerId)
+        public static bool TryParseUserId(string @string, out IPlayerId playerId)
         {
             playerId = null;
             if (@string == null)
