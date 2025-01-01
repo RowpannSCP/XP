@@ -477,7 +477,7 @@
                 case AuthType.Steam:
                 case AuthType.Discord:
                     if (EnsureIs(out ulong ulongId))
-                        return (IPlayerId)new NumberPlayerId(ulongId, authType);
+                        return new NumberPlayerId(ulongId, authType);
 
                     LogDebug("UserId creating failed (not ulong)");
                     return null;

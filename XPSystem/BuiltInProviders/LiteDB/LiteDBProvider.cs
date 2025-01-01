@@ -102,7 +102,7 @@
             T info = new T()
             {
                 XP = 0
-            }.SetId<T>(playerId);
+            }.SetId<T>(playerId.Id);
             collection.Insert(info);
             return info.ToPlayerInfo(playerId.AuthType);
         }
