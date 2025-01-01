@@ -21,7 +21,7 @@
         : Exiled.API.Features.Plugin<ExiledConfig>
 #endif
     {
-        public const string VersionString = "2.0.7";
+        public const string VersionString = "2.0.8";
 
         /// <summary>
         /// This number is increased every time the plugin is reloaded.
@@ -133,9 +133,9 @@
 
         public void SetDisplayProviders(IEnumerable<string> typeNames)
         {
-            foreach (var typeName in typeNames)
+            foreach (string typeName in typeNames)
             {
-                if (!TryCreate(typeName, out var exception, out IXPDisplayProvider provider))
+                if (!TryCreate(typeName, out Exception exception, out IXPDisplayProvider provider))
                 {
                     LogError($"Could not create display provider {typeName}: {exception}");
                     continue;
@@ -179,7 +179,7 @@
 
             try
             {
-                var type = Type.GetType(typeName) ?? throw new TypeLoadException("Type not found!");
+                Type type = Type.GetType(typeName) ?? throw new TypeLoadException("Type not found!");
                 obj = (T)Activator.CreateInstance(type);
             }
             catch (Exception e)

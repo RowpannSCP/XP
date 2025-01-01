@@ -1,6 +1,7 @@
 ﻿namespace XPSystem.Commands.Admin.Subcommands
 {
     using System;
+    using System.Text;
     using CommandSystem;
     using NorthwoodLib.Pools;
     using XPSystem.API;
@@ -9,7 +10,7 @@
     {
         public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.variables", out var player))
+            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.variables", out XPPlayer player))
             {
                 response = "You don't have permission (xps.variables) to use this command.";
                 return false;
@@ -30,7 +31,7 @@
                 return true;
             }
 
-            var sb = StringBuilderPool.Shared.Rent();
+            StringBuilder sb = StringBuilderPool.Shared.Rent();
             sb.AppendLine("Variables:");
 
             foreach (var kvp in player.Variables)

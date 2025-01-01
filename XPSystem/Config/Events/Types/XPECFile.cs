@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Reflection;
     using YamlDotNet.Core;
     using YamlDotNet.Core.Events;
     using static API.XPAPI;
@@ -47,14 +48,14 @@
         /// <param name="parser">The parser to read from.</param>
         public virtual void Read(IParser parser)
         {
-            var type = GetType();
+            Type type = GetType();
 
             while (!parser.Accept(out MappingEnd _))
             {
-                if (!parser.TryConsume<Scalar>(out var scalar))
+                if (!parser.TryConsume<Scalar>(out Scalar scalar))
                     throw new InvalidDataException("Invalid YAML content: Expected scalar key.");
 
-                var property = type.GetProperty(scalar.Value);
+                PropertyInfo property = type.GetProperty(scalar.Value);
                 if (property == null)
                 {
                     LogWarn("Skipping serialization of unknown property: " + scalar.Value);
@@ -73,7 +74,7 @@
         /// <param name="emitter">The emitter to emit to.</param>
         public virtual void Write(IEmitter emitter)
         {
-            foreach (var property in GetType().GetProperties())
+            foreach (PropertyInfo property in GetType().GetProperties())
             {
                 if (property.GetMethod == null || property.SetMethod == null)
                     continue;

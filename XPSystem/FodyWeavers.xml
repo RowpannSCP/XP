@@ -13,6 +13,7 @@
 
             System.Buffers
             System.Diagnostics.DiagnosticSource
+            System.Memory
             System.Numerics.Vectors
             System.Threading.Tasks.Extensions
 

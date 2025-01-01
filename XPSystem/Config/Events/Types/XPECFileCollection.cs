@@ -26,7 +26,7 @@
             if (string.IsNullOrWhiteSpace(key))
                 return null;
 
-            return Files.TryGetValue(key, out var file)
+            return Files.TryGetValue(key, out XPECFile file)
                 ? file.Get(subkeys)
                 : null;
         }

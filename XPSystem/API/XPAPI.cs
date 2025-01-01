@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Text;
     using NorthwoodLib.Pools;
     using PlayerRoles;
     using XPSystem.API.DisplayProviders;
@@ -93,6 +94,11 @@
         public static bool XPGainPaused { get; set; } = false;
 
         /// <summary>
+        /// Gets invoke when a player levels up.
+        /// </summary>
+        public static event Action<XPPlayer, int, int> PlayerLevelUp = delegate { };
+
+        /// <summary>
         /// Prints a debug message, if debug is enabled.
         /// Not too different from your loader's LogDebug.
         /// </summary>
@@ -169,7 +175,7 @@
                 return;
             }
 
-            if (Main.TryCreate(typeName, out var e, out IStorageProvider provider))
+            if (Main.TryCreate(typeName, out Exception e, out IStorageProvider provider))
             {
                 SetStorageProvider(provider);
                 return;
@@ -202,7 +208,7 @@
             }
             else
             {
-                var obj = provider.ConfigPropertyInternal;
+                object obj = provider.ConfigPropertyInternal;
 
                 File.WriteAllText(file, Serializer.Serialize(obj));
                 provider.ConfigPropertyInternal = obj;
@@ -223,9 +229,9 @@
         /// Gets the player info of a player.
         /// Will create a new one if it doesn't exist.
         /// </summary>
-        /// <param name="playerId">The <see cref="PlayerId"/> of the player to get the info of.</param>
+        /// <param name="playerId">The <see cref="IPlayerId"/> of the player to get the info of.</param>
         /// <returns>The <see cref="PlayerInfoWrapper"/> belonging to the player.</returns>
-        public static PlayerInfoWrapper GetPlayerInfo(PlayerId playerId)
+        public static PlayerInfoWrapper GetPlayerInfo(IPlayerId playerId)
         {
             EnsureStorageProviderValid();
             return StorageProvider.GetPlayerInfoAndCreateOfNotExist(playerId);
@@ -265,8 +271,7 @@
         /// <param name="force">Whether to force the addition of XP, <br/>
         /// even if <see cref="XPGainPaused"/> <br/>
         /// or the player has <see cref="XPPlayer.DNT"/> enabled <br/>
-        /// or <see cref="XPPlayer.IsNPC"/> is true, <br/>
-        /// or the <see cref="XPPlayer.PlayerId"/> is not <see cref="PlayerId.IsValid"/>.</param>
+        /// or <see cref="XPPlayer.IsNPC"/> is true.</param>
         /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
         /// <returns>Whether or not the XP was added.</returns>
         public static bool AddXP(XPPlayer player, int amount, bool force = false, PlayerInfoWrapper playerInfo = null)
@@ -276,9 +281,6 @@
 
             if (!force && (XPGainPaused || player.DNT) || player.IsNPC)
                 return false;
-
-            if (!force)
-                player.PlayerId.EnsureValid();
 
             playerInfo ??= GetPlayerInfo(player.PlayerId);
 
@@ -314,7 +316,7 @@
             StorageProvider.SetPlayerInfo(playerInfo);
 
             if (connected && playerInfo.Level != prevLevel)
-                HandleLevelUp(player, playerInfo);
+                HandleLevelUp(player, playerInfo, prevLevel);
 
             return true;
         }
@@ -362,8 +364,8 @@
             if (!player.IsConnected)
                 return false;
 
-            var file = XPECManager.GetFile(key, player.Role);
-            var item = file?.Get(subkeys);
+            XPECFile file = XPECManager.GetFile(key, player.Role);
+            XPECItem item = file?.Get(subkeys);
             if (item == null)
                 return false;
 
@@ -390,7 +392,7 @@
             if (xpecItem == null || xpecItem.Amount == 0 || player.DNT || XPGainPaused)
                 return false;
 
-            var playerInfo = GetPlayerInfo(player.PlayerId);
+            PlayerInfoWrapper playerInfo = GetPlayerInfo(player.PlayerId);
             AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
 
             string message = xpecItem.Translation;
@@ -429,7 +431,8 @@
         /// </summary>
         /// <param name="player">The player that leveled up.</param>
         /// <param name="wrapper">The <see cref="PlayerInfoWrapper"/> belonging to the player.</param>
-        public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper)
+        /// <param name="prevLevel">The previous level the player had.</param>
+        public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper, int prevLevel)
         {
             DisplayProviders.RefreshOf(player);
 
@@ -438,44 +441,85 @@
                 player.DisplayMessage(Config.AddedLVLMessage.Replace("%level%",
                     wrapper.Level.ToString()));
             }
+
+            PlayerLevelUp.Invoke(player, wrapper.Level, prevLevel);
         }
 
         /// <summary>
-        /// Attempts to parse a string into a <see cref="PlayerId"/>.
+        /// Attempts to create a <see cref="IPlayerId"/> from an id and an <see cref="AuthType"/>.
+        /// </summary>
+        /// <param name="id">The id value.</param>
+        /// <param name="authType">The <see cref="AuthType"/> of the id.</param>
+        /// <returns>If successful, the <see cref="IPlayerId"/> created. Otherwise, null.</returns>
+        public static IPlayerId CreateUserId(object id, AuthType authType)
+        {
+            bool EnsureIs<T>(out T obj)
+            {
+                if (id is T t)
+                {
+                    obj = t;
+                    return true;
+                }
+
+                object converted = Convert.ChangeType(id, typeof(T));
+                if (converted is T t2)
+                {
+                    obj = t2;
+                    return true;
+                }
+
+                obj = default;
+                return false;
+            }
+
+            switch (authType)
+            {
+                case AuthType.Steam:
+                case AuthType.Discord:
+                    if (EnsureIs(out ulong ulongId))
+                        return new NumberPlayerId(ulongId, authType);
+
+                    LogDebug("UserId creating failed (not ulong)");
+                    return null;
+                case AuthType.Northwood:
+                    if (EnsureIs(out string stringId))
+                        return new StringPlayerId(stringId, authType);
+
+                    LogDebug("UserId creating failed (not string)");
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to parse a string into a <see cref="IPlayerId"/>.
         /// </summary>
         /// <param name="string">The string to parse.</param>
-        /// <param name="playerId">The equivalent <see cref="PlayerId"/>.</param>
+        /// <param name="playerId">The equivalent <see cref="IPlayerId"/>.</param>
         /// <returns>Whether or not the parsing was successful.</returns>
-        public static bool TryParseUserId(string @string, out PlayerId playerId)
+        public static bool TryParseUserId(string @string, out IPlayerId playerId)
         {
-            playerId = default;
+            playerId = null;
             if (@string == null)
                 return false;
 
-            var split = @string.Split('@');
+            string[] split = @string.Split('@');
             if (split.Length != 2)
-                return false;
-
-            switch (split[1].ToLower())
             {
-                case "steam":
-                    playerId.AuthType = AuthType.Steam;
-                    break;
-                case "discord":
-                    playerId.AuthType = AuthType.Discord;
-                    break;
-                case "northwood":
-                    playerId.AuthType = AuthType.Northwood;
-                    break;
-                default:
-                    return false;
+                LogDebug("Failed to parse UserId (length != 2)");
+                return false;
             }
 
-            if (!ulong.TryParse(split[0], out ulong ulongId))
+            string authTypeString = split[1];
+            if (!Enum.TryParse(authTypeString, true, out AuthType authType))
+            {
+                LogDebug("Failed to parse UserId (unknown authType):" + authTypeString);
                 return false;
+            }
 
-            playerId.Id = ulongId;
-            return true;
+            playerId = CreateUserId(split[0], authType);
+            return playerId != null;
         }
 
         /// <summary>
@@ -485,9 +529,9 @@
         /// <returns>The formatted leaderboard, as a string..</returns>
         public static string FormatLeaderboard(IEnumerable<PlayerInfoWrapper> players)
         {
-            var sb = StringBuilderPool.Shared.Rent();
+            StringBuilder sb = StringBuilderPool.Shared.Rent();
 
-            foreach (var playerInfo in players)
+            foreach (PlayerInfoWrapper playerInfo in players)
             {
 #if STORENICKS
                 sb.AppendLine(string.IsNullOrWhiteSpace(playerInfo.Nickname)
@@ -508,12 +552,12 @@
         /// <returns>The type, formatted into a string.</returns>
         public static string FormatType(Type type)
         {
-            var sb = StringBuilderPool.Shared.Rent();
+            StringBuilder sb = StringBuilderPool.Shared.Rent();
             sb.Append(type.FullName);
             if (type.IsGenericType)
             {
                 sb.Append("<");
-                foreach (var arg in type.GetGenericArguments())
+                foreach (Type arg in type.GetGenericArguments())
                 {
                     sb.Append(FormatType(arg));
                     sb.Append(", ");

@@ -61,7 +61,7 @@
             int count = 0;
             int total = collection.Count();
 
-            foreach (var log in collection.FindAll())
+            foreach (PlayerLog log in collection.FindAll())
             {
                 if (!log.ID.TryParseUserId(out var id))
                 {

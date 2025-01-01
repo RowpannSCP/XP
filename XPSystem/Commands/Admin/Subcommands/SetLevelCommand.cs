@@ -3,12 +3,13 @@
     using System;
     using CommandSystem;
     using XPSystem.API;
+    using XPSystem.API.StorageProviders;
 
     public class SetLevelCommand : DatabasePlayerCommand
     {
         public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.setlevel", out var player))
+            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.setlevel", out XPPlayer player))
             {
                 response = "You don't have permission (xps.setlevel) to use this command.";
                 return false;
@@ -22,7 +23,7 @@
                 return false;
             }
 
-            var levelString = arguments.At(0);
+            string levelString = arguments.At(0);
             if (!int.TryParse(levelString, out int level) || level < 0)
             {
                 response = $"Invalid level: {levelString}.";
@@ -30,7 +31,7 @@
             }
 
             response = null;
-            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out var playerInfo, out var playerId))
+            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out PlayerInfoWrapper playerInfo, out var playerId))
                 return false;
 
             playerInfo.Level = level;

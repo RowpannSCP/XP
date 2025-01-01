@@ -21,7 +21,7 @@
             if (keys == null || keys.Length == 0)
                 return Default;
 
-            var keyObj = keys[0];
+            object keyObj = keys[0];
             if (keyObj is not T key)
                 throw new InvalidCastException($"Key is not of the correct type (was: {keyObj.GetType().FormatType()}, expected: {typeof(T).FormatType()})");
 
@@ -31,7 +31,7 @@
                 return Default;
             }
 
-            return Items.TryGetValue(key, out var item)
+            return Items.TryGetValue(key, out XPECItem item)
                 ? item
                 : Default;
         }

@@ -19,7 +19,7 @@
 
         public static void UnregisterAliases()
         {
-            foreach (var alias in Aliases)
+            foreach (IAliasableCommand alias in Aliases)
                 QueryProcessor.DotCommandHandler.UnregisterCommand(alias);
         }
 
