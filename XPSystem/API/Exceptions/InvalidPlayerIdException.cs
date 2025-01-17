@@ -4,7 +4,7 @@
 
     public class InvalidPlayerIdException : Exception
     {
-        public InvalidPlayerIdException() : base("The PlayerId for the specified player is invalid! Are you trying to add xp to a the host?")
+        public InvalidPlayerIdException() : base("The PlayerId for the specified player is invalid! Are you trying to modify the xp for the host?")
         {
         }
     }

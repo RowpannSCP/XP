@@ -18,19 +18,19 @@
         /// </summary>
         public virtual void Dispose() => ClearCache();
 
-        public virtual bool TryGetPlayerInfo(PlayerId playerId, out PlayerInfoWrapper playerInfo)
+        public virtual bool TryGetPlayerInfo(IPlayerId playerId, out PlayerInfoWrapper playerInfo)
         {
             if (TryGetFromCache(playerId, out playerInfo))
                 return true;
 
-            bool result = TryGetPlayerInfoNoCache(playerId, out var playerInfo3);
+            bool result = TryGetPlayerInfoNoCache(playerId, out PlayerInfo playerInfo3);
             playerInfo = playerInfo3;
             return result;
         }
 
-        public virtual PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(PlayerId playerId)
+        public virtual PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(IPlayerId playerId)
         {
-            if (TryGetFromCache(playerId, out var playerInfo))
+            if (TryGetFromCache(playerId, out PlayerInfoWrapper playerInfo))
                 return playerInfo;
 
             return GetPlayerInfoAndCreateOfNotExistNoCache(playerId);
@@ -38,15 +38,15 @@
 
         public virtual void SetPlayerInfo(PlayerInfoWrapper playerInfo)
         {
-            if (XPPlayer.TryGet(playerInfo.Player, out var player))
+            if (XPPlayer.TryGet(playerInfo.Player, out XPPlayer player))
                 player.Variables.Set(VariableKey, playerInfo);
 
             SetPlayerInfoNoCache(playerInfo);
         }
 
-        public virtual bool DeletePlayerInfo(PlayerId playerId)
+        public virtual bool DeletePlayerInfo(IPlayerId playerId)
         {
-            if (XPPlayer.TryGet(playerId, out var player))
+            if (XPPlayer.TryGet(playerId, out XPPlayer player))
                 player.Variables.Remove(VariableKey);
 
             return DeletePlayerInfoNoCache(playerId);
@@ -58,11 +58,11 @@
             DeleteAllPlayerInfoNoCache();
         }
 
-        protected virtual bool TryGetFromCache(PlayerId playerId, out PlayerInfoWrapper playerInfo)
+        protected virtual bool TryGetFromCache(IPlayerId playerId, out PlayerInfoWrapper playerInfo)
         {
             playerInfo = null;
 
-            if (!XPPlayer.TryGet(playerId, out var player))
+            if (!XPPlayer.TryGet(playerId, out XPPlayer player))
             {
                 LogDebug("Player not in server: " + playerId);
                 playerInfo = null;
@@ -95,10 +95,10 @@
 
         public abstract void Initialize();
         public abstract IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count);
-        protected abstract bool TryGetPlayerInfoNoCache(PlayerId playerId, out PlayerInfo playerInfo);
-        protected abstract PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(PlayerId playerId);
+        protected abstract bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo);
+        protected abstract PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId playerId);
         protected abstract void SetPlayerInfoNoCache(PlayerInfo playerInfo);
-        protected abstract bool DeletePlayerInfoNoCache(PlayerId playerId);
+        protected abstract bool DeletePlayerInfoNoCache(IPlayerId playerId);
         protected abstract void DeleteAllPlayerInfoNoCache();
 
         /// <summary>

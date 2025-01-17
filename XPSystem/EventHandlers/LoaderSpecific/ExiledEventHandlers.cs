@@ -1,7 +1,6 @@
 namespace XPSystem.EventHandlers.LoaderSpecific
 {
     using System;
-    using Exiled.Events.EventArgs.Interfaces;
     using Exiled.Events.EventArgs.Player;
     using Exiled.Events.EventArgs.Scp049;
     using Exiled.Events.EventArgs.Scp914;

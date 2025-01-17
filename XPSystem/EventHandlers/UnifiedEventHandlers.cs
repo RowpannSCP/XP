@@ -3,11 +3,13 @@
     using System;
     using System.Diagnostics;
     using System.Linq;
+    using System.Reflection;
     using MEC;
     using PlayerRoles;
     using XPSystem.API;
     using XPSystem.API.StorageProviders;
     using XPSystem.Config.Events;
+    using XPSystem.Config.Events.Types;
     using static XPSystem.API.XPAPI;
 
     public class UnifiedEventHandlers
@@ -34,7 +36,7 @@
         {
             if (obj == null)
             {
-                var method = new StackTrace()
+                MethodBase method = new StackTrace()
                     .GetFrame(1)
                     .GetMethod();
 
@@ -59,7 +61,7 @@
 
                 Timing.CallDelayed(.5f + Config.ExtraDelay, () =>
                 {
-                    var playerInfo = player.GetPlayerInfo();
+                    PlayerInfoWrapper playerInfo = player.GetPlayerInfo();
                     XPPlayerJoined.Invoke(player, playerInfo);
 #if STORENICKS
                     UpdateNickname(player);
@@ -85,7 +87,7 @@
             if (!Config.XPAfterRoundEnd)
                 XPGainPaused = true;
 
-            var roundwin = XPECManager.GetItem("win");
+            XPECItem roundwin = XPECManager.GetItem("win");
             foreach (var kvp in XPPlayer.Players)
             {
                 if (kvp.Value.LeadingTeam == leadingTeam)

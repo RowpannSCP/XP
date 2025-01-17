@@ -52,7 +52,7 @@
         /// <param name="expiryTime">The expiry time of the variable.</param>
         public void Set(string key, object value, DateTime? expiryTime = null)
         {
-            if (_variables.TryGetValue(key, out var variable))
+            if (_variables.TryGetValue(key, out Variable variable))
             {
                 variable.Value = value;
                 variable.ExpiryTime = expiryTime;
@@ -93,7 +93,7 @@
         /// <remarks>Will throw if the cast fails.</remarks>
         public bool TryGet<T>(string key, out T value)
         {
-            if (TryGet(key, out var variable))
+            if (TryGet(key, out Variable variable))
             {
                 value = variable.As<T>();
                 return true;
@@ -116,7 +116,7 @@
         /// <param name="key">The key of the variable.</param>
         public Variable this[string key]
         {
-            get => TryGet(key, out var variable)
+            get => TryGet(key, out Variable variable)
                 ? variable
                 : null;
             set => _variables[key] = value;

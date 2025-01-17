@@ -14,7 +14,7 @@
         {
             public static void Prefix(NicknameSync __instance, ref string value)
             {
-                if (__instance._hub == ReferenceHub.HostHub)
+                if (__instance._hub.IsHost)
                     return;
 
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
