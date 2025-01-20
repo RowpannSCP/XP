@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXILED_REFERENCES_URL: https://misaka-zerotwo.github.io/SL-References/Dev.zip
+  EXILED_REFERENCES_URL: https://exmod-team.github.io/SL-References/Dev.zip
   EXILED_REFERENCES: ${{ github.workspace }}/refs
   NWAPIPERMSYSTEM_URL: https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest/download/NWAPIPermissionSystem.dll
 
