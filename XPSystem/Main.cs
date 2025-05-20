@@ -19,6 +19,8 @@
     public class Main
 #if EXILED
         : Exiled.API.Features.Plugin<ExiledConfig>
+#else
+        : LabApi.Loader.Features.Plugins.Plugin<NwAPIConfig>
 #endif
     {
         public const string VersionString = "2.0.8";
@@ -34,19 +36,20 @@
         /// </summary>
         public static event Action Reloaded = delegate { };
 
-#if EXILED
         private static readonly int[] _splitVersion = VersionString
             .Split('.')
             .Select(x => Convert.ToInt32(x))
             .ToArray();
-
+        public override Version Version { get; } = new Version(_splitVersion[0], _splitVersion[1], _splitVersion[2]);
         public override string Author { get; } = "moddedmcplayer, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(_splitVersion[0], _splitVersion[1], _splitVersion[2]);
+
+#if EXILED
+        
         public override Version RequiredExiledVersion { get; } = new Version(8, 0, 0);
 #else
-        [PluginAPI.Core.Attributes.PluginConfig]
-        public NwAPIConfig Config;
+        public override string Description { get; } = "A not so basic, customisable leveling system for SCP: SL.";
+        public override Version RequiredApiVersion { get; } = new Version(1, 0, 0);
 #endif
 
         public static Main Instance { get; private set; }
@@ -62,8 +65,8 @@
 #if EXILED
         public override void OnEnabled()
 #else
-        [PluginAPI.Core.Attributes.PluginEntryPoint("xpsystem", VersionString, "xp plugin", "Rowpann's Emperium, original by BrutoForceMaestro")]
-        public void OnEnabled()
+        
+        public override void Enable()
 #endif
         {
             Instance = this;
@@ -96,8 +99,7 @@
 #if EXILED
         public override void OnDisabled()
 #else
-        [PluginAPI.Core.Attributes.PluginUnload]
-        public void OnDisabled()
+        public override void Disable()
 #endif
         {
             PluginEnabled = false;
@@ -124,7 +126,6 @@
 #if EXILED
         public override void OnReloaded()
 #else
-        [PluginAPI.Core.Attributes.PluginReload]
         public void OnReloaded()
 #endif
         {

@@ -102,7 +102,7 @@
             T info = new T()
             {
                 XP = 0
-            }.SetId<T>(playerId.Id);
+            }.SetId<T>(playerId);
             collection.Insert(info);
             return info.ToPlayerInfo(playerId.AuthType);
         }
@@ -162,7 +162,7 @@
 #if STORENICKS
                     Nickname = playerInfo.Nickname
 #endif
-                }.SetId<T>(playerInfo.Player.Id));
+                }.SetId<T>(playerInfo.Player));
             }
             else
             {
