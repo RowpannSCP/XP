@@ -6,10 +6,10 @@
     using PlayerRoles;
     using PlayerRoles.Ragdolls;
     using PlayerStatsSystem;
-    using PluginAPI.Core;
-    using PluginAPI.Core.Attributes;
-    using PluginAPI.Enums;
-    using PluginAPI.Events;
+    using LabApi.Core;
+    using LabApi.Core.Attributes;
+    using LabApi.Enums;
+    using LabApi.Events;
     using XPSystem.API;
 
 #if !EXILED

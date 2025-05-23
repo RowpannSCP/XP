@@ -25,7 +25,7 @@
 #if EXILED
             Exiled.API.Features.Paths.Configs;
 #else
-            PluginAPI.Helpers.Paths.LocalPlugins.Plugins;
+            LabApi.Loader.Features.Paths.PathManager.LocalPlugins.Plugins;
 #endif
 
         /// <summary>
@@ -41,17 +41,17 @@
             return Exiled.API.Features.Player.Get(data)?.ReferenceHub;
 #else
             if (uint.TryParse(data, out uint networkId)
-                && PluginAPI.Core.Player.TryGet(networkId, out var player))
+                && LabApi.Features.Wrappers.Player.TryGet(networkId, out var player))
                 return player.ReferenceHub;
 
             if (int.TryParse(data, out int playerId)
-                && PluginAPI.Core.Player.TryGet(playerId, out player))
+                && LabApi.Features.Wrappers.Player.TryGet(playerId, out player))
                 return player.ReferenceHub;
 
-            if (PluginAPI.Core.Player.TryGet(data, out player))
+            if (LabApi.Features.Wrappers.Player.TryGet(data, out player))
                 return player.ReferenceHub;
 
-            return PluginAPI.Core.Player.GetByName(data)?.ReferenceHub;
+            return LabApi.Features.Wrappers.Player.TryGetPlayersByName(data)?.ReferenceHub;
 #endif
         }
 
@@ -99,7 +99,7 @@
 #if EXILED
             return Exiled.Permissions.Extensions.Permissions.CheckPermission(sender, permission);
 #else
-            return NWAPIPermissionSystem.PermissionHandler.CheckPermission(sender, permission);
+            return LabApi.Features.Permissions.PermissionsExtensions.HasPermissions(sender, permission);
 #endif
 
         }
@@ -117,8 +117,8 @@
                 Exiled.API.Features.Player.Get(hub)
                 , permission);
 #else
-            return NWAPIPermissionSystem.PermissionHandler
-                .CheckPermission(hub.authManager.UserId, permission);
+            return LabApi.Features.Permissions.PermissionsManager
+                .HasPermissions(Player.Get(hub), permission);
 #endif
         }
 
@@ -140,7 +140,7 @@
             Exiled.API.Features.Log.Debug(message);
 #else
             if (XPAPI.Config.Debug)
-                PluginAPI.Core.Log.Debug(message);
+                LabApi.Core.Log.Debug(message);
 #endif
         }
 
@@ -149,7 +149,8 @@
 #if EXILED
             Exiled.API.Features.Log.Info(message);
 #else
-            PluginAPI.Core.Log.Info(message);
+            LabApi.
+                .Log.Info(message);
 #endif
         }
 
@@ -158,7 +159,7 @@
 #if EXILED
             Exiled.API.Features.Log.Warn(message);
 #else
-            PluginAPI.Core.Log.Warning(message);
+            LabApi.Core.Log.Warning(message);
 #endif
         }
 
@@ -167,7 +168,7 @@
 #if EXILED
             Exiled.API.Features.Log.Error(message);
 #else
-            PluginAPI.Core.Log.Error(message);
+            LabApi.Core.Log.Error(message);
 #endif
         }
 
