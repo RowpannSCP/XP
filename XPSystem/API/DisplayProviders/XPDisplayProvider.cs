@@ -62,6 +62,8 @@
         {
             if (!Config.Enabled && !HasSet)
                 return;
+            if (player.IsNPC)
+                return;
 
             if (Config.Enabled)
             {

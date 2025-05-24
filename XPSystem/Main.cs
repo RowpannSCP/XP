@@ -4,10 +4,12 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Exiled.Loader.Models;
     using HarmonyLib;
     using XPSystem.API;
     using XPSystem.API.Legacy;
     using XPSystem.API.StorageProviders;
+    using XPSystem.BuiltInProviders.Display.Patch;
     using XPSystem.Commands.Client;
     using XPSystem.Config;
     using XPSystem.Config.Events;
@@ -19,9 +21,11 @@
     public class Main
 #if EXILED
         : Exiled.API.Features.Plugin<ExiledConfig>
+#else
+        : LabApi.Loader.Features.Plugins.Plugin<NwAPIConfig>
 #endif
     {
-        public const string VersionString = "2.0.8";
+        public const string VersionString = "2.0.9";
 
         /// <summary>
         /// This number is increased every time the plugin is reloaded.
@@ -34,25 +38,26 @@
         /// </summary>
         public static event Action Reloaded = delegate { };
 
-#if EXILED
         private static readonly int[] _splitVersion = VersionString
             .Split('.')
             .Select(x => Convert.ToInt32(x))
             .ToArray();
-
+        public override Version Version { get; } = new Version(_splitVersion[0], _splitVersion[1], _splitVersion[2]);
         public override string Author { get; } = "moddedmcplayer, original by BrutoForceMaestro";
         public override string Name { get; } = "XPSystem";
-        public override Version Version { get; } = new Version(_splitVersion[0], _splitVersion[1], _splitVersion[2]);
-        public override Version RequiredExiledVersion { get; } = new Version(8, 0, 0);
+
+#if EXILED
+        
+        public override Version RequiredExiledVersion { get; } = Exiled.Loader.Loader.Version;
 #else
-        [PluginAPI.Core.Attributes.PluginConfig]
-        public NwAPIConfig Config;
+        public override string Description { get; } = "A not so basic, customisable leveling system for SCP: SL.";
+        public override Version RequiredApiVersion { get; } = LabApi.Features.LabApiProperties.CurrentVersion;
 #endif
 
         public static Main Instance { get; private set; }
         public Harmony Harmony { get; private set; }
 
-        private UnifiedEventHandlers _eventHandlers = new
+        private readonly UnifiedEventHandlers _eventHandlers = new
 #if EXILED
             ExiledEventHandlers();
 #else
@@ -62,8 +67,8 @@
 #if EXILED
         public override void OnEnabled()
 #else
-        [PluginAPI.Core.Attributes.PluginEntryPoint("xpsystem", VersionString, "xp plugin", "Rowpann's Emperium, original by BrutoForceMaestro")]
-        public void OnEnabled()
+        
+        public override void Enable()
 #endif
         {
             Instance = this;
@@ -71,9 +76,9 @@
             Harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
             Harmony.PatchAll();
 
-            DisplayProviders.Add(new NickXPDisplayProvider());
+            DisplayProviders.Add(new NickPatchXPDisplayProvider());
             DisplayProviders.Add(new RankXPDisplayProvider());
-            MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
+            MessagingProvider = MessagingProviders.Get(Config.DisplayMode); // why nullable
             XPECLimitTracker.Initialize();
 
             LoadExtraConfigs();
@@ -96,8 +101,7 @@
 #if EXILED
         public override void OnDisabled()
 #else
-        [PluginAPI.Core.Attributes.PluginUnload]
-        public void OnDisabled()
+        public override void Disable()
 #endif
         {
             PluginEnabled = false;
@@ -124,7 +128,6 @@
 #if EXILED
         public override void OnReloaded()
 #else
-        [PluginAPI.Core.Attributes.PluginReload]
         public void OnReloaded()
 #endif
         {
@@ -149,7 +152,7 @@
         {
             try
             {
-                Directory.CreateDirectory(Config.ExtendedConfigPath);
+                Directory.CreateDirectory(Config!.ExtendedConfigPath);
 
                 SetStorageProvider(Config.StorageProvider);
                 SetDisplayProviders(Config.AdditionalDisplayProviders);

@@ -12,8 +12,9 @@ You can always request more features by messaging me on discord: `moddedmcplayer
 # Installation
 Drag and drop plugin into the plugins folder. <br>
 Use -nw-bundled instead of -nw if you are getting an error regarding missing 0Harmony.
-### NWAPI version also requires
-- https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest
+### ~~NWAPI version also requires~~
+- ~~https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest~~
+- Uses LapAPI perms now, nw version still missing: generator, throw, and door events
 
 ## READ: If you have previously (before version 2.0) used the plugin and your data is gone,
 Run `xps migrate` in the server console to migrate the old database.

@@ -8,7 +8,7 @@
 
     public class NickPatchXPDisplayProvider : XPDisplayProvider<NickPatchXPDisplayProvider.NickConfig>
     {
-        public Dictionary<string, string> DisplayNameOverrides { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> DisplayNameOverrides { get; } = new();
 
         protected override void RefreshOfEnabled(XPPlayer player, PlayerInfoWrapper playerInfo) => Refresh(player);
         protected override void RefreshOfDisabled(XPPlayer player) => Refresh(player);
@@ -25,6 +25,9 @@
         {
             public static void Prefix(NicknameSync __instance, ref string value)
             {
+                if (!__instance._hub || __instance._hub.IsHost || __instance._hub.IsDummy)
+                    return;
+
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
                 {
                     if (provider is NickPatchXPDisplayProvider nickProvider)

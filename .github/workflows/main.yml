@@ -11,9 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXILED_REFERENCES_URL: https://misaka-zerotwo.github.io/SL-References/Dev.zip
+  EXILED_REFERENCES_URL: https://exslmod-team.github.io/SL-References/Dev.zip
   EXILED_REFERENCES: ${{ github.workspace }}/refs
-  NWAPIPERMSYSTEM_URL: https://github.com/CedModV2/NWAPIPermissionSystem/releases/latest/download/NWAPIPermissionSystem.dll
 
 jobs:
   main:
@@ -40,11 +39,6 @@ jobs:
         run: |
           Invoke-WebRequest -Uri ${{ env.EXILED_REFERENCES_URL }} -OutFile ${{ github.workspace }}/References.zip
           Expand-Archive -Path References.zip -DestinationPath ${{ env.EXILED_REFERENCES }} -Force
-
-      - name: Get nwapipermissionsystem
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri ${{ env.NWAPIPERMSYSTEM_URL }} -OutFile ${{ env.EXILED_REFERENCES }}/NWAPIPermissionSystem.dll
 
       - name: Restore Packages
         run: nuget restore ${{ github.workspace }}/XPSystem.sln
