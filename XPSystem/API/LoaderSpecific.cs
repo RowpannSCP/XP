@@ -25,7 +25,7 @@
 #if EXILED
             Exiled.API.Features.Paths.Configs;
 #else
-            LabApi.Loader.Features.Paths.PathManager.LocalPlugins.Plugins;
+            LabApi.Loader.Features.Paths.PathManager.Configs.FullName;
 #endif
 
         /// <summary>
@@ -51,7 +51,8 @@
             if (LabApi.Features.Wrappers.Player.TryGet(data, out player))
                 return player.ReferenceHub;
 
-            return LabApi.Features.Wrappers.Player.TryGetPlayersByName(data)?.ReferenceHub;
+            LabApi.Features.Wrappers.Player.TryGetPlayersByName(data, out var list);
+            return list.FirstOrDefault()?.ReferenceHub;
 #endif
         }
 
@@ -118,7 +119,7 @@
                 , permission);
 #else
             return LabApi.Features.Permissions.PermissionsManager
-                .HasPermissions(Player.Get(hub), permission);
+                .HasPermissions(LabApi.Features.Wrappers.Player.Get(hub), permission);
 #endif
         }
 
@@ -131,7 +132,8 @@
 #if EXILED
             Exiled.API.Features.Player.Get(hub)?.IsNPC == true;
 #else
-            false;
+            // ReSharper disable once ConstantConditionalAccessQualifier
+            LabApi.Features.Wrappers.Player.Get(hub)?.IsNpc == true;
 #endif
 
         public static void LogDebug(string message)
@@ -140,7 +142,7 @@
             Exiled.API.Features.Log.Debug(message);
 #else
             if (XPAPI.Config.Debug)
-                LabApi.Core.Log.Debug(message);
+                LabApi.Features.Console.Logger.Debug(message);
 #endif
         }
 
@@ -149,8 +151,7 @@
 #if EXILED
             Exiled.API.Features.Log.Info(message);
 #else
-            LabApi.
-                .Log.Info(message);
+            LabApi.Features.Console.Logger.Info(message);
 #endif
         }
 
@@ -159,7 +160,7 @@
 #if EXILED
             Exiled.API.Features.Log.Warn(message);
 #else
-            LabApi.Core.Log.Warning(message);
+            LabApi.Features.Console.Logger.Warn(message);
 #endif
         }
 
@@ -168,7 +169,7 @@
 #if EXILED
             Exiled.API.Features.Log.Error(message);
 #else
-            LabApi.Core.Log.Error(message);
+            LabApi.Features.Console.Logger.Error(message);
 #endif
         }
 

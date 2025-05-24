@@ -19,7 +19,7 @@
 #if EXILED
                 Exiled.API.Features.Paths.Configs, 
 #else
-                Path.Combine(LabApi.Helpers.Paths.LocalPlugins.Plugins, "XPSystem"),
+                Path.Combine(LabApi.Loader.Features.Paths.PathManager.Plugins.FullName, "XPSystem"),
 #endif
                 "Players.db");
     }
