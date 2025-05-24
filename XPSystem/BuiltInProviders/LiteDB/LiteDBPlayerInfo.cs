@@ -1,5 +1,6 @@
 ﻿namespace XPSystem.BuiltInProviders.LiteDB
 {
+    using System;
     using global::LiteDB;
     using XPSystem.API.Enums;
     using XPSystem.API.StorageProviders.Models;
@@ -9,9 +10,12 @@
         [BsonId]
         public ulong Id { get; set; }
 
-        public override T SetId<T>(object id)
+        public override T SetId<T>(IPlayerId id)
         {
-            Id = (ulong)id;
+            if (id is not NumberPlayerId numberPlayerId)
+                throw new ArgumentException("id is not NumberPlayerId", nameof(id));
+
+            Id = numberPlayerId.IdNumber;
             return (T)(object)this;
         }
 
@@ -23,9 +27,12 @@
         [BsonId]
         public string Id { get; set; }
 
-        public override T SetId<T>(object id)
+        public override T SetId<T>(IPlayerId id)
         {
-            Id = (string)id;
+            if (id is not StringPlayerId stringPlayerId)
+                throw new ArgumentException("id is not StringPlayerId", nameof(id));
+
+            Id = stringPlayerId.IdString;
             return (T)(object)this;
         }
 
@@ -39,7 +46,7 @@
         public string Nickname { get; set; }
 #endif
 
-        public abstract T SetId<T>(object id) where T : LiteDBPlayerInfo;
+        public abstract T SetId<T>(IPlayerId id) where T : LiteDBPlayerInfo;
 
         protected abstract IPlayerId toPlayerId(AuthType authType);
         public PlayerInfo ToPlayerInfo(AuthType authType)

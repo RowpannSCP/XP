@@ -35,9 +35,10 @@
 
             foreach (var kvp in XPPlayer.Players)
             {
+                if (kvp.Value.IsNPC)
+                    continue;
                 if (player == kvp.Value)
                     continue;
-
                 if (!ShouldEdit(kvp.Value))
                     continue;
 
@@ -61,9 +62,10 @@
 
             foreach (var kvp in XPPlayer.Players)
             {
+                if (kvp.Value.IsNPC)
+                    continue;
                 if (player == kvp.Value)
                     continue;
-
                 if (!ShouldEdit(kvp.Value))
                     continue;
 
@@ -138,6 +140,6 @@
         /// <param name="player">The player to show the data of.</param>
         /// <param name="target">The target player to show the data to.</param>
         /// <returns>Whether or not the player's data should be shown to the target player.</returns>
-        protected virtual bool ShouldShowTo(XPPlayer player, XPPlayer target) => true;
+        protected virtual bool ShouldShowTo(XPPlayer player, XPPlayer target) => !target.IsNPC;
     }
 }
