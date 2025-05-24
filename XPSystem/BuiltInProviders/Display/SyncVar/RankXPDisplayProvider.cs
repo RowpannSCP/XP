@@ -76,6 +76,8 @@
 
         protected override bool ShouldShowTo(XPPlayer player, XPPlayer target)
         {
+            if (!base.ShouldShowTo(player, target))
+                return false;
             if (!Config.EditBadgeHiding)
                 return true;
 

@@ -50,7 +50,7 @@
         // Event needs to exist to ensure players are added to list
         protected void OnPlayerJoined(XPPlayer player)
         {
-            if (XPAPI.StorageProvider != null)
+            if (XPAPI.StorageProvider != null && !player.IsNPC)
             {
                 if (player.DNT)
                 {

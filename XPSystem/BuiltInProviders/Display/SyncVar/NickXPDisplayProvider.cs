@@ -29,6 +29,9 @@
         {
             public static void Postfix(NicknameSync __instance)
             {
+                if (__instance._hub.IsDummy)
+                    return;
+
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
                 {
                     if (provider is NickXPDisplayProvider nickProvider && nickProvider.Config.PatchNickCommand)
