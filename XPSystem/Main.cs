@@ -71,6 +71,8 @@
         public override void Enable()
 #endif
         {
+            Config = Config ?? Config!; // why nullable (labapi ragebait)
+
             Instance = this;
             XPAPI.Config = Config;
             Harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
@@ -78,7 +80,7 @@
 
             DisplayProviders.Add(new NickPatchXPDisplayProvider());
             DisplayProviders.Add(new RankXPDisplayProvider());
-            MessagingProvider = MessagingProviders.Get(Config.DisplayMode); // why nullable
+            MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
             XPECLimitTracker.Initialize();
 
             LoadExtraConfigs();
