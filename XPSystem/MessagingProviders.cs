@@ -2,10 +2,11 @@
 {
     using XPSystem.API;
     using XPSystem.API.Enums;
+    using XPSystem.API.Player;
 
     public class MessagingProviders
     {
-        public static IMessagingProvider Get(DisplayMode displayMode) =>
+        public static IMessagingProvider? Get(DisplayMode displayMode) =>
             displayMode switch
             {
                 DisplayMode.Hint => new HintMessagingProvider(),
@@ -16,7 +17,7 @@
 
         public class HintMessagingProvider : IMessagingProvider
         {
-            public void DisplayMessage(XPPlayer player, string message, float duration)
+            public void DisplayMessage(BaseXPPlayer player, string message, float duration)
             {
                 player.ShowHint(message, duration);
             }
@@ -24,7 +25,7 @@
 
         public class BroadcastMessagingProvider : IMessagingProvider
         {
-            public void DisplayMessage(XPPlayer player, string message, float duration)
+            public void DisplayMessage(BaseXPPlayer player, string message, float duration)
             {
                 player.ShowBroadcast(message, (ushort)duration);
             }
@@ -32,7 +33,7 @@
 
         public class ConsoleMessagingProvider : IMessagingProvider
         {
-            public void DisplayMessage(XPPlayer player, string message, float duration)
+            public void DisplayMessage(BaseXPPlayer player, string message, float duration)
             {
                 player.SendConsoleMessage(message, "green");
             }

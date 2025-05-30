@@ -1,6 +1,7 @@
 ﻿namespace XPSystem.API.StorageProviders
 {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using XPSystem.API.StorageProviders.Models;
 
@@ -11,7 +12,7 @@
     {
         void Initialize();
         void Dispose();
-        bool TryGetPlayerInfo(IPlayerId playerId, out PlayerInfoWrapper playerInfo);
+        bool TryGetPlayerInfo(IPlayerId playerId, [NotNullWhen(true)] out PlayerInfoWrapper? playerInfo);
         PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(IPlayerId playerId);
         IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count);
         void SetPlayerInfo(PlayerInfoWrapper playerInfo);

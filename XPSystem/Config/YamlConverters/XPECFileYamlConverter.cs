@@ -1,4 +1,6 @@
-﻿namespace XPSystem.Config.YamlConverters
+﻿#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
+namespace XPSystem.Config.YamlConverters
 {
     using System;
     using System.IO;
@@ -13,8 +15,6 @@
 
         public object ReadYaml(IParser parser, Type type)
         {
-            object result;
-
             if (!parser.TryConsume(out MappingStart _))
                 throw new InvalidDataException("Invalid YAML content: MappingStart not found.");
 
@@ -26,7 +26,7 @@
             type = Type.GetType(typeValue.Value)
                    ?? throw new InvalidDataException($"Invalid YAML content: type {typeValue.Value} not resolved.");
 
-            result = Activator.CreateInstance(type);
+            object result = Activator.CreateInstance(type);
 
             ((XPECFile)result).Read(parser);
 

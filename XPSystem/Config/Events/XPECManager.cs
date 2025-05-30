@@ -35,7 +35,11 @@
             },
             ["death"] = new XPECDictFile<RoleTypeId>()
             {
-                Default = null
+                Default = new XPECItem()
+                {
+                    Amount = 0,
+                    Translation = null
+                }
             },
             ["upgrade"] = new XPECDictFile<ItemCategory>()
             {
@@ -190,7 +194,7 @@
 #endif
         }.AsReadonly();
 
-        public static XPECFileCollection Default;
+        public static XPECFileCollection Default = null!;
         public static readonly Dictionary<RoleTypeId, XPECFileCollection> Overrides = new();
 
         private static readonly RoleTypeId[] _skipRoles = new[]
@@ -200,7 +204,7 @@
             RoleTypeId.Overwatch
         };
 
-        public static Dictionary<string, int> KeyUsage = new();
+        public static readonly Dictionary<string, int> KeyUsage = new();
 
         /// <summary>
         /// Gets the override <see cref="XPECFileCollection"/> for the specified role.
@@ -221,7 +225,7 @@
         /// <param name="key">The key of the file.</param>
         /// <param name="role">The role to check for overrides from.</param>
         /// <returns>The file, if found, otherwise null.</returns>
-        public static XPECFile GetFile(string key, RoleTypeId role = RoleTypeId.None)
+        public static XPECFile? GetFile(string key, RoleTypeId role = RoleTypeId.None)
         {
             if (Overrides.TryGetValue(role, out XPECFileCollection collection))
             {
@@ -244,9 +248,9 @@
         /// <typeparam name="T">The type to cast the file to.</typeparam>
         /// <returns>The file, if found, otherwise null.</returns>
         /// <exception cref="InvalidCastException">Thrown if the file is not of the specified type.</exception>
-        public static T GetFile<T>(string key, RoleTypeId role = RoleTypeId.None) where T : XPECFile
+        public static T? GetFile<T>(string key, RoleTypeId role = RoleTypeId.None) where T : XPECFile
         {
-            XPECFile file = GetFile(key, role);
+            XPECFile? file = GetFile(key, role);
             return file switch
             {
                 null => null,
@@ -263,12 +267,10 @@
         /// <param name="role">The role to check for overrides for.</param>
         /// <param name="subkeys">The (optional) subkeys of the item.</param>
         /// <returns>The item, if found, otherwise null.</returns>
-        public static XPECItem GetItem(string key, RoleTypeId role = RoleTypeId.None, params object[] subkeys)
+        public static XPECItem? GetItem(string key, RoleTypeId role = RoleTypeId.None, params object?[] subkeys)
         {
-            XPECFile file = GetFile(key, role);
-            XPECItem item = file?.Get(subkeys);
-
-            return item;
+            XPECFile? file = GetFile(key, role);
+            return file?.Get(subkeys);
         }
 
         public static void Load(string dir)

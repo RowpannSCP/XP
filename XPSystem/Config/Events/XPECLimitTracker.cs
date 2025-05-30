@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using PlayerRoles;
     using XPSystem.API;
+    using XPSystem.API.Player;
     using XPSystem.Config.Events.Types;
     using XPSystem.Config.Events.Types.Custom;
     using XPSystem.EventHandlers;
@@ -99,7 +100,7 @@
 
         private static Dictionary<object, LimitData> GetDict(XPPlayer player)
         {
-            if (!player.Variables.TryGet(DictKey, out Dictionary<object, LimitData> dict))
+            if (!player.Variables.TryGet(DictKey, out Dictionary<object, LimitData>? dict))
             {
                 dict = new Dictionary<object, LimitData>();
                 player.Variables.Add(DictKey, dict);
@@ -110,7 +111,7 @@
 
         private class LimitData
         {
-            public IXPECLimitedFile File;
+            public IXPECLimitedFile File = null!;
 
             public int LeftForLife;
             public int LeftForRound;

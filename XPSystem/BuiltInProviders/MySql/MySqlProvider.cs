@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using MySqlConnector;
     using XPSystem.API;
@@ -68,7 +69,7 @@
                 .Select(x => new PlayerInfoWrapper(x));
         }
 
-        protected override bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo)
+        protected override bool TryGetPlayerInfoNoCache(IPlayerId playerId, [NotNullWhen(true)] out PlayerInfo? playerInfo)
         {
             using MySqlConnection connection = GetConnection();
             using MySqlCommand command = connection.CreateCommand();
@@ -159,14 +160,16 @@
             }
         }
 
-        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId playerId = null)
+        private PlayerInfo FromReader(MySqlDataReader reader, IPlayerId playerId)
         {
             return new PlayerInfo
             {
                 Player = playerId,
                 XP = reader.GetInt32(1),
 #if STORENICKS
-                Nickname = reader.IsDBNull(2) ? null : reader.GetString(2)
+                Nickname = reader.IsDBNull(2)
+                    ? null
+                    : reader.GetString(2)
 #endif
             };
         }
@@ -195,7 +198,7 @@
 
         public class MySqlProviderConfig
         {
-            public string ConnectionString { get; set; }
+            public string ConnectionString { get; set; } = null!;
             public bool LogQueries { get; set; } = false;
         }
     }

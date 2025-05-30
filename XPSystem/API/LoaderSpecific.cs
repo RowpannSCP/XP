@@ -33,7 +33,7 @@
         /// </summary>
         /// <param name="data">The player's nickname, user ID, or player ID.</param>
         /// <returns>The <see cref="ReferenceHub"/> if found, otherwise null.</returns>
-        public static ReferenceHub GetHub(string data)
+        public static ReferenceHub? GetHub(string data)
         {
             if (string.IsNullOrWhiteSpace(data))
                 return null;

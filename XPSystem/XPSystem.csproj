@@ -13,7 +13,7 @@
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>9</LangVersion>
-        <Nullable>disable</Nullable>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -185,7 +185,6 @@
         <Compile Include="API\DisplayProviders\XPDisplayProvider.cs" />
         <Compile Include="API\DisplayProviders\XPDisplayProviderCollection.cs" />
         <Compile Include="API\Enums\AuthType.cs" />
-        <Compile Include="API\Exceptions\InvalidPlayerIdException.cs" />
         <Compile Include="API\Exceptions\StorageProviderInvalidException.cs" />
         <Compile Include="API\IMessagingProvider.cs" />
         <Compile Include="API\Enums\DisplayMode.cs" />
@@ -204,7 +203,8 @@
         <Compile Include="API\Variables\VariableCollection.cs" />
         <Compile Include="API\XPAPI.cs" />
         <Compile Include="API\XPExtensions.cs" />
-        <Compile Include="API\XPPlayer.cs" />
+        <Compile Include="API\Player\BaseXPPlayer.cs" />
+        <Compile Include="API\Player\XPPlayer.cs" />
         <Compile Include="BuiltInProviders\Display\Patch\MyNickPatchXPDisplayProvider.cs" />
         <Compile Include="BuiltInProviders\Display\Patch\NickPatchXPDisplayProvider.cs" />
         <Compile Include="BuiltInProviders\Display\Patch\RankSetXPDisplayProvider.cs" />
@@ -261,6 +261,7 @@
         <Compile Include="EventHandlers\UnifiedEventHandlers.cs" />
         <Compile Include="MessagingProviders.cs" />
         <Compile Include="Main.cs" />
+        <Compile Include="NotNullWhenAttribute.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
 

@@ -5,12 +5,13 @@
     using CommandSystem;
     using NorthwoodLib.Pools;
     using XPSystem.API;
+    using XPSystem.API.Player;
 
     public class VariablesCommand : SanitizedInputCommand
     {
         public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.variables", out XPPlayer player))
+            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.variables", out BaseXPPlayer? player))
             {
                 response = "You don't have permission (xps.variables) to use this command.";
                 return false;

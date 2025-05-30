@@ -6,19 +6,28 @@
     using MEC;
     using XPSystem.API;
     using XPSystem.API.DisplayProviders;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
 
     public class NickXPDisplayProvider : SyncVarXPDisplayProvider<NickXPDisplayProvider.NickConfig, string>
     {
         protected override string VariableKey { get; } = "NickXPDisplayProvider_nick";
 
-        protected override (Type typeName, string methodName, Func<XPPlayer, string, object> getFakeSyncVar, Func<XPPlayer, object> getResyncVar)[] SyncVars { get; } =
+        protected override (Type typeName, string methodName, Func<BaseXPPlayer, string, object?> getFakeSyncVar, Func<BaseXPPlayer, object?> getResyncVar)[] SyncVars { get; } =
         {
             (typeof(NicknameSync), nameof(NicknameSync.Network_displayName), (_, obj) => obj, player => player.DisplayedName)
         };
 
-        protected override string CreateObject(XPPlayer player, PlayerInfoWrapper playerInfo)
+        protected override string? CreateObject(BaseXPPlayer player, PlayerInfoWrapper? playerInfo)
         {
+            if (playerInfo == null)
+            {
+                if (player is XPPlayer xpPlayer)
+                    playerInfo = xpPlayer.GetPlayerInfo();
+                else
+                    return null;
+            }
+
             return Config.NickStructure
                 .Replace("%lvl%", playerInfo.Level.ToString())
                 .Replace("%name%", player.DisplayedName);
@@ -29,16 +38,17 @@
         {
             public static void Postfix(NicknameSync __instance)
             {
-                if (__instance._hub.IsDummy)
+                XPPlayer? player = __instance._hub;
+                if (player == null)
                     return;
 
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
                 {
-                    if (provider is NickXPDisplayProvider nickProvider && nickProvider.Config.PatchNickCommand)
+                    if (provider is NickXPDisplayProvider { Config: { PatchNickCommand: true } } nickProvider)
                     {
                         Timing.CallDelayed(.5f + XPAPI.Config.ExtraDelay, () =>
                         {
-                            nickProvider.RefreshOf(__instance._hub);
+                            nickProvider.RefreshOf(player);
                         });
 
                         return;

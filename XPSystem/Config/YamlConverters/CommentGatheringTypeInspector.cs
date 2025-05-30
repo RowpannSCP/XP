@@ -1,4 +1,5 @@
-﻿namespace XPSystem.Config.YamlConverters
+﻿#pragma warning disable CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
+namespace XPSystem.Config.YamlConverters
 {
     using System;
     using System.Collections.Generic;
