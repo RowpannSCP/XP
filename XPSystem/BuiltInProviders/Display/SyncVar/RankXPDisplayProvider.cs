@@ -8,35 +8,39 @@
     using MEC;
     using XPSystem.API;
     using XPSystem.API.DisplayProviders;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
-    using XPSystem.Config.Models;
     using YamlDotNet.Serialization;
 
     public class RankXPDisplayProvider : SyncVarXPDisplayProvider<RankXPDisplayProvider.RankConfig, Badge>
     {
         protected override string VariableKey { get; } = "RankXPDisplayProvider_badge";
 
-        protected override (Type typeName, string methodName, Func<XPPlayer, Badge, object> getFakeSyncVar, Func<XPPlayer, object> getResyncVar)[] SyncVars { get; } =
+        protected override (Type typeName, string methodName, Func<BaseXPPlayer, Badge, object?> getFakeSyncVar, Func<BaseXPPlayer, object?> getResyncVar)[] SyncVars { get; } =
         {
             (typeof(ServerRoles), nameof(ServerRoles.Network_myText), (_, obj) => obj.Text, player => player.BadgeText),
             (typeof(ServerRoles), nameof(ServerRoles.Network_myColor), (_, obj) => obj.Color, player => player.BadgeColor)
         };
 
-        protected override Badge CreateObject(XPPlayer player, PlayerInfoWrapper playerInfo)
+        protected override Badge? CreateObject(BaseXPPlayer player, PlayerInfoWrapper? playerInfo)
         {
             if (player.DNT)
             {
-                if (player.HasBadge && !player.HasHiddenBadge)
+                if (player is { HasBadge: true, HasHiddenBadge: false })
                     return null;
 
                 return Config.DNTBadge;
             }
 
-            Badge badge = null;
+            if (player is not XPPlayer xpPlayer)
+                return null;
+            playerInfo ??= xpPlayer.GetPlayerInfo();
+
+            Badge? badge = null;
             string format = !player.HasBadge || player.HasHiddenBadge
                 ? Config.BadgeStructureNoBadge
                 : Config.BadgeStructure;
-            string color = "default";
+            string? color = null;
 
             foreach (var kvp in Config.SortedBadges)
             {
@@ -59,11 +63,11 @@
                     .Replace("%lvl%", playerInfo.Level.ToString())
                     .Replace("%badge%", badge.Text)
                     .Replace("%oldbadge%", player.BadgeText),
-                Color = color
+                Color = color ?? "default"
             };
         }
 
-        protected override bool ShouldEdit(XPPlayer player)
+        protected override bool ShouldEdit(BaseXPPlayer player)
         {
             if (Config.SkipGlobalBadges && player.HasGlobalBadge)
                 return false;
@@ -74,7 +78,7 @@
             return true;
         }
 
-        protected override bool ShouldShowTo(XPPlayer player, XPPlayer target)
+        protected override bool ShouldShowTo(BaseXPPlayer player, BaseXPPlayer target)
         {
             if (!base.ShouldShowTo(player, target))
                 return false;
@@ -151,10 +155,10 @@
             public Badge DNTBadge { get; set; } = new()
             {
                 Text = "(DNT) anonymous man????",
-                Color = Misc.PlayerInfoColorTypes.Nickel.ToString()
+                Color = nameof(Misc.PlayerInfoColorTypes.Nickel)
             };
 
-            private Dictionary<int, Badge> _sortedBadges;
+            private Dictionary<int, Badge> _sortedBadges = null!;
             [YamlIgnore]
             public Dictionary<int, Badge> SortedBadges => _sortedBadges ??= Badges
                 .OrderBy(x => x.Key)
@@ -166,27 +170,27 @@
                 [0] = new Badge
                 {
                     Text = "Visitor",
-                    Color = Misc.PlayerInfoColorTypes.Cyan.ToString().ToLower()
+                    Color = nameof(Misc.PlayerInfoColorTypes.Cyan).ToLower()
                 },
                 [1] = new Badge
                 {
                     Text = "Junior",
-                    Color = Misc.PlayerInfoColorTypes.Orange.ToString().ToLower()
+                    Color = nameof(Misc.PlayerInfoColorTypes.Orange).ToLower()
                 },
                 [5] = new Badge
                 {
                     Text = "Senior",
-                    Color = Misc.PlayerInfoColorTypes.Yellow.ToString().ToLower()
+                    Color = nameof(Misc.PlayerInfoColorTypes.Yellow).ToLower()
                 },
                 [10] = new Badge
                 {
                     Text = "Veteran",
-                    Color = Misc.PlayerInfoColorTypes.Red.ToString().ToLower()
+                    Color = nameof(Misc.PlayerInfoColorTypes.Red).ToLower()
                 },
                 [50] = new Badge
                 {
                     Text = "Nerd",
-                    Color = Misc.PlayerInfoColorTypes.Lime.ToString().ToLower()
+                    Color = nameof(Misc.PlayerInfoColorTypes.Lime).ToLower()
                 }
             };
         }

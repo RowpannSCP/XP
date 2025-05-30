@@ -1,9 +1,12 @@
-﻿namespace XPSystem.API.StorageProviders
+﻿// ReSharper disable MemberCanBePrivate.Global
+namespace XPSystem.API.StorageProviders
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders.Models;
-    using XPSystem.EventHandlers;
     using static XPAPI;
 
     /// <summary>
@@ -18,19 +21,19 @@
         /// </summary>
         public virtual void Dispose() => ClearCache();
 
-        public virtual bool TryGetPlayerInfo(IPlayerId playerId, out PlayerInfoWrapper playerInfo)
+        public virtual bool TryGetPlayerInfo(IPlayerId playerId, [NotNullWhen(true)] out PlayerInfoWrapper? playerInfo)
         {
             if (TryGetFromCache(playerId, out playerInfo))
                 return true;
 
-            bool result = TryGetPlayerInfoNoCache(playerId, out PlayerInfo playerInfo3);
-            playerInfo = playerInfo3;
+            bool result = TryGetPlayerInfoNoCache(playerId, out PlayerInfo? playerInfo3);
+            playerInfo = playerInfo3!;
             return result;
         }
 
         public virtual PlayerInfoWrapper GetPlayerInfoAndCreateOfNotExist(IPlayerId playerId)
         {
-            if (TryGetFromCache(playerId, out PlayerInfoWrapper playerInfo))
+            if (TryGetFromCache(playerId, out PlayerInfoWrapper? playerInfo))
                 return playerInfo;
 
             return GetPlayerInfoAndCreateOfNotExistNoCache(playerId);
@@ -38,7 +41,7 @@
 
         public virtual void SetPlayerInfo(PlayerInfoWrapper playerInfo)
         {
-            if (XPPlayer.TryGet(playerInfo.Player, out XPPlayer player))
+            if (XPPlayer.TryGetXP(playerInfo.Player, out XPPlayer? player))
                 player.Variables.Set(VariableKey, playerInfo);
 
             SetPlayerInfoNoCache(playerInfo);
@@ -46,7 +49,7 @@
 
         public virtual bool DeletePlayerInfo(IPlayerId playerId)
         {
-            if (XPPlayer.TryGet(playerId, out XPPlayer player))
+            if (XPPlayer.TryGetXP(playerId, out XPPlayer? player))
                 player.Variables.Remove(VariableKey);
 
             return DeletePlayerInfoNoCache(playerId);
@@ -58,18 +61,18 @@
             DeleteAllPlayerInfoNoCache();
         }
 
-        protected virtual bool TryGetFromCache(IPlayerId playerId, out PlayerInfoWrapper playerInfo)
+        protected virtual bool TryGetFromCache(IPlayerId playerId, [NotNullWhen(true)] out PlayerInfoWrapper? playerInfo)
         {
             playerInfo = null;
 
-            if (!XPPlayer.TryGet(playerId, out XPPlayer player))
+            if (!XPPlayer.TryGetXP(playerId, out XPPlayer? player))
             {
                 LogDebug("Player not in server: " + playerId);
                 playerInfo = null;
                 return false;
             }
 
-            if (!player.Variables.TryGet(VariableKey, out object playerInfoObj))
+            if (!player.Variables.TryGet(VariableKey, out object? playerInfoObj))
             {
                 LogDebug("Player variable cache not found - adding " + playerId);
 
@@ -89,48 +92,58 @@
 
         public virtual void ClearCache()
         {
-            foreach (var kvp in XPPlayer.Players)
-                kvp.Value.Variables.Remove(VariableKey);
+            foreach (BaseXPPlayer player in XPPlayer.PlayersRealConnected)
+                player.Variables.Remove(VariableKey);
         }
 
         public abstract void Initialize();
         public abstract IEnumerable<PlayerInfoWrapper> GetTopPlayers(int count);
-        protected abstract bool TryGetPlayerInfoNoCache(IPlayerId playerId, out PlayerInfo playerInfo);
+        protected abstract bool TryGetPlayerInfoNoCache(IPlayerId playerId, [NotNullWhen(true)] out PlayerInfo? playerInfo);
         protected abstract PlayerInfo GetPlayerInfoAndCreateOfNotExistNoCache(IPlayerId playerId);
         protected abstract void SetPlayerInfoNoCache(PlayerInfo playerInfo);
         protected abstract bool DeletePlayerInfoNoCache(IPlayerId playerId);
         protected abstract void DeleteAllPlayerInfoNoCache();
 
         /// <summary>
-        /// Ignore this.
-        /// Used by loader when combined with <see cref="StorageProvider{T}"/>.
+        /// Ignore, used by loader in case of <see cref="StorageProvider{T}"/>.
         /// </summary>
-        public virtual object ConfigPropertyInternal { get; set; }
-
-        /// <summary>
-        /// Ignore this.
-        /// Used by loader when combined with <see cref="StorageProvider{T}"/>.
-        /// Type of <see cref="ConfigPropertyInternal"/>.
-        /// </summary>
-        public virtual Type ConfigTypeInternal { get; } = null;
+        internal virtual void LoadConfig()
+        {
+        }
     }
 
     /// <summary>
     /// <see cref="StorageProvider"/> template with config.
     /// </summary>
     /// <typeparam name="T">The type of the config.</typeparam>
-    public abstract class StorageProvider<T> : StorageProvider where T : new()
+    public abstract class StorageProvider<T> : StorageProvider where T : class, new()
     {
-        public T Config;
+        public T Config { get; private set; } = null!;
 
-        /// <inheritdoc/>
-        public override object ConfigPropertyInternal
+        /// <summary>
+        /// Ignore, used by loader.
+        /// </summary>
+        internal override void LoadConfig()
         {
-            get => Config ?? new T();
-            set => Config = (T)value;
-        }
+            string name = GetType().Name;
+            string file = Path.Combine(XPAPI.Config.ExtendedConfigPath, name + ".yml");
 
-        /// <inheritdoc/>
-        public override Type ConfigTypeInternal { get; } = typeof(T);
+            if (File.Exists(file))
+            {
+                try
+                {
+                    Config = Deserializer.Deserialize<T>(File.ReadAllText(file));
+                }
+                catch (Exception e)
+                {
+                    LogError($"Error loading storageprovider config for {name}: {e}");
+                }
+            }
+            else
+            {
+                Config = new T();
+                File.WriteAllText(file, Serializer.Serialize(Config));
+            }
+        }
     }
 }

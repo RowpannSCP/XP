@@ -7,7 +7,7 @@
     {
         public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            Main.Instance.LoadExtraConfigs();
+            Main.Instance!.LoadExtraConfigs();
             response = "Extra (non main, use your pluginloader to reload) configs reloaded.";
             return true;
         }

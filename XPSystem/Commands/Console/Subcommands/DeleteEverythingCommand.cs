@@ -20,7 +20,7 @@
 
             if ((DateTime.Now - _lastUsed).TotalSeconds < 10)
             {
-                XPAPI.StorageProvider.DeleteAllPlayerInfo();
+                XPAPI.StorageProvider!.DeleteAllPlayerInfo();
 
                 response = "Everything deleted.";
                 return true;
