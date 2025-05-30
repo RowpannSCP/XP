@@ -356,7 +356,7 @@
         public static implicit operator BaseXPPlayer(Exiled.API.Features.Player player) => XPPlayer.Get(player.ReferenceHub);
 #else
         /// <inheritdoc cref="XPPlayer.Get(ReferenceHub)"/>
-        public static implicit operator BaseXPPlayer(LabApi.Features.Wrappers.Player player) => Get(player.ReferenceHub);
+        public static implicit operator BaseXPPlayer(LabApi.Features.Wrappers.Player player) => XPPlayer.Get(player.ReferenceHub);
 #endif
     }
 }
