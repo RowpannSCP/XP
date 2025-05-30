@@ -71,7 +71,9 @@
         public override void Enable()
 #endif
         {
+#if !EXILED
             Config = Config ?? Config!; // why nullable (labapi ragebait)
+#endif
 
             Instance = this;
             XPAPI.Config = Config;
