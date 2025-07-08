@@ -4,17 +4,21 @@
     using System.ComponentModel;
     using HarmonyLib;
     using XPSystem.API;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
 
     public class NickPatchXPDisplayProvider : XPDisplayProvider<NickPatchXPDisplayProvider.NickConfig>
     {
         public Dictionary<string, string> DisplayNameOverrides { get; } = new();
 
-        protected override void RefreshOfEnabled(XPPlayer player, PlayerInfoWrapper playerInfo) => Refresh(player);
-        protected override void RefreshOfDisabled(XPPlayer player) => Refresh(player);
+        protected override void RefreshOfEnabled(BaseXPPlayer player, PlayerInfoWrapper? playerInfo) => Refresh(player);
+        protected override void RefreshOfDisabled(BaseXPPlayer player) => Refresh(player);
 
-        private void Refresh(XPPlayer player)
+        private void Refresh(BaseXPPlayer player)
         {
+            if (player is not XPPlayer)
+                return;
+
             player.Hub.nicknameSync.DisplayName = DisplayNameOverrides.TryGetValue(player.UserId, out string cached)
                 ? cached
                 : player.DisplayedName;
@@ -25,7 +29,7 @@
         {
             public static void Prefix(NicknameSync __instance, ref string value)
             {
-                if (!__instance._hub || __instance._hub.IsHost || __instance._hub.IsDummy)
+                if (!XPPlayer.TryGetXP(__instance._hub, out XPPlayer? player))
                     return;
 
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
@@ -35,9 +39,9 @@
                         if (!nickProvider.Config.Enabled)
                             return;
 
-                        nickProvider.DisplayNameOverrides[__instance._hub.authManager.UserId] = value;
+                        nickProvider.DisplayNameOverrides[player.UserId] = value;
                         value = nickProvider.Config.NickStructure
-                            .Replace("%lvl%", XPAPI.GetPlayerInfo(__instance._hub).Level.ToString())
+                            .Replace("%lvl%", XPAPI.GetPlayerInfo(player).Level.ToString())
                             .Replace("%name%", value);
 
                         return;

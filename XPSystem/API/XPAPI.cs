@@ -1,14 +1,16 @@
-﻿namespace XPSystem.API
+﻿// ReSharper disable MemberCanBePrivate.Global
+namespace XPSystem.API
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
+    using System.Diagnostics.CodeAnalysis;
     using System.Text;
     using NorthwoodLib.Pools;
     using PlayerRoles;
     using XPSystem.API.DisplayProviders;
     using XPSystem.API.Enums;
     using XPSystem.API.Exceptions;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
     using XPSystem.API.StorageProviders.Models;
     using XPSystem.Config;
@@ -26,6 +28,7 @@
         /// <summary>
         /// Whether the plugin is enabled or not.
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public static bool PluginEnabled { get; internal set; } = false;
 
         /// <summary>
@@ -35,18 +38,18 @@
 
         /// <summary>
         /// The display provider for the plugin.
-        /// May be null (<see cref="XPSystem.API.Enums.DisplayMode.None"/> or uninitialized).
+        /// Null if (<see cref="XPSystem.API.Enums.DisplayMode.None"/> or uninitialized).
         /// </summary>
-        public static IMessagingProvider MessagingProvider;
+        public static IMessagingProvider? MessagingProvider;
 
         /// <summary>
         /// The storage provider for the plugin.
         /// Change it using <see cref="SetStorageProvider(IStorageProvider)"/>.
         /// </summary>
-        public static IStorageProvider StorageProvider { get; private set; }
+        public static IStorageProvider? StorageProvider { get; private set; }
 
         /// <summary>
-        /// The xp display providers.
+        /// The XP display providers.
         /// </summary>
         public static readonly XPDisplayProviderCollection DisplayProviders = new();
 
@@ -122,13 +125,12 @@
         /// </summary>
         public static Action<string> LogError = LoaderSpecific.LogError;
 #endregion
-
 #region Storage
         /// <summary>
         /// Sets the storage provider for the plugin.
         /// </summary>
         /// <param name="provider">The storage provider to set.</param>
-        public static void SetStorageProvider(IStorageProvider provider)
+        public static void SetStorageProvider(IStorageProvider? provider)
         {
             try
             {
@@ -141,14 +143,15 @@
 
             if (provider == null)
             {
-                LogDebug("Disposed storage provider. No data will be read or saved!");
+                StorageProvider = null;
+                LogInfo("Storage provider set to null, no data will be read or saved!");
                 return;
             }
 
             try
             {
-                if (provider is StorageProvider { ConfigTypeInternal: not null } storageProvider)
-                    LoadStorageProviderConfig(storageProvider);
+                if (provider is StorageProvider storageProvider)
+                    storageProvider.LoadConfig();
 
                 provider.Initialize();
             }
@@ -175,7 +178,7 @@
                 return;
             }
 
-            if (Main.TryCreate(typeName, out Exception e, out IStorageProvider provider))
+            if (Main.TryCreate(typeName, out Exception? e, out IStorageProvider? provider))
             {
                 SetStorageProvider(provider);
                 return;
@@ -183,36 +186,6 @@
 
             LogError("Could not instantiate storage provider (are you implementing IStorageProvider and have parameterless constructor?): " + e);
             LogError("No data will be read or saved!");
-        }
-
-        /// <summary>
-        /// Loads the storage providers config.
-        /// </summary>
-        /// <param name="provider">The storage provider whose config is to be loaded.</param>
-        public static void LoadStorageProviderConfig(StorageProvider provider)
-        {
-            string name = provider.GetType().Name;
-            string file = Path.Combine(Config.ExtendedConfigPath, name + ".yml");
-
-            if (File.Exists(file))
-            {
-                try
-                {
-                    provider.ConfigPropertyInternal =
-                        Deserializer.Deserialize(File.ReadAllText(file), provider.ConfigTypeInternal);
-                }
-                catch (Exception e)
-                {
-                    LogError($"Error loading storageprovider config for {name}: {e}");
-                }
-            }
-            else
-            {
-                object obj = provider.ConfigPropertyInternal;
-
-                File.WriteAllText(file, Serializer.Serialize(obj));
-                provider.ConfigPropertyInternal = obj;
-            }
         }
 
         /// <summary>
@@ -234,7 +207,7 @@
         public static PlayerInfoWrapper GetPlayerInfo(IPlayerId playerId)
         {
             EnsureStorageProviderValid();
-            return StorageProvider.GetPlayerInfoAndCreateOfNotExist(playerId);
+            return StorageProvider!.GetPlayerInfoAndCreateOfNotExist(playerId);
         }
 
         /// <summary>
@@ -253,12 +226,12 @@
         /// </summary>
         /// <param name="player">The player to update the nickname of.</param>
         /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
-        public static void UpdateNickname(XPPlayer player, PlayerInfoWrapper playerInfo = null)
+        public static void UpdateNickname(XPPlayer player, PlayerInfoWrapper? playerInfo = null)
         {
             playerInfo ??= GetPlayerInfo(player);
             playerInfo.PlayerInfo.Nickname = player.DisplayedName;
 
-            StorageProvider.SetPlayerInfo(playerInfo);
+            StorageProvider!.SetPlayerInfo(playerInfo);
             LogDebug("Updated nick of " + player.PlayerId + " to " + player.DisplayedName);
         }
 #endif
@@ -268,38 +241,32 @@
         /// </summary>
         /// <param name="player">The player to add XP to.</param>
         /// <param name="amount">The amount of XP to add.</param>
-        /// <param name="force">Whether to force the addition of XP, <br/>
-        /// even if <see cref="XPGainPaused"/> <br/>
-        /// or the player has <see cref="XPPlayer.DNT"/> enabled <br/>
-        /// or <see cref="XPPlayer.IsNPC"/> is true.</param>
+        /// <param name="force">Whether to force the addition of XP, even if <see cref="XPGainPaused"/>.</param>
         /// <param name="playerInfo">The player's <see cref="PlayerInfoWrapper"/>. Optional, only pass if you already have it, saves barely any time.</param>
-        /// <returns>Whether or not the XP was added.</returns>
-        public static bool AddXP(XPPlayer player, int amount, bool force = false, PlayerInfoWrapper playerInfo = null)
+        /// <returns>Whether or not the player leveled up.</returns>
+        public static bool AddXP(XPPlayer player, int amount, bool force = false, PlayerInfoWrapper? playerInfo = null)
         {
             if (amount == 0)
                 return false;
 
-            if (!force && (XPGainPaused || player.DNT) || player.IsNPC)
+            if (!force && (XPGainPaused || player.DNT))
                 return false;
 
-            playerInfo ??= GetPlayerInfo(player.PlayerId);
-
-            AddXP(playerInfo, amount, player);
-            return true;
+            return AddXP(playerInfo ?? GetPlayerInfo(player.PlayerId), amount, player);
         }
 
         /// <summary>
         /// The method that actually adds XP to a player.
         /// Beware: No checks!
         /// </summary>
-        internal static bool AddXP(PlayerInfoWrapper playerInfo, int amount, XPPlayer player = null)
+        internal static bool AddXP(PlayerInfoWrapper playerInfo, int amount, XPPlayer? player = null)
         {
             if (player == null)
-                XPPlayer.TryGet(playerInfo.Player, out player);
+                XPPlayer.TryGetXP(playerInfo.Player, out player);
 
             int prevLevel = playerInfo.Level;
             float floatAmount = amount;
-            bool connected = player?.IsConnected ?? false;
+            bool connected = player != null;
 
             if (amount > 0 || Config.XPMultiplierForXPLoss)
             {
@@ -313,12 +280,16 @@
             amount = (int)floatAmount;
 
             playerInfo.PlayerInfo.XP += amount;
-            StorageProvider.SetPlayerInfo(playerInfo);
+            StorageProvider!.SetPlayerInfo(playerInfo);
 
-            if (connected && playerInfo.Level != prevLevel)
-                HandleLevelUp(player, playerInfo, prevLevel);
+            if (playerInfo.Level == prevLevel)
+                return false;
+
+            if (connected)
+                HandleLevelUp(player!, playerInfo, prevLevel);
 
             return true;
+
         }
 #endregion
 #region Translations
@@ -328,9 +299,9 @@
         /// <param name="player">The player to display the message to.</param>
         /// <param name="message">The message to display.</param>
         /// <remarks>If <see cref="MessagingProvider"/> is null, it will not be displayed.</remarks>
-        public static void DisplayMessage(XPPlayer player, string message)
+        public static void DisplayMessage(BaseXPPlayer player, string? message)
         {
-            if (string.IsNullOrWhiteSpace(message) || player.IsNPC)
+            if (string.IsNullOrWhiteSpace(message))
                 return;
 
             MessagingProvider?.DisplayMessage(player, Config.TextPrefix + message + Config.TextSuffix, Config.DisplayDuration);
@@ -339,16 +310,16 @@
 #region Mixed
         /// <summary>
         /// Adds XP to a player and displays it's corresponding message.
-        /// Respects role overrides, DNT, and <see cref="XPGainPaused"/>.
+        /// Respects role overrides and <see cref="XPGainPaused"/>.
         /// </summary>
         /// <param name="player">The player to affect.</param>
         /// <param name="key">The key of the <see cref="XPECFile"/>.</param>
         /// <param name="subkeys">The subkeys of the <see cref="XPECItem"/>.</param>
         /// <returns>Whether or not the XP was added and the message was sent (can be forced with
-        /// <see cref="AddXP(XPSystem.API.XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/>
+        /// <see cref="AddXP(XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/>
         /// and <see cref="DisplayMessage"/>).</returns>
         /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
-        public static bool AddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
+        public static bool AddXPAndDisplayMessage(XPPlayer player, string key, params object?[] subkeys)
         {
             return AddXPAndDisplayMessage(player, XPECManager.GetItem(key, player.Role, subkeys));
         }
@@ -359,13 +330,13 @@
         /// </summary>
         /// <inheritdoc cref="AddXPAndDisplayMessage(XPPlayer, string, object[])"/>
         /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
-        public static bool TryAddXPAndDisplayMessage(XPPlayer player, string key, params object[] subkeys)
+        public static bool TryAddXPAndDisplayMessage(XPPlayer? player, string key, params object?[] subkeys)
         {
-            if (!player.IsConnected)
+            if (player is not { IsConnected: true })
                 return false;
 
-            XPECFile file = XPECManager.GetFile(key, player.Role);
-            XPECItem item = file?.Get(subkeys);
+            XPECFile? file = XPECManager.GetFile(key, player.Role);
+            XPECItem? item = file?.Get(subkeys);
             if (item == null)
                 return false;
 
@@ -384,18 +355,21 @@
         /// </summary>
         /// <param name="player">The player to affect.</param>
         /// <param name="xpecItem">The <see cref="XPECItem"/> containing the amount and the message.</param>
-        /// <returns>Whether or not the XP was added and the message was sent (can be forced with
-        /// <see cref="AddXP(XPSystem.API.XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/>
-        /// and <see cref="DisplayMessage"/>).</returns>
-        public static bool AddXPAndDisplayMessage(XPPlayer player, XPECItem xpecItem)
+        /// <returns>Whether or not the XP was added and the message was sent (can be forced with <br />
+        /// <see cref="AddXP(XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/> and <br />
+        /// <see cref="DisplayMessage"/>).</returns>
+        public static bool AddXPAndDisplayMessage(XPPlayer player, XPECItem? xpecItem)
         {
             if (xpecItem == null || xpecItem.Amount == 0 || player.DNT || XPGainPaused)
                 return false;
 
             PlayerInfoWrapper playerInfo = GetPlayerInfo(player.PlayerId);
-            AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
+            bool levelup = AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
 
-            string message = xpecItem.Translation;
+            if (levelup && !Config.ShowXPOnLevelUp)
+                return true;
+
+            string? message = xpecItem.Translation;
             if (message != null && Config.UseAddedXPTemplate)
             {
                 message = Config.AddedXPTemplate
@@ -451,9 +425,9 @@
         /// <param name="id">The id value.</param>
         /// <param name="authType">The <see cref="AuthType"/> of the id.</param>
         /// <returns>If successful, the <see cref="IPlayerId"/> created. Otherwise, null.</returns>
-        public static IPlayerId CreateUserId(object id, AuthType authType)
+        public static IPlayerId? CreateUserId(object id, AuthType authType)
         {
-            bool EnsureIs<T>(out T obj)
+            bool EnsureIs<T>([NotNullWhen(true)] out T? obj)
             {
                 if (id is T t)
                 {
@@ -482,7 +456,7 @@
                     LogDebug("UserId creating failed (not ulong)");
                     return null;
                 case AuthType.Northwood:
-                    if (EnsureIs(out string stringId))
+                    if (EnsureIs(out string? stringId))
                         return new StringPlayerId(stringId, authType);
 
                     LogDebug("UserId creating failed (not string)");
@@ -498,7 +472,7 @@
         /// <param name="string">The string to parse.</param>
         /// <param name="playerId">The equivalent <see cref="IPlayerId"/>.</param>
         /// <returns>Whether or not the parsing was successful.</returns>
-        public static bool TryParseUserId(string @string, out IPlayerId playerId)
+        public static bool TryParseUserId(string? @string, [NotNullWhen(true)] out IPlayerId? playerId)
         {
             playerId = null;
             if (@string == null)

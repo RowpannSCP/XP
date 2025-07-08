@@ -23,7 +23,7 @@
         /// <summary>
         /// Gets the stored nickname of the player.
         /// </summary>
-        public string Nickname => PlayerInfo.Nickname;
+        public string? Nickname => PlayerInfo.Nickname;
 
         /// <summary>
         /// Gets or sets the amount of XP of the player has.

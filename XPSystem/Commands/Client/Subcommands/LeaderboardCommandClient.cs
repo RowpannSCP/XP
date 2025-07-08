@@ -32,7 +32,7 @@
                 }
             }
 
-            response = XPAPI.StorageProvider.GetTopPlayers(amount)
+            response = XPAPI.StorageProvider!.GetTopPlayers(amount)
                 .FormatLeaderboard();
             return true;
         }

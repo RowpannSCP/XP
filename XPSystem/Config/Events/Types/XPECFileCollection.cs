@@ -21,7 +21,7 @@
         /// <param name="key">The key of the file.</param>
         /// <param name="subkeys">The (optional) subkeys of the item.</param>
         /// <returns>The item, if found, otherwise null.</returns>
-        public XPECItem Get(string key, params object[] subkeys)
+        public XPECItem? Get(string key, params object[] subkeys)
         {
             if (string.IsNullOrWhiteSpace(key))
                 return null;

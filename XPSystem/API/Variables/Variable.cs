@@ -10,7 +10,7 @@
         /// <summary>
         /// Gets or sets value of the variable.
         /// </summary>
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         /// <summary>
         /// Gets or sets the expiry time of the variable.
@@ -61,7 +61,7 @@
             if (Value is T value)
                 return value;
 
-            throw new InvalidCastException($"Cannot cast {Value.GetType()} to {typeof(T)}");
+            throw new InvalidCastException($"Cannot cast {Value?.GetType().ToString() ?? "null"} to {typeof(T)}");
         }
 
         /// <summary>

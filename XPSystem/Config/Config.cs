@@ -9,34 +9,34 @@
         [Description("Print debug messages?")]
         public bool Debug { get; set; } = false;
 
-        [Description("The function to calculate level for given xp. Parameter: xp. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
-        public string LevelFunction { get; set; } = "Ceiling(-50 + Sqrt((4 * xp / a) + 9800) / 2)";
+        [Description("The function to calculate level for given XP. Parameter: XP. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
+        public string LevelFunction { get; set; } = "Ceiling(-50 + Sqrt((4 * XP / a) + 9800) / 2)";
 
-        [Description("The function to calculate xp needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
+        [Description("The function to calculate XP needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
         public string XPFunction { get; set; } = "Ceiling((level^2 + 100 * level + 50) * a)";
 
-        [Description("Additional parameters for the level/xp functions.")]
+        [Description("Additional parameters for the level/XP functions.")]
         public Dictionary<string, double> AdditionalFunctionParameters { get; set; } = new()
         {
             { "a", 1 },
         };
 
-        [Description("Override xp required for specific levels. Key: level, Value: xp.")]
+        [Description("Override XP required for specific levels. Key: level, Value: XP.")]
         public Dictionary<int, int> LevelXPOverrides { get; set; } = new()
         {
             [0] = 0
         };
 
-        [Description("Whether or not to pause xp gain when the round ends.")]
+        [Description("Whether or not to pause XP gain when the round ends.")]
         public bool XPAfterRoundEnd { get; set; } = true;
 
         [Description("A global XP multiplier.")]
         public float GlobalXPMultiplier { get; set; } = 1f;
 
-        [Description("Whether or not the global XP multiplier should apply to xp given to people that aren't online (via commands, etc.).")]
+        [Description("Whether or not the global XP multiplier should apply to XP given to people that aren't online (via commands, etc.).")]
         public bool GlobalXPMultiplierForNonOnline { get; set; } = true;
 
-        [Description("Whether or not the global XP multiplier should apply to xp removed.")]
+        [Description("Whether or not the global XP multiplier should apply to XP removed.")]
         public bool XPMultiplierForXPLoss { get; set; } = false;
 
         [Description("Path to the event configs folder, relative to the ExtendedConfigPath.")]
@@ -58,22 +58,25 @@
         public string DNTMessage { get; set; } =
             "We can't track your stats while you have DNT enabled in your game options!";
 
-        [Description("Whether or not to format a message according to a template when adding xp.")]
+        [Description("Whether or not to format a message according to a template when adding XP.")]
         public bool UseAddedXPTemplate { get; set; } = true;
 
-        [Description("When enabled, template used for messages that modify xp. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
+        [Description("When enabled, template used for messages that modify XP. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
         public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
 
-        [Description("Whether or not to use the total xp instead of only the xp required for the next level. Requires extra calculations if false.")]
+        [Description("Whether or not to use the total XP instead of only the XP required for the next level. Requires extra calculations if false.")]
         public bool UseTotalXP { get; set; } = true;
 
         [Description("Whether or not to show a message to a player if they advance a level.")]
         public bool ShowAddedLVL { get; set; } = true;
 
+        [Description("Whether or not to show the XP gain message on level up. If false, only the level will be shown.")]
+        public bool ShowXPOnLevelUp { get; set; } = true;
+
         [Description("When enabled, what message to show if player advances a level.")]
         public string AddedLVLMessage { get; set; } = "NEW LEVEL: <color=red>%level%</color>";
 
-        [Description("Decide how messages (ex. xp gain, level up) are displayed.")]
+        [Description("Decide how messages (ex. XP gain, level up) are displayed.")]
         public DisplayMode DisplayMode { get; set; } = DisplayMode.Hint;
 
         [Description("The duration of the message, if applicable.")]
@@ -85,7 +88,7 @@
         [Description("Prepended to all messages.")]
         public string TextSuffix { get; set; } = "";
 
-        [Description("An alias for the client to view their own xp. Empty to disable.")]
+        [Description("An alias for the client to view their own XP. Empty to disable.")]
         public string ClientGetCommandAlias { get; set; } = "";
 
         [Description("An alias for the client to view the leaderboard. Empty to disable.")]
@@ -95,7 +98,7 @@
                      "Available, but I will not help you with: XPSystem.BuiltInProviders.MySql.MySqlProvider")]
         public string StorageProvider { get; set; } = "XPSystem.BuiltInProviders.LiteDB.LiteDBProvider";
 
-        [Description("The assembly qualified type names of xp display providers to load, in addition to the built-in rank and nick ones.")]
+        [Description("The assembly qualified type names of XP display providers to load, in addition to the built-in rank and nick ones.")]
         public List<string> AdditionalDisplayProviders { get; set; } = new()
         {
         };

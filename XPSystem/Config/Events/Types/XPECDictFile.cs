@@ -10,22 +10,21 @@
     /// <typeparam name="T">The type of the subkeys.</typeparam>
     public class XPECDictFile<T> : XPECFile
     {
-        public XPECItem Default { get; set; }
-
+        public XPECItem Default { get; set; } = null!;
         public Dictionary<T, XPECItem> Items { get; set; } = new();
 
         /// <inheritdoc />
-        public override XPECItem Get(params object[] keys)
+        public override XPECItem Get(params object?[]? keys)
         {
             base.Get(keys);
             if (keys == null || keys.Length == 0)
                 return Default;
 
-            object keyObj = keys[0];
+            object? keyObj = keys[0];
             if (keyObj is not T key)
-                throw new InvalidCastException($"Key is not of the correct type (was: {keyObj.GetType().FormatType()}, expected: {typeof(T).FormatType()})");
+                throw new InvalidCastException($"Key is not of the correct type (was: {keyObj?.GetType().FormatType() ?? "null"}, expected: {typeof(T).FormatType()})");
 
-            if (Items == null)
+            if (Items == null!)
             {
                 XPAPI.LogDebug("Items null in XPECDictFile with keytype " + typeof(T).FormatType());
                 return Default;

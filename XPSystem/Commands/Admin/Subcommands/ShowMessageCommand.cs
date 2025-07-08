@@ -9,6 +9,7 @@
     using NorthwoodLib.Pools;
     using PlayerRoles;
     using XPSystem.API;
+    using XPSystem.API.Player;
     using XPSystem.Config.Events;
     using XPSystem.Config.Events.Types;
 
@@ -33,10 +34,10 @@
 
             if (key.StartsWith("default_"))
                 key = key.Substring(8);
-            else if (XPPlayer.TryGet(sender, out XPPlayer player))
+            else if (XPPlayer.TryGet(sender, out BaseXPPlayer? player))
                 role = player.Role;
 
-            XPECFile file = XPECManager.GetFile(key, role);
+            XPECFile? file = XPECManager.GetFile(key, role);
             if (file == null)
             {
                 response = "No such XPEC file.";
@@ -61,7 +62,7 @@
                     }
 
                     bool success = false;
-                    Exception e = null;
+                    Exception? e = null;
                     var argTypes = types[i];
                     foreach (Type type in argTypes)
                     {
@@ -93,7 +94,7 @@
                 }
             }
 
-            XPECItem item = file.Get(subkeys.ToArray());
+            XPECItem? item = file.Get(subkeys.ToArray());
             if (item == null)
             {
                 response = "Item null.";

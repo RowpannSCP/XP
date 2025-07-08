@@ -3,13 +3,15 @@
     using System;
     using CommandSystem;
     using XPSystem.API;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
+    using XPSystem.API.StorageProviders.Models;
 
     public class GiveCommand : DatabasePlayerCommand
     {
         public override bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.give", out XPPlayer player))
+            if (!XPPlayer.TryGetAndCheckPermission(sender, "xps.give", out BaseXPPlayer? player))
             {
                 response = "You don't have permission (xps.give) to use this command.";
                 return false;
@@ -28,8 +30,10 @@
                 return false;
             }
 
-            response = null;
-            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out PlayerInfoWrapper playerInfo, out var playerId))
+            response = "temp";
+            XPAPI.EnsureStorageProviderValid();
+
+            if (!DoThingWithArgs(ref arguments, 1, player, ref response, out PlayerInfoWrapper playerInfo, out IPlayerId playerId))
                 return false;
 
             playerInfo.XP += amount;

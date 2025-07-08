@@ -12,6 +12,6 @@
         public int LVL { get; set; }
         public int XP { get; set; }
         [BsonId]
-        public string ID { get; set; }
+        public string ID { get; set; } = null!;
     }
 }

@@ -76,7 +76,7 @@
                     XP = log.XP + LevelCalculator.GetXP(log.LVL)
                 };
 
-                StorageProvider.SetPlayerInfo(playerInfo);
+                StorageProvider!.SetPlayerInfo(playerInfo);
                 count++;
 
                 if (count % 100 == 0) LogInfo($"Imported {count}/{total} players.");
