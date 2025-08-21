@@ -249,7 +249,7 @@ namespace XPSystem.API
             if (amount == 0)
                 return false;
 
-            if (!force && (XPGainPaused || player.DNT))
+            if (!force && XPGainPaused)
                 return false;
 
             return AddXP(playerInfo ?? GetPlayerInfo(player.PlayerId), amount, player);
@@ -289,7 +289,6 @@ namespace XPSystem.API
                 HandleLevelUp(player!, playerInfo, prevLevel);
 
             return true;
-
         }
 #endregion
 #region Translations
@@ -309,26 +308,13 @@ namespace XPSystem.API
 #endregion
 #region Mixed
         /// <summary>
-        /// Adds XP to a player and displays it's corresponding message.
-        /// Respects role overrides and <see cref="XPGainPaused"/>.
+        /// Tries to add XP to a player and display it's corresponding message.
+        /// Respects <see cref="XPECLimitedDictFile{T}"/> limits, role overrides, and <see cref="XPGainPaused"/>.
         /// </summary>
         /// <param name="player">The player to affect.</param>
         /// <param name="key">The key of the <see cref="XPECFile"/>.</param>
         /// <param name="subkeys">The subkeys of the <see cref="XPECItem"/>.</param>
-        /// <returns>Whether or not the XP was added and the message was sent (can be forced with
-        /// <see cref="AddXP(XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/>
-        /// and <see cref="DisplayMessage"/>).</returns>
-        /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
-        public static bool AddXPAndDisplayMessage(XPPlayer player, string key, params object?[] subkeys)
-        {
-            return AddXPAndDisplayMessage(player, XPECManager.GetItem(key, player.Role, subkeys));
-        }
-
-        /// <summary>
-        /// Tries to add XP to a player and display it's corresponding message.
-        /// Respects <see cref="XPECLimitedDictFile{T}"/> limits, role overrides, DNT, and <see cref="XPGainPaused"/>.
-        /// </summary>
-        /// <inheritdoc cref="AddXPAndDisplayMessage(XPPlayer, string, object[])"/>
+        /// <returns>Whether or not the XP was added.</returns>
         /// <remarks>Uses <see cref="XPECManager.GetItem(string, RoleTypeId, object[])"/>.</remarks>
         public static bool TryAddXPAndDisplayMessage(XPPlayer? player, string key, params object?[] subkeys)
         {
@@ -351,52 +337,100 @@ namespace XPSystem.API
 
         /// <summary>
         /// Adds XP to a player and displays it's corresponding message.
-        /// Respects role overrides, DNT, and <see cref="XPGainPaused"/>.
+        /// Respects role overrides and <see cref="XPGainPaused"/>.
         /// </summary>
         /// <param name="player">The player to affect.</param>
         /// <param name="xpecItem">The <see cref="XPECItem"/> containing the amount and the message.</param>
-        /// <returns>Whether or not the XP was added and the message was sent (can be forced with <br />
-        /// <see cref="AddXP(XPPlayer,int,bool,XPSystem.API.StorageProviders.PlayerInfoWrapper)"/> and <br />
-        /// <see cref="DisplayMessage"/>).</returns>
+        /// <returns>Whether or not the XP was added.</returns>
         public static bool AddXPAndDisplayMessage(XPPlayer player, XPECItem? xpecItem)
         {
-            if (xpecItem == null || xpecItem.Amount == 0 || player.DNT || XPGainPaused)
+            if (xpecItem == null)
+                return false;
+
+            return AddXPAndDisplayMessage(player, xpecItem.Amount, xpecItem.Translation);
+        }
+
+        /// <summary>
+        /// Adds XP to a player and displays it's corresponding message.
+        /// </summary>
+        /// <param name="player">The player to affect.</param>
+        /// <param name="amount">The amount of XP to add.</param>
+        /// <param name="message">The message to display.</param>
+        /// <param name="force">Whether to force the addition of XP, even if amount = 0 or <see cref="XPGainPaused"/>.</param>
+        /// <returns>Whether or not XP was added.</returns>
+        public static bool AddXPAndDisplayMessage(XPPlayer player, int amount, string? message, bool force = false)
+        {
+            if (amount == 0 && !force || XPGainPaused)
                 return false;
 
             PlayerInfoWrapper playerInfo = GetPlayerInfo(player.PlayerId);
-            bool levelup = AddXP(player, xpecItem.Amount, playerInfo: playerInfo);
+            bool levelup = AddXP(player, amount, force: true, playerInfo: playerInfo);
 
             if (levelup && !Config.ShowXPOnLevelUp)
                 return true;
 
-            string? message = xpecItem.Translation;
-            if (message != null && Config.UseAddedXPTemplate)
+            if (!string.IsNullOrWhiteSpace(message))
             {
-                message = Config.AddedXPTemplate
+                if (Config.UseAddedXPTemplate)
+                    message = FormatMessage(message!, playerInfo);
+                DisplayMessage(player, message);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Formats a message according to the <see cref="Config.AddedXPTemplate"/> for a player.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="playerInfo">The <see cref="PlayerInfoWrapper"/> of the player to format the message for.</param>
+        /// <returns>The formatted message.</returns>
+        public static string FormatMessage(string message, PlayerInfoWrapper playerInfo)
+        {
+            message = Config.AddedXPTemplate
                     .Replace("%message%", message)
                     .Replace("%currentlevel%", playerInfo.Level.ToString())
                     .Replace("%nextlevel%", (playerInfo.Level + 1).ToString());
 
-                if (Config.UseTotalXP)
+            message = message
+                .Replace("%currentxp%",
+                    (Config.UseTotalXP
+                        ? playerInfo.XP
+                        : playerInfo.XP - playerInfo.NeededXPCurrent)
+                    .ToString())
+                .Replace("%neededxp%",
+                    (Config.UseTotalXP
+                        ? playerInfo.NeededXPNext
+                        : playerInfo.NeededXPNext - playerInfo.NeededXPCurrent)
+                    .ToString());
+
+            if (Config.AddedXPTemplate.Contains("%progressbarfilled%") ||
+                Config.AddedXPTemplate.Contains("%progressbarremaining%"))
+            {
+                if (string.IsNullOrEmpty(Config.AddedXPProgressBarChars) || Config.AddedXPProgressBarChars.Length < 2)
                 {
+                    LogWarn("Template contains progress bar, but no/not enough characters are set for it!");
                     message = message
-                        .Replace("%currentxp%", playerInfo.XP.ToString())
-                        .Replace("%neededxp%", playerInfo.NeededXPNext.ToString());
+                        .Replace("%progressbarfilled%", string.Empty)
+                        .Replace("%progressbarremaining%", string.Empty);
                 }
                 else
                 {
+                    char filledChar = Config.AddedXPProgressBarChars[0];
+                    char remainingChar = Config.AddedXPProgressBarChars[1];
+                    double fillPercentage = (double)(playerInfo.XP - playerInfo.NeededXPCurrent) /
+                                            (playerInfo.NeededXPNext - playerInfo.NeededXPCurrent);
+                    int fill = (int)(Config.AddedXPProgressBarLength * fillPercentage);
+
                     message = message
-                        .Replace("%currentxp%",
-                            (playerInfo.XP - playerInfo.NeededXPCurrent)
-                            .ToString())
-                        .Replace("%neededxp%",
-                            (playerInfo.NeededXPNext - playerInfo.NeededXPCurrent)
-                            .ToString());
+                        .Replace("%progressbarfilled%",
+                            new string(filledChar, fill))
+                        .Replace("%progressbarremaining%",
+                            new string(remainingChar, Config.AddedXPProgressBarLength - fill));
                 }
             }
 
-            DisplayMessage(player, message);
-            return true;
+            return message;
         }
 #endregion
 #region Misc

@@ -33,10 +33,10 @@
         public static void DisplayMessage(this BaseXPPlayer player, string message) => XPAPI.DisplayMessage(player, message);
 
         /// <inheritdoc cref="XPAPI.AddXP(XPPlayer, int, bool, PlayerInfoWrapper)"/>
-        public static bool AddXP(this XPPlayer player, int amount, bool notify = false) => XPAPI.AddXP(player, amount, notify);
+        public static bool AddXP(this XPPlayer player, int amount, bool force = false) => XPAPI.AddXP(player, amount, force);
 
         /// <inheritdoc cref="XPAPI.AddXPAndDisplayMessage(XPPlayer, XPECItem)"/>
-        public static void TryAddXPAndDisplayMessage(this XPPlayer player, XPECItem? item) => XPAPI.AddXPAndDisplayMessage(player, item);
+        public static void AddXPAndDisplayMessage(this XPPlayer player, XPECItem? item) => XPAPI.AddXPAndDisplayMessage(player, item);
 
         /// <inheritdoc cref="XPAPI.TryAddXPAndDisplayMessage(XPPlayer, string, object[])"/>
         public static void TryAddXPAndDisplayMessage(this XPPlayer? player, string key, params object?[] args) => XPAPI.TryAddXPAndDisplayMessage(player, key, args);

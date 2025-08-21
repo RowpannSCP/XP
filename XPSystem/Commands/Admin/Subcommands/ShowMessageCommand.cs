@@ -25,6 +25,13 @@
 
             if (arguments.Count < 1)
             {
+                if (XPPlayer.TryGet(sender, out BaseXPPlayer? player) && player is XPPlayer xpPlayer)
+                {
+                    XPAPI.AddXPAndDisplayMessage(xpPlayer, 1, "debug");
+                    response = "done.";
+                    return true;
+                }
+
                 response = "Usage: showmessage (key) or showmessage (key) (subkeys)";
                 return false;
             }

@@ -105,7 +105,7 @@
             foreach (XPPlayer player in XPPlayer.XPPlayers)
             {
                 if (player.LeadingTeam == leadingTeam)
-                    player.TryAddXPAndDisplayMessage(roundwin);
+                    player.AddXPAndDisplayMessage(roundwin);
             }
 
             if (Config.LogXPGainedMethods)

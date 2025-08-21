@@ -9,16 +9,17 @@
         [Description("Print debug messages?")]
         public bool Debug { get; set; } = false;
 
-        [Description("The function to calculate level for given XP. Parameter: XP. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
-        public string LevelFunction { get; set; } = "Ceiling(-50 + Sqrt((4 * XP / a) + 9800) / 2)";
-
         [Description("The function to calculate XP needed for a level. The inverse of the LevelFunction. Parameter: level. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
-        public string XPFunction { get; set; } = "Ceiling((level^2 + 100 * level + 50) * a)";
+        public string XPFunction { get; set; } = "Floor((level^a) * b)";
+
+        [Description("The function to calculate level for given XP. Parameter: xp. Available functions: https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0#methods.")]
+        public string LevelFunction { get; set; } = "Floor((xp/b)^(1/a))";
 
         [Description("Additional parameters for the level/XP functions.")]
         public Dictionary<string, double> AdditionalFunctionParameters { get; set; } = new()
         {
-            { "a", 1 },
+            { "a", 2 },
+            { "b", 100 }
         };
 
         [Description("Override XP required for specific levels. Key: level, Value: XP.")]
@@ -61,10 +62,17 @@
         [Description("Whether or not to format a message according to a template when adding XP.")]
         public bool UseAddedXPTemplate { get; set; } = true;
 
-        [Description("When enabled, template used for messages that modify XP. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel.")]
+        [Description("When enabled, template used for messages that modify XP. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel%."
+            + "Also: %progressbarfilled%, %progressbarremaining%. Using them requires the same extra calculations as UseTotalXP = false.")]
         public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
 
-        [Description("Whether or not to use the total XP instead of only the XP required for the next level. Requires extra calculations if false.")]
+        [Description("The characters to use for the progress bar, if present in the AddedXPTemplate.")]
+        public string AddedXPProgressBarChars { get; set; } = "██";
+
+        [Description("The total length (in chars) of the progress bar to be generated.")]
+        public int AddedXPProgressBarLength { get; set; } = 20;
+
+        [Description("Whether or not to use the total XP instead of only the XP required for the next level. Requires extra calculations if false and progress bar is not present in AddedXPTemplate.")]
         public bool UseTotalXP { get; set; } = true;
 
         [Description("Whether or not to show a message to a player if they advance a level.")]
