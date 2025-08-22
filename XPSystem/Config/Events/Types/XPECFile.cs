@@ -1,7 +1,10 @@
-﻿namespace XPSystem.Config.Events.Types
+﻿#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+namespace XPSystem.Config.Events.Types
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using YamlDotNet.Core;
     using YamlDotNet.Core.Events;
@@ -16,7 +19,7 @@
         /// The key of the file.
         /// Set by <see cref="XPECManager"/> upon loading.
         /// </summary>
-        internal string Key;
+        internal string Key = null!;
 
         /// <summary>
         /// Gets an item with the specified keys.
@@ -24,11 +27,15 @@
         /// </summary>
         /// <param name="keys">The keys of the item.</param>
         /// <returns>The item.</returns>
-        public virtual XPECItem Get(params object[] keys)
+        public virtual XPECItem? Get(params object?[]? keys)
         {
             if (Config.Debug || Config.LogXPGainedMethods)
             {
-                string fullKey = $"{Key}/{string.Join("/", keys ?? Array.Empty<object>())}";
+                var keysList = new List<object>();
+                if (keys != null)
+                    keysList.AddRange(keys.OfType<object>());
+
+                string fullKey = $"{Key}/{string.Join("/", keysList)}";
                 LogDebug("Key retrieved: " + fullKey);
 
                 if (Config.LogXPGainedMethods)
@@ -52,10 +59,10 @@
 
             while (!parser.Accept(out MappingEnd _))
             {
-                if (!parser.TryConsume<Scalar>(out Scalar scalar))
+                if (!parser.TryConsume(out Scalar scalar))
                     throw new InvalidDataException("Invalid YAML content: Expected scalar key.");
 
-                PropertyInfo property = type.GetProperty(scalar.Value);
+                PropertyInfo? property = type.GetProperty(scalar.Value);
                 if (property == null)
                 {
                     LogWarn("Skipping serialization of unknown property: " + scalar.Value);
@@ -63,7 +70,7 @@
                     continue;
                 }
 
-                object value = Deserializer.Deserialize(parser, property.PropertyType);
+                object? value = Deserializer.Deserialize(parser, property.PropertyType);
                 property.SetValue(this, value);
             }
         }

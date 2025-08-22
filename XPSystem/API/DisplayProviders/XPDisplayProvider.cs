@@ -1,24 +1,27 @@
 ﻿namespace XPSystem.API
 {
     using System;
+    using System.IO;
     using XPSystem.API.DisplayProviders;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
+    using static XPAPI;
 
     /// <summary>
-    /// Base class for xp display providers, shows the xp/lvl of a player to others.
+    /// Base class for XP display providers, shows the XP/level of a player to others.
     /// </summary>
-    public abstract class XPDisplayProvider<T> : IXPDisplayProvider where T : IXPDisplayProviderConfig, new()
+    public abstract class XPDisplayProvider<T> : ConfigXPDisplayProvider where T : IXPDisplayProviderConfig, new()
     {
         /// <summary>
         /// Gets the patch category.
         /// Null to disable patching.
         /// </summary>
-        protected virtual string PatchCategory => null;
+        protected virtual string? PatchCategory => null;
 
         /// <summary>
         /// Enables the display provider.
         /// </summary>
-        public virtual void Enable()
+        public override void Enable()
         {
             if (PatchCategory != null)
             {
@@ -32,7 +35,7 @@
         /// <summary>
         /// Disables the display provider.
         /// </summary>
-        public virtual void Disable()
+        public override void Disable()
         {
             if (PatchCategory != null)
             {
@@ -50,19 +53,17 @@
         /// <summary>
         /// <see cref="RefreshTo"/> implementation when enabled.
         /// </summary>
-        protected virtual void RefreshToEnabled(XPPlayer player) {}
+        protected virtual void RefreshToEnabled(BaseXPPlayer player) {}
 
         /// <summary>
         /// <see cref="RefreshTo"/> implementation when disabled.
         /// </summary>
-        protected virtual void RefreshToDisabled(XPPlayer player) {}
+        protected virtual void RefreshToDisabled(BaseXPPlayer player) {}
 
         /// See <see cref="XPDisplayProviderCollection.RefreshTo"/>.
-        public virtual void RefreshTo(XPPlayer player)
+        public override void RefreshTo(BaseXPPlayer player)
         {
             if (!Config.Enabled && !HasSet)
-                return;
-            if (player.IsNPC)
                 return;
 
             if (Config.Enabled)
@@ -79,22 +80,24 @@
         /// <summary>
         /// <see cref="RefreshOf"/> implementation when enabled.
         /// </summary>
-        protected virtual void RefreshOfEnabled(XPPlayer player, PlayerInfoWrapper playerInfo) {}
+        protected virtual void RefreshOfEnabled(BaseXPPlayer player, PlayerInfoWrapper? playerInfo) {}
 
         /// <summary>
         /// <see cref="RefreshOf"/> implementation when disabled.
         /// </summary>
-        protected virtual void RefreshOfDisabled(XPPlayer player) {}
+        protected virtual void RefreshOfDisabled(BaseXPPlayer player) {}
 
         /// See <see cref="XPDisplayProviderCollection.RefreshTo"/>.
-        public virtual void RefreshOf(XPPlayer player, PlayerInfoWrapper playerInfo = null)
+        public override void RefreshOf(BaseXPPlayer player, PlayerInfoWrapper? playerInfo = null)
         {
             if (!Config.Enabled && !HasSet)
                 return;
 
             if (Config.Enabled)
             {
-                RefreshOfEnabled(player, playerInfo ?? player.GetPlayerInfo());
+                if (player is XPPlayer xpPlayer)
+                    playerInfo ??= xpPlayer.GetPlayerInfo();
+                RefreshOfEnabled(player, playerInfo);
                 HasSet = true;
             }
             else
@@ -106,13 +109,13 @@
         /// <summary>
         /// Refreshes the displays of all players.
         /// </summary>
-        public virtual void RefreshAll()
+        public override void RefreshAll()
         {
             if (!Config.Enabled && !HasSet)
                 return;
 
-            foreach (var kvp in XPPlayer.Players)
-                RefreshOf(kvp.Value, kvp.Value.GetPlayerInfo());
+            foreach (BaseXPPlayer player in XPPlayer.PlayersRealConnected)
+                RefreshOf(player, player is XPPlayer xpPlayer ? xpPlayer.GetPlayerInfo() : null);
 
             HasSet = Config.Enabled;
         }
@@ -120,21 +123,45 @@
         /// <summary>
         /// The config instance.
         /// </summary>
-        protected T Config { get; set; }
+        public T Config { get; private set; } = default!;
 
+        internal override IXPDisplayProviderConfig ConfigPropertyInternal => Config;
         /// <summary>
-        /// Ignore this, used by loader.
+        /// Ignore, used by loader.
         /// </summary>
-        IXPDisplayProviderConfig IXPDisplayProvider.ConfigPropertyInternal
+        internal override void LoadConfig(string folder)
         {
-            get => Config ?? new T();
-            set => Config = (T)value;
-        }
+            string name = GetType().Name;
+            string file = Path.Combine(folder, name + ".yml");
 
-        /// <summary>
-        /// Ignore this, used by loader.
-        /// Type of <see cref="IXPDisplayProvider.ConfigPropertyInternal"/>.
-        /// </summary>
-        public Type ConfigTypeInternal { get; } = typeof(T);
+            if (File.Exists(file))
+            {
+                try
+                {
+                    Config = Deserializer.Deserialize<T>(File.ReadAllText(file));
+                }
+                catch (Exception e)
+                {
+                    LogError($"Error loading display provider config for {name}: {e}");
+                }
+            }
+            else
+            {
+                Config = new T();
+                File.WriteAllText(file, Serializer.Serialize(Config));
+            }
+        }
+    }
+
+    public abstract class ConfigXPDisplayProvider : IXPDisplayProvider
+    {
+        public abstract void Enable();
+        public abstract void Disable();
+        public abstract void RefreshTo(BaseXPPlayer player);
+        public abstract void RefreshOf(BaseXPPlayer player, PlayerInfoWrapper? playerInfo = null);
+        public abstract void RefreshAll();
+
+        internal abstract IXPDisplayProviderConfig ConfigPropertyInternal { get; }
+        internal abstract void LoadConfig(string folder);
     }
 }

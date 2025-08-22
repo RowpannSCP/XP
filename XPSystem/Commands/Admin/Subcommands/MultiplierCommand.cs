@@ -3,6 +3,7 @@
     using System;
     using CommandSystem;
     using XPSystem.API;
+    using XPSystem.API.Player;
 
     public class MultiplierCommand : SanitizedInputCommand
     {
@@ -36,26 +37,31 @@
                     return true;
                 case "p":
                 case "player":
-                    XPPlayer player;
+                    BaseXPPlayer? basePlayer;
                     int intArgLocation;
 
                     if (arguments.Count > 2)
                     {
                         intArgLocation = 2;
-
-                        if (!XPPlayer.TryGet(arguments.At(1), out player))
+                        if (!XPPlayer.TryGet(arguments.At(1), out basePlayer))
                         {
                             response = "Invalid player.";
                             return false;
                         }
                     }
-                    else if (XPPlayer.TryGet(sender, out player))
+                    else if (XPPlayer.TryGet(sender, out basePlayer))
                     {
                         intArgLocation = 1;
                     }
                     else
                     {
                         response = "You must specify a player.";
+                        return false;
+                    }
+
+                    if (basePlayer is not XPPlayer player)
+                    {
+                        response = "Player not XPPlayer.";
                         return false;
                     }
 

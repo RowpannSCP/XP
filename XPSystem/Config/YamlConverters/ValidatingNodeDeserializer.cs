@@ -1,4 +1,6 @@
-﻿namespace XPSystem.Config.YamlConverters
+﻿#pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning disable CS8614 // Nullability of reference types in type of parameter doesn't match implicitly implemented member.
+namespace XPSystem.Config.YamlConverters
 {
     using System;
     using System.ComponentModel.DataAnnotations;

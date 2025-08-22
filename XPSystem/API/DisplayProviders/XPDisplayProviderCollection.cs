@@ -3,8 +3,8 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
     using static XPAPI;
 
@@ -47,7 +47,7 @@
         /// </summary>
         /// <param name="player">The player to refresh the displays of.</param>
         /// <param name="playerInfo">The player's info to refresh the displays using.</param>
-        public void RefreshOf(XPPlayer player, PlayerInfoWrapper playerInfo = null)
+        public void RefreshOf(XPPlayer player, PlayerInfoWrapper? playerInfo = null)
         {
             playerInfo ??= player.GetPlayerInfo();
 
@@ -97,7 +97,7 @@
         {
             foreach (IXPDisplayProvider provider in _providers)
             {
-                if (provider.ConfigPropertyInternal?.Enabled == true)
+                if (provider is not ConfigXPDisplayProvider config || config.ConfigPropertyInternal?.Enabled == true)
                 {
                     try
                     {
@@ -119,28 +119,8 @@
         {
             foreach (IXPDisplayProvider provider in Providers)
             {
-                string name = provider.GetType().Name;
-                string file = Path.Combine(folder, name + ".yml");
-
-                if (File.Exists(file))
-                {
-                    try
-                    {
-                        provider.ConfigPropertyInternal = (IXPDisplayProviderConfig)
-                            Deserializer.Deserialize(File.ReadAllText(file), provider.ConfigTypeInternal);
-                    }
-                    catch (Exception e)
-                    {
-                        LogError($"Error loading xpdisplayprovider config for {name}: {e}");
-                    }
-                }
-                else
-                {
-                    IXPDisplayProviderConfig obj = provider.ConfigPropertyInternal;
-
-                    File.WriteAllText(file, XPAPI.Serializer.Serialize(obj));
-                    provider.ConfigPropertyInternal = obj;
-                }
+                if (provider is ConfigXPDisplayProvider config)
+                    config.LoadConfig(folder);
             }
         }
 

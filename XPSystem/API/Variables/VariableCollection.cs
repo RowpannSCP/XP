@@ -3,13 +3,14 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Represents a collection of variables.
     /// </summary>
     public class VariableCollection : IEnumerable<KeyValuePair<string, Variable>>
     {
-        private Dictionary<string, Variable> _variables = new();
+        private readonly Dictionary<string, Variable> _variables = new();
 
         /// <summary>
         /// Gets the number of variables in the collection.
@@ -69,7 +70,7 @@
         /// <param name="key">The key of the variable.</param>
         /// <param name="variable">The variable with the specified key, if found; otherwise, null.</param>
         /// <returns>Whether or not the variable was found.</returns>
-        public bool TryGet(string key, out Variable variable)
+        public bool TryGet(string key, [NotNullWhen(true)] out Variable? variable)
         {
             if (_variables.TryGetValue(key, out variable))
             {
@@ -91,11 +92,11 @@
         /// <typeparam name="T">The type to cast the variable to.</typeparam>
         /// <returns>Whether or not the variable was found and casted.</returns>
         /// <remarks>Will throw if the cast fails.</remarks>
-        public bool TryGet<T>(string key, out T value)
+        public bool TryGet<T>(string key, [NotNullWhen(true)] out T? value)
         {
-            if (TryGet(key, out Variable variable))
+            if (TryGet(key, out Variable? variable))
             {
-                value = variable.As<T>();
+                value = variable.As<T>()!;
                 return true;
             }
 
@@ -114,12 +115,12 @@
         /// Gets or sets the variable with the specified key.
         /// </summary>
         /// <param name="key">The key of the variable.</param>
-        public Variable this[string key]
+        public Variable? this[string key]
         {
-            get => TryGet(key, out Variable variable)
+            get => TryGet(key, out Variable? variable)
                 ? variable
                 : null;
-            set => _variables[key] = value;
+            set => _variables[key] = value!;
         }
 
         /// <inheritdoc />

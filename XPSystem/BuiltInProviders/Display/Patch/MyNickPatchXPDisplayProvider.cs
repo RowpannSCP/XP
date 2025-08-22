@@ -3,18 +3,19 @@
     using System.ComponentModel;
     using HarmonyLib;
     using XPSystem.API;
+    using XPSystem.API.Player;
 
     public class MyNickPatchXPDisplayProvider : XPDisplayProvider<MyNickPatchXPDisplayProvider.NickConfig>
     {
         public override void RefreshAll() {}
-        public override void RefreshTo(XPPlayer player) {}
+        public override void RefreshTo(BaseXPPlayer player) {}
 
         [HarmonyPatch(typeof(NicknameSync), nameof(NicknameSync.Network_myNickSync), MethodType.Setter)]
         internal static class NicknamePatch
         {
             public static void Prefix(NicknameSync __instance, ref string value)
             {
-                if (!__instance._hub || __instance._hub.IsHost || __instance._hub.IsDummy)
+                if (!XPPlayer.TryGetXP(__instance._hub, out XPPlayer? player))
                     return;
 
                 foreach (IXPDisplayProvider provider in XPAPI.DisplayProviders)
@@ -25,7 +26,7 @@
                             return;
 
                         value = nickProvider.Config.NickStructure
-                            .Replace("%lvl%", XPAPI.GetPlayerInfo(__instance._hub).Level.ToString())
+                            .Replace("%lvl%", XPAPI.GetPlayerInfo(player).Level.ToString())
                             .Replace("%name%", value);
 
                         return;

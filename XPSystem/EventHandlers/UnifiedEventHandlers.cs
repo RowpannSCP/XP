@@ -7,7 +7,9 @@
     using MEC;
     using PlayerRoles;
     using XPSystem.API;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
+    using XPSystem.API.StorageProviders.Models;
     using XPSystem.Config.Events;
     using XPSystem.Config.Events.Types;
     using static XPSystem.API.XPAPI;
@@ -48,37 +50,49 @@
         }
 
         // Event needs to exist to ensure players are added to list
-        protected void OnPlayerJoined(XPPlayer player)
+        protected void OnPlayerJoined(BaseXPPlayer player)
         {
-            if (XPAPI.StorageProvider != null && !player.IsNPC)
+            if (XPAPI.StorageProvider != null)
             {
-                if (player.DNT)
+                if (player is XPPlayer xpPlayer)
+                {
+                    Timing.CallDelayed(.5f + Config.ExtraDelay, () =>
+                    {
+                        PlayerInfoWrapper playerInfo = xpPlayer.GetPlayerInfo();
+                        XPPlayerJoined.Invoke(xpPlayer, playerInfo);
+#if STORENICKS
+                        UpdateNickname(xpPlayer);
+#endif
+                        DisplayProviders.RefreshTo(xpPlayer);
+                        DisplayProviders.RefreshOf(xpPlayer, playerInfo);
+                    });
+                }
+                else if (player.DNT)
                 {
                     player.DisplayMessage(Config.DNTMessage);
-                    XPAPI.StorageProvider.DeletePlayerInfo(player.PlayerId);
-                    return;
-                }
 
-                Timing.CallDelayed(.5f + Config.ExtraDelay, () =>
-                {
-                    PlayerInfoWrapper playerInfo = player.GetPlayerInfo();
-                    XPPlayerJoined.Invoke(player, playerInfo);
-#if STORENICKS
-                    UpdateNickname(player);
-#endif
-                    DisplayProviders.RefreshTo(player);
-                    DisplayProviders.RefreshOf(player, playerInfo);
-                });
+                    if (!player.UserId.TryParseUserId(out IPlayerId? playerId))
+                    {
+                        LogError($"Failed to parse DNT user ID for player {player.Nickname} ({player.UserId}) in order to attempt deletion");
+                        return;
+                    }
+
+                    XPAPI.StorageProvider.DeletePlayerInfo(playerId);
+                }
             }
         }
 
-        protected void OnPlayerLeft(XPPlayer player)
+        protected void OnPlayerLeft(XPPlayer? player)
         {
+            if (player == null)
+                return;
             PlayerLeft.Invoke(player);
         }
 
-        protected void OnPlayerChangedRole(XPPlayer player, RoleTypeId oldRole, RoleTypeId newRole)
+        protected void OnPlayerChangedRole(XPPlayer? player, RoleTypeId oldRole, RoleTypeId newRole)
         {
+            if (player == null)
+                return;
             PlayerChangedRole.Invoke(player, oldRole, newRole);
         }
 
@@ -87,11 +101,11 @@
             if (!Config.XPAfterRoundEnd)
                 XPGainPaused = true;
 
-            XPECItem roundwin = XPECManager.GetItem("win");
-            foreach (var kvp in XPPlayer.Players)
+            XPECItem? roundwin = XPECManager.GetItem("win");
+            foreach (XPPlayer player in XPPlayer.XPPlayers)
             {
-                if (kvp.Value.LeadingTeam == leadingTeam)
-                    kvp.Value.AddXPAndDisplayMessage(roundwin);
+                if (player.LeadingTeam == leadingTeam)
+                    player.AddXPAndDisplayMessage(roundwin);
             }
 
             if (Config.LogXPGainedMethods)
@@ -113,23 +127,25 @@
             XPPlayer.PlayersValue.Clear();
         }
 
-        protected void OnPlayedDied(XPPlayer attacker, XPPlayer target, RoleTypeId? targetRole = null)
+        protected void OnPlayedDied(XPPlayer? attacker, XPPlayer? target, RoleTypeId? targetRole = null)
         {
-            targetRole ??= target.Role;
+            if (target != null)
+            {
+                targetRole ??= target.Role;
+                target.TryAddXPAndDisplayMessage("death", targetRole);
+            }
 
-            if (attacker != target)
+            if (attacker != null && attacker != target)
                 attacker.TryAddXPAndDisplayMessage("kill", targetRole);
-
-            target.TryAddXPAndDisplayMessage("death", targetRole);
         }
 
-        protected void OnPlayerUpgradedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("upgrade", item);
-        protected void OnPlayerPickedUpItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("pickup", item);
-        protected void OnPlayerDroppedItem(XPPlayer player, ItemCategory item) => player.TryAddXPAndDisplayMessage("drop", item);
-        protected void OnPlayerUsedItem(XPPlayer player, ItemType item) => player.TryAddXPAndDisplayMessage("use", item);
+        protected void OnPlayerUpgradedItem(XPPlayer? player, ItemCategory item) => player?.TryAddXPAndDisplayMessage("upgrade", item);
+        protected void OnPlayerPickedUpItem(XPPlayer? player, ItemCategory item) => player?.TryAddXPAndDisplayMessage("pickup", item);
+        protected void OnPlayerDroppedItem(XPPlayer? player, ItemCategory item) => player?.TryAddXPAndDisplayMessage("drop", item);
+        protected void OnPlayerUsedItem(XPPlayer? player, ItemType item) => player?.TryAddXPAndDisplayMessage("use", item);
 
-        protected void OnPlayerSpawned(XPPlayer player) => player.TryAddXPAndDisplayMessage("spawn");
-        protected void OnPlayerEscaped(XPPlayer player) => player.TryAddXPAndDisplayMessage("escape");
-        protected void OnPlayerResurrected(XPPlayer scp049) => scp049.TryAddXPAndDisplayMessage("resurrect");
+        protected void OnPlayerSpawned(XPPlayer? player) => player?.TryAddXPAndDisplayMessage("spawn");
+        protected void OnPlayerEscaped(XPPlayer? player) => player?.TryAddXPAndDisplayMessage("escape");
+        protected void OnPlayerResurrected(XPPlayer? scp049) => scp049?.TryAddXPAndDisplayMessage("resurrect");
     }
 }

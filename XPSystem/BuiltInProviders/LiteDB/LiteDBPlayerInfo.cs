@@ -25,7 +25,7 @@
     public class LiteDBStringPlayerInfo : LiteDBPlayerInfo
     {
         [BsonId]
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
         public override T SetId<T>(IPlayerId id)
         {
@@ -43,7 +43,7 @@
     {
         public int XP { get; set; }
 #if STORENICKS
-        public string Nickname { get; set; }
+        public string? Nickname { get; set; }
 #endif
 
         public abstract T SetId<T>(IPlayerId id) where T : LiteDBPlayerInfo;
