@@ -2,9 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
-    using Exiled.Loader.Models;
     using HarmonyLib;
     using XPSystem.API;
     using XPSystem.API.Legacy;
@@ -25,7 +25,7 @@
         : LabApi.Loader.Features.Plugins.Plugin<NwAPIConfig>
 #endif
     {
-        public const string VersionString = "2.0.9";
+        public const string VersionString = "2.1.0";
 
         /// <summary>
         /// This number is increased every time the plugin is reloaded.
@@ -54,8 +54,8 @@
         public override Version RequiredApiVersion { get; } = LabApi.Features.LabApiProperties.CurrentVersion;
 #endif
 
-        public static Main Instance { get; private set; }
-        public Harmony Harmony { get; private set; }
+        public static Main? Instance { get; private set; }
+        public Harmony? Harmony { get; private set; }
 
         private readonly UnifiedEventHandlers _eventHandlers = new
 #if EXILED
@@ -71,6 +71,10 @@
         public override void Enable()
 #endif
         {
+#if !EXILED
+            Config = Config ?? Config!; // why nullable (labapi ragebait)
+#endif
+
             Instance = this;
             XPAPI.Config = Config;
             Harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
@@ -78,7 +82,7 @@
 
             DisplayProviders.Add(new NickPatchXPDisplayProvider());
             DisplayProviders.Add(new RankXPDisplayProvider());
-            MessagingProvider = MessagingProviders.Get(Config.DisplayMode); // why nullable
+            MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
             XPECLimitTracker.Initialize();
 
             LoadExtraConfigs();
@@ -111,13 +115,13 @@
             XPECLimitTracker.Disable();
             ClientAliasManager.UnregisterAliases();
 
-            SetStorageProvider((IStorageProvider)null);
+            SetStorageProvider((IStorageProvider?)null);
             MessagingProvider = null;
 
             XPECManager.Default.Files.Clear();
             XPECManager.Overrides.Clear();
 
-            Harmony.UnpatchAll(Harmony.Id);
+            Harmony?.UnpatchAll(Harmony.Id);
             Harmony = null;
             Instance = null;
 #if EXILED
@@ -138,7 +142,7 @@
         {
             foreach (string typeName in typeNames)
             {
-                if (!TryCreate(typeName, out Exception exception, out IXPDisplayProvider provider))
+                if (!TryCreate(typeName, out Exception? exception, out IXPDisplayProvider? provider))
                 {
                     LogError($"Could not create display provider {typeName}: {exception}");
                     continue;
@@ -175,7 +179,7 @@
             }
         }
 
-        public static bool TryCreate<T>(string typeName, out Exception exception, out T obj)
+        public static bool TryCreate<T>(string typeName, [NotNullWhen(false)] out Exception? exception, [NotNullWhen(true)] out T? obj)
         {
             obj = default;
             exception = null;

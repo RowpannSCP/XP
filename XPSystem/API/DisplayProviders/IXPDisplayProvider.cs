@@ -1,6 +1,6 @@
 ﻿namespace XPSystem.API
 {
-    using System;
+    using XPSystem.API.Player;
     using XPSystem.API.StorageProviders;
 
     /// <summary>
@@ -10,10 +10,8 @@
     {
         void Enable();
         void Disable();
-        void RefreshTo(XPPlayer player);
-        void RefreshOf(XPPlayer player, PlayerInfoWrapper playerInfo);
+        void RefreshTo(BaseXPPlayer player);
+        void RefreshOf(BaseXPPlayer player, PlayerInfoWrapper? playerInfo = null);
         void RefreshAll();
-        IXPDisplayProviderConfig ConfigPropertyInternal { get; set; }
-        Type ConfigTypeInternal { get; }
     }
 }

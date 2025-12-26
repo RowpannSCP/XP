@@ -14,17 +14,17 @@
         /// <summary>
         /// Gets the <see cref="ExpressionContext"/> used for the <see cref="Expression"/>s.
         /// </summary>
-        public static ExpressionContext Context { get; private set; }
+        public static ExpressionContext Context { get; private set; } = null!;
 
         /// <summary>
         /// Gets the <see cref="IGenericExpression{T}"/> used to calculate the level.
         /// </summary>
-        public static IGenericExpression<double> Expression { get; private set; }
+        public static IGenericExpression<double> Expression { get; private set; } = null!;
 
         /// <summary>
         /// Gets the inverse of the <see cref="Expression"/>. Used to calculate the XP needed for a level.
         /// </summary>
-        public static IGenericExpression<double> InverseExpression { get; private set; }
+        public static IGenericExpression<double> InverseExpression { get; private set; } = null!;
 
         /// <summary>
         /// Gets the level of the specified <see cref="PlayerInfo"/>.

@@ -1,31 +1,22 @@
-﻿namespace XPSystem.API
+﻿namespace XPSystem.API.Player
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using CommandSystem;
     using Hints;
     using Mirror;
     using PlayerRoles;
-    using RemoteAdmin;
-    using XPSystem.API.StorageProviders.Models;
     using XPSystem.API.Variables;
-    using XPSystem.Config.Models;
     using static LoaderSpecific;
 
     /// <summary>
-    /// <see cref="ReferenceHub"/> wrapper.
+    /// <see cref="ReferenceHub"/> wrapper. Kinda like the one found in plugin frameworks.
     /// </summary>
-    /// <remarks>Multiple instances of this class can exist for the same player, instances are not saved, there is no constructor logic.</remarks>
-    public partial class XPPlayer
+    public class BaseXPPlayer
     {
-        public static IReadOnlyDictionary<ReferenceHub, XPPlayer> Players => PlayersValue;
-        internal static readonly Dictionary<ReferenceHub, XPPlayer> PlayersValue = new();
-
         /// <summary>
         /// The player's <see cref="ReferenceHub"/>.
         /// </summary>
         public readonly ReferenceHub Hub;
+        internal BaseXPPlayer(ReferenceHub hub) => Hub = hub;
 
         /// <summary>
         /// Gets the player's user ID.
@@ -38,17 +29,6 @@
         public readonly VariableCollection Variables = new();
 
         /// <summary>
-        /// Gets the player's <see cref="PlayerId"/>.
-        /// </summary>
-        public IPlayerId PlayerId { get; }
-
-        /// <summary>
-        /// Gets whether or not the player is a npc.
-        /// AddXP will return unless forced, if this is true.
-        /// </summary>
-        public bool IsNPC { get; }
-
-        /// <summary>
         /// Gets the player's nickname.
         /// </summary>
         public string Nickname => Hub.nicknameSync.Network_myNickSync;
@@ -56,7 +36,7 @@
         /// <summary>
         /// Gets the player's display name.
         /// </summary>
-        public string DisplayName => Hub.nicknameSync.Network_displayName;
+        public string? DisplayName => Hub.nicknameSync.Network_displayName;
 
         /// <summary>
         /// Gets the name that will be displayed to other players.
@@ -71,17 +51,23 @@
         /// <summary>
         /// Gets whether or not the player is connected to the server.
         /// </summary>
-        public bool IsConnected => GetIsConnectedSafe();
+        public bool IsConnected => Hub && Hub.gameObject;
+
+        /// <summary>
+        /// Gets whether or not the player is a NPC.
+        /// </summary>
+        public bool IsNPC => Hub.IsHost || CheckNPC(Hub);
 
         /// <summary>
         /// Gets whether or not the player has do not track enabled.
+        /// Should always be false unless the creation was forced (which you shouldn't do).
         /// </summary>
         public bool DNT => Hub.authManager.DoNotTrack;
 
         /// <summary>
         /// Gets the player's group.
         /// </summary>
-        public UserGroup Group => Hub.serverRoles.Group; 
+        public UserGroup? Group => Hub.serverRoles.Group; 
 
         /// <summary>
         /// Gets whether or not the player has a badge.
@@ -101,12 +87,12 @@
         /// <summary>
         /// Gets the player's badge text.
         /// </summary>
-        public string BadgeText => Hub.serverRoles.Network_myText;
+        public string? BadgeText => Hub.serverRoles.Network_myText;
 
         /// <summary>
         /// Gets the player's badge color.
         /// </summary>
-        public string BadgeColor => Hub.serverRoles.Network_myColor;
+        public string? BadgeColor => Hub.serverRoles.Network_myColor;
 
         /// <summary>
         /// Gets whether or not the player can view hidden badges.
@@ -124,12 +110,6 @@
         /// Gets the <see cref="RoundSummary.LeadingTeam"/> of the player's team.
         /// </summary>
         public RoundSummary.LeadingTeam LeadingTeam => Role.GetTeam().GetLeadingTeam();
-
-        /// <summary>
-        /// Gets or sets the player's XP multiplier.
-        /// All XP added by methods (all built-in except for directly via non-wrapper) that respect this value will be multiplied by this value.
-        /// </summary>
-        public float XPMultiplier { get; set; } = 1f;
 
         public void ShowHint(string message, float duration = 3f)
         {
@@ -169,164 +149,8 @@
         {
             return LoaderSpecific.CheckPermission(Hub, permission);
         }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="XPPlayer"/> for the specified <see cref="ReferenceHub"/>.
-        /// </summary>
-        /// <param name="referenceHub">The player's <see cref="ReferenceHub"/> to wrap.</param>
-        private XPPlayer(ReferenceHub referenceHub)
-        {
-            if (referenceHub == null)
-                throw new ArgumentNullException(nameof(referenceHub));
-
-#if DEBUG
-            if (referenceHub.IsHost)
-            {
-                var stackTrace = new StackTrace();
-                LogInfo("XPPlayer for Dedicated Server was created: " + stackTrace);
-            }
-#endif
-
-            Hub = referenceHub;
-            IsNPC = referenceHub.IsHost || CheckNPC(referenceHub);
-
-            if (UserId.TryParseUserId(out var playerId))
-            {
-                PlayerId = playerId;
-            }
-            else if (!IsNPC)
-            {
-                LogWarn("PlayerId "
-                        + (string.IsNullOrWhiteSpace(UserId) ? "(empty)" : UserId)
-                        + " could not be parsed for player "
-                        + DisplayedName);
-            }
-
-            PlayersValue.Add(referenceHub, this);
-        }
-
-        /// <summary>
-        /// Gets a player from their <see cref="ReferenceHub"/>.
-        /// </summary>
-        /// <param name="hub">The <see cref="ReferenceHub"/> of the player.</param>
-        /// <returns>The player.</returns>
-        public static XPPlayer Get(ReferenceHub hub)
-        {
-            if (Players.TryGetValue(hub, out XPPlayer player))
-                return player;
-
-            player = new XPPlayer(hub);
-            return player;
-        }
-
-        /// <summary>
-        /// Attempts to get a player using a <see cref="IPlayerId"/>.
-        /// </summary>
-        /// <param name="playerId">The <see cref="IPlayerId"/> of the player.</param>
-        /// <param name="player">The player, if on the server.</param>
-        /// <returns>Whether or not the playerid is valid and player is on the server.</returns>
-        public static bool TryGet(IPlayerId playerId, out XPPlayer player)
-        {
-            return TryGet(playerId.ToString(), out player);
-        }
-
-        public static bool TryGet(ICommandSender sender, out XPPlayer player)
-        {
-            if (sender is not PlayerCommandSender playerSender)
-            {
-                player = null;
-                return false;
-            }
-
-            player = Get(playerSender.ReferenceHub);
-            return true;
-        }
-
-        /// <summary>
-        /// Just <see cref="LoaderSpecific.GetHub"/> with extra return.
-        /// </summary>
-        public static bool TryGet(string data, out XPPlayer player)
-        {
-            player = null;
-            if (string.IsNullOrWhiteSpace(data))
-                return false;
-
-            ReferenceHub hub = GetHub(data);
-            if (hub == null)
-                return false;
-
-            player = Get(hub);
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to get a player of a <see cref="ICommandSender"/> and checks if they have a permission.
-        /// </summary>
-        /// <param name="sender">The sender to get the player from.</param>
-        /// <param name="permission">The permission to check for.</param>
-        /// <param name="player">The player if found, otherwise null.</param>
-        /// <returns>Whether or not the player was found and has the permission.</returns>
-        public static bool TryGetAndCheckPermission(ICommandSender sender, string permission, out XPPlayer player)
-        {
-            return TryGet(sender, out player) && player.CheckPermission(permission);
-        }
-
-        /// <summary>
-        /// Sets the player's badge.
-        /// </summary>
-        /// <param name="badge">The badge to set.</param>
-        /// <param name="fakeSyncVar">Whether or not the badge is actually set on the server and not just synced to the clients.</param>
-        public void SetBadge(Badge badge, bool fakeSyncVar)
-        {
-            if (badge == null)
-                throw new ArgumentNullException(nameof(badge));
-
-            if (fakeSyncVar)
-            {
-                SendFakeSyncVars(typeof(ServerRoles), nameof(ServerRoles.Network_myText), badge.Text);
-                SendFakeSyncVars(typeof(ServerRoles), nameof(ServerRoles.Network_myColor), badge.Color);
-            }
-            else
-            {
-                Hub.serverRoles.SetText(badge.Text);
-                Hub.serverRoles.SetColor(badge.Color);
-            }
-        }
-
-        /// <summary>
-        /// Sets the player's nickname.
-        /// </summary>
-        /// <param name="nick">The nickname to set.</param>
-        /// <param name="fakeSyncVar">Whether or not the nickname is actually set on the server and not just synced to the clients.</param>
-        public void SetNick(string nick, bool fakeSyncVar)
-        {
-            if (string.IsNullOrWhiteSpace(nick))
-                throw new ArgumentNullException(nameof(nick));
-
-            if (fakeSyncVar)
-            {
-                SendFakeSyncVars(typeof(NicknameSync), nameof(NicknameSync.Network_displayName), nick);
-            }
-            else
-            {
-                Hub.nicknameSync.DisplayName = nick;
-            }
-        }
-
-        // Because unity do be like that
-        private bool GetIsConnectedSafe()
-        {
-            try
-            {
-                return Hub.gameObject != null;
-            }
-            catch (NullReferenceException)
-            {
-                return false;
-            }
-        }
-
-#region Exiled sync stuff (Source: https://github.com/Exiled-Team/EXILED/blob/master/Exiled.API/Extensions/MirrorExtensions.cs)
+        
+        #region Exiled sync stuff (Source: https://github.com/Exiled-Team/EXILED/blob/master/Exiled.API/Extensions/MirrorExtensions.cs)
         /// <summary>
         /// Send fake values to the client's <see cref="SyncVarAttribute"/>.
         /// </summary>
@@ -380,12 +204,12 @@
                 payload = writer.ToArraySegment(),
             };
 
-            foreach (ReferenceHub referenceHub in ReferenceHub.AllHubs)
+            foreach (ReferenceHub hub in ReferenceHub.AllHubs)
             {
-                if (skipSelf && referenceHub == Hub)
+                if (skipSelf && hub == Hub)
                     continue;
 
-                referenceHub.connectionToClient.Send(message);
+                hub.connectionToClient.Send(message);
                 count++;
             }
 
@@ -410,7 +234,7 @@
         /// <param name="value2">Value to send to people who don't match the condition.</param>
         /// <param name="skipSelf">Whether or not to skip sending to self.</param>
         /// <returns>The amount of people the first value was sent to.</returns>
-        public int SendFakeSyncVars(Func<XPPlayer, bool> condition, Type targetType, string propertyName, object value, object value2 = null, bool skipSelf = false)
+        public int SendFakeSyncVars(Func<BaseXPPlayer, bool> condition, Type targetType, string propertyName, object value, object value2 = null!, bool skipSelf = false)
         {
             if (!IsConnected)
                 return -1;
@@ -420,7 +244,7 @@
             MakeCustomSyncWriter(Hub.networkIdentity, targetType, CustomSyncVarGenerator, writer);
 
             EntityStateMessage message2 = default;
-            if (value2 != null)
+            if (value2 != null!)
             {
                 NetworkWriterPooled writer2 = NetworkWriterPool.Get();
                 MakeCustomSyncWriter(Hub.networkIdentity, targetType, CustomSyncVarGeneratorValue2, writer2);
@@ -440,19 +264,19 @@
                 payload = writer.ToArraySegment(),
             };
 
-            foreach (var kvp in Players)
+            foreach (BaseXPPlayer player in XPPlayer.PlayersRealConnected)
             {
-                if (skipSelf && kvp.Value == this)
+                if (skipSelf && player == this)
                     continue;
 
-                if (condition(kvp.Value))
+                if (condition(player))
                 {
-                    kvp.Value.Hub.connectionToClient.Send(message);
+                    player.Hub.connectionToClient.Send(message);
                     count++;
                 }
                 else if (value2 != null)
                 {
-                    kvp.Value.Hub.connectionToClient.Send(message2);
+                    player.Hub.connectionToClient.Send(message2);
                 }
             }
 
@@ -484,10 +308,10 @@
                 Hub.gameObject.GetComponent(targetType), 
                 new object[] { SyncVarDirtyBits[$"{targetType.Name}.{propertyName}"] });
 
-        private static void MakeCustomSyncWriter(NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncVar, NetworkWriter owner)
+        private static void MakeCustomSyncWriter(NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter>? customSyncVar, NetworkWriter owner)
         {
             ulong value = 0;
-            NetworkBehaviour behaviour = null;
+            NetworkBehaviour behaviour = null!;
 
             // Get NetworkBehaviors index (behaviorDirty use index)
             for (int i = 0; i < behaviorOwner.NetworkBehaviours.Length; i++)
@@ -522,17 +346,17 @@
         }
 #endregion
 
-        /// <inheritdoc cref="Get(ReferenceHub)"/>
-        public static implicit operator XPPlayer(ReferenceHub hub) => Get(hub);
-
+        /// <inheritdoc cref="XPPlayer.Get(ReferenceHub)"/>
+        public static implicit operator BaseXPPlayer(ReferenceHub hub) => XPPlayer.Get(hub);
         /// <inheritdoc cref="Hub"/>
-        public static implicit operator ReferenceHub(XPPlayer player) => player.Hub;
-        
+        public static implicit operator ReferenceHub(BaseXPPlayer player) => player.Hub;
+
 #if EXILED
-        /// <inheritdoc cref="Exiled.API.Features.Player"/>
-        public static implicit operator XPPlayer(Exiled.API.Features.Player player) => Get(player.ReferenceHub);
+        /// <inheritdoc cref="XPPlayer.Get(ReferenceHub)"/>
+        public static implicit operator BaseXPPlayer(Exiled.API.Features.Player player) => XPPlayer.Get(player.ReferenceHub);
 #else
-        public static implicit operator XPPlayer(LabApi.Features.Wrappers.Player player) => Get(player.ReferenceHub);
+        /// <inheritdoc cref="XPPlayer.Get(ReferenceHub)"/>
+        public static implicit operator BaseXPPlayer(LabApi.Features.Wrappers.Player player) => XPPlayer.Get(player.ReferenceHub);
 #endif
     }
 }

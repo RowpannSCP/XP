@@ -6,10 +6,10 @@
     /// </summary>
     public class PlayerInfo
     {
-        public IPlayerId Player { get; set; }
+        public IPlayerId Player { get; set; } = null!;
         public int XP { get; set; }
 #if STORENICKS
-        public string Nickname { get; set; }
+        public string? Nickname { get; set; }
 #endif
     }
 }

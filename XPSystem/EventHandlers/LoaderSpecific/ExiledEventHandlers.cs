@@ -26,7 +26,7 @@ namespace XPSystem.EventHandlers.LoaderSpecific
             Exiled.Events.Handlers.Player.DroppedItem += PlayerDroppedItem;
             Exiled.Events.Handlers.Player.UsedItem += PlayerUsedItem;
             Exiled.Events.Handlers.Player.Spawned += PlayerSpawned;
-            Exiled.Events.Handlers.Player.Escaping += PlayerEscaping;
+            Exiled.Events.Handlers.Player.Escaped += PlayerEscaped;
 
             Exiled.Events.Handlers.Scp049.FinishingRecall += Scp049FinishingRecall;
 
@@ -50,7 +50,7 @@ namespace XPSystem.EventHandlers.LoaderSpecific
             Exiled.Events.Handlers.Player.DroppedItem -= PlayerDroppedItem;
             Exiled.Events.Handlers.Player.UsedItem -= PlayerUsedItem;
             Exiled.Events.Handlers.Player.Spawned -= PlayerSpawned;
-            Exiled.Events.Handlers.Player.Escaping -= PlayerEscaping;
+            Exiled.Events.Handlers.Player.Escaped -= PlayerEscaped;
 
             Exiled.Events.Handlers.Scp049.FinishingRecall -= Scp049FinishingRecall;
 
@@ -126,13 +126,7 @@ namespace XPSystem.EventHandlers.LoaderSpecific
             OnPlayerSpawned(ev.Player);
         }
 
-        private void PlayerEscaping(EscapingEventArgs ev)
-        {
-            if (!ev.IsAllowed)
-                return;
-
-            OnPlayerEscaped(ev.Player);
-        }
+        private void PlayerEscaped(EscapedEventArgs ev) => OnPlayerEscaped(ev.Player);
 
         private void Scp049FinishingRecall(FinishingRecallEventArgs ev)
         {

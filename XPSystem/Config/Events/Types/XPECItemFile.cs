@@ -5,10 +5,10 @@
     /// </summary>
     public class XPECItemFile : XPECFile
     {
-        public XPECItem Item { get; set; }
+        public XPECItem Item { get; set; } = null!;
 
         /// <inheritdoc />
-        public override XPECItem Get(params object[] keys)
+        public override XPECItem Get(params object?[]? keys)
         {
             base.Get(keys);
             return Item;

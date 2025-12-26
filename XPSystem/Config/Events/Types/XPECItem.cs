@@ -11,6 +11,6 @@
         public int Amount { get; set; }
 
         [Description("The message to show. Leave empty for none.")]
-        public string Translation { get; set; }
+        public string? Translation { get; set; }
     }
 }
