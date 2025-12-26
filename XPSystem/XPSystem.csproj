@@ -90,37 +90,37 @@
         </Reference>
         <Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_References)\Assembly-CSharp-firstpass.dll" Private="false" />
         <Reference Include="CommandSystem.Core, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\CommandSystem.Core.dll</HintPath>
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\CommandSystem.Core.dll</HintPath>
         </Reference>
         <Reference Include="Costura, Version=5.8.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
           <HintPath>..\packages\Costura.Fody.5.8.0-alpha0098\lib\netstandard1.0\Costura.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.API, Version=9.6.3.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\Exiled.API.dll</HintPath>
+        <Reference Include="Exiled.API, Version=9.12.1.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\Exiled.API.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.CreditTags, Version=9.6.3.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\Exiled.CreditTags.dll</HintPath>
+        <Reference Include="Exiled.CreditTags, Version=9.12.1.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\Exiled.CreditTags.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.CustomItems, Version=9.6.3.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\Exiled.CustomItems.dll</HintPath>
+        <Reference Include="Exiled.CustomItems, Version=9.12.1.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\Exiled.CustomItems.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.CustomRoles, Version=9.6.3.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\Exiled.CustomRoles.dll</HintPath>
+        <Reference Include="Exiled.CustomRoles, Version=9.12.1.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\Exiled.CustomRoles.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.Events, Version=9.6.3.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\Exiled.Events.dll</HintPath>
+        <Reference Include="Exiled.Events, Version=9.12.1.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\Exiled.Events.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.Loader, Version=9.6.3.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\Exiled.Loader.dll</HintPath>
+        <Reference Include="Exiled.Loader, Version=9.12.1.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\Exiled.Loader.dll</HintPath>
         </Reference>
-        <Reference Include="Exiled.Permissions, Version=9.6.3.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\Exiled.Permissions.dll</HintPath>
+        <Reference Include="Exiled.Permissions, Version=9.12.1.0, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\Exiled.Permissions.dll</HintPath>
         </Reference>
         <Reference Include="Flee.Net45, Version=1.0.0.0, Culture=neutral, PublicKeyToken=951a102ce2413032, processorArchitecture=MSIL">
           <HintPath>..\packages\Flee.1.2.2\lib\net45\Flee.Net45.dll</HintPath>
         </Reference>
-        <Reference Include="LabApi, Version=1.1.0.0, Culture=neutral, processorArchitecture=Amd64">
-          <HintPath>$(EXILED_References)\LabApi.dll</HintPath>
+        <Reference Include="LabApi, Version=1.1.4.2, Culture=neutral, processorArchitecture=Amd64">
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\LabApi.dll</HintPath>
         </Reference>
         <Reference Include="LiteDB, Version=5.0.16.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
           <HintPath>..\packages\LiteDB.5.0.16\lib\net45\LiteDB.dll</HintPath>
@@ -135,7 +135,7 @@
           <HintPath>..\packages\MySqlConnector.2.3.7\lib\net48\MySqlConnector.dll</HintPath>
         </Reference>
         <Reference Include="NorthwoodLib, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\NorthwoodLib.dll</HintPath>
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\NorthwoodLib.dll</HintPath>
         </Reference>
         <Reference Include="System" />
         <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -173,7 +173,7 @@
         <Reference Include="UnityEngine.CoreModule" HintPath="$(EXILED_References)\UnityEngine.CoreModule.dll" Private="false" />
         <Reference Include="UnityEngine.PhysicsModule" HintPath="$(EXILED_References)\UnityEngine.PhysicsModule.dll" Private="false" />
         <Reference Include="YamlDotNet, Version=11.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
-          <HintPath>..\packages\ExMod.Exiled.9.6.3\lib\net48\YamlDotNet.dll</HintPath>
+          <HintPath>..\packages\ExMod.Exiled.9.12.1\lib\net48\YamlDotNet.dll</HintPath>
         </Reference>
     </ItemGroup>
 
