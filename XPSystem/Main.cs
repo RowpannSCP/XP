@@ -25,7 +25,7 @@
         : LabApi.Loader.Features.Plugins.Plugin<NwAPIConfig>
 #endif
     {
-        public const string VersionString = "2.1.0";
+        public const string VersionString = "2.1.1";
 
         /// <summary>
         /// This number is increased every time the plugin is reloaded.
