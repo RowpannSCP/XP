@@ -9,7 +9,7 @@
     using XPSystem.API;
     using XPSystem.API.Legacy;
     using XPSystem.API.StorageProviders;
-    using XPSystem.BuiltInProviders.Display.Patch;
+    using XPSystem.BuiltInProviders.Display;
     using XPSystem.Commands.Client;
     using XPSystem.Config;
     using XPSystem.Config.Events;
@@ -25,7 +25,7 @@
         : LabApi.Loader.Features.Plugins.Plugin<NwAPIConfig>
 #endif
     {
-        public const string VersionString = "2.1.1";
+        public const string VersionString = "2.1.2";
 
         /// <summary>
         /// This number is increased every time the plugin is reloaded.
@@ -80,7 +80,7 @@
             Harmony = new Harmony($"XPSystem - {DateTime.Now.Ticks}");
             Harmony.PatchAll();
 
-            DisplayProviders.Add(new NickPatchXPDisplayProvider());
+            DisplayProviders.Add(new NickEventXPDisplayProvider());
             DisplayProviders.Add(new RankXPDisplayProvider());
             MessagingProvider = MessagingProviders.Get(Config.DisplayMode);
             XPECLimitTracker.Initialize();
