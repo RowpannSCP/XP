@@ -205,6 +205,7 @@
         <Compile Include="API\XPExtensions.cs" />
         <Compile Include="API\Player\BaseXPPlayer.cs" />
         <Compile Include="API\Player\XPPlayer.cs" />
+        <Compile Include="BuiltInProviders\Display\NickEventXPDisplayProvider.cs" />
         <Compile Include="BuiltInProviders\Display\Patch\MyNickPatchXPDisplayProvider.cs" />
         <Compile Include="BuiltInProviders\Display\Patch\NickPatchXPDisplayProvider.cs" />
         <Compile Include="BuiltInProviders\Display\Patch\RankSetXPDisplayProvider.cs" />

@@ -9,7 +9,7 @@
 
     public class NickPatchXPDisplayProvider : XPDisplayProvider<NickPatchXPDisplayProvider.NickConfig>
     {
-        public Dictionary<string, string> DisplayNameOverrides { get; } = new();
+        private Dictionary<string, string> DisplayNameOverrides { get; } = new();
 
         protected override void RefreshOfEnabled(BaseXPPlayer player, PlayerInfoWrapper? playerInfo) => Refresh(player);
         protected override void RefreshOfDisabled(BaseXPPlayer player) => Refresh(player);
