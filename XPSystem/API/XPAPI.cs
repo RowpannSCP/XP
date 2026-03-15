@@ -232,7 +232,7 @@ namespace XPSystem.API
             playerInfo.PlayerInfo.Nickname = player.DisplayedName;
 
             StorageProvider!.SetPlayerInfo(playerInfo);
-            LogDebug("Updated nick of " + player.PlayerId + " to " + player.DisplayedName);
+            LogDebug("Updated stored nick of " + player.PlayerId + " to " + player.DisplayedName);
         }
 #endif
 

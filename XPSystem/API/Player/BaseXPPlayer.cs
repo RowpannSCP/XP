@@ -1,6 +1,7 @@
 ﻿namespace XPSystem.API.Player
 {
     using System;
+    using CentralAuth;
     using Hints;
     using Mirror;
     using PlayerRoles;
@@ -22,6 +23,11 @@
         /// Gets the player's user ID.
         /// </summary>
         public string UserId => Hub.authManager.UserId;
+
+        /// <summary>
+        /// Gets the player's player ID (per-round, per-server, with dedicated server always being 1).
+        /// </summary>
+        public int PlayerServerId => Hub.PlayerId;
 
         /// <summary>
         /// Gets the player's variables.
@@ -52,6 +58,11 @@
         /// Gets whether or not the player is connected to the server.
         /// </summary>
         public bool IsConnected => Hub && Hub.gameObject;
+
+        /// <summary>
+        /// Gets whether or not the player object is ready (fully initialized).
+        /// </summary>
+        public bool IsReady => Hub.authManager.InstanceMode != ClientInstanceMode.Unverified && Hub.nicknameSync.NickSet;
 
         /// <summary>
         /// Gets whether or not the player is a NPC.
