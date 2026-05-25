@@ -38,7 +38,9 @@
 
             Badge? badge = null;
             string format = !player.HasBadge || player.HasHiddenBadge
-                ? Config.BadgeStructureNoBadge
+                ? string.IsNullOrWhiteSpace(Config.BadgeStructureNoBadge)
+                    ? Config.BadgeStructure
+                    : Config.BadgeStructureNoBadge
                 : Config.BadgeStructure;
             string? color = null;
 
@@ -62,7 +64,7 @@
                 Text = format
                     .Replace("%lvl%", playerInfo.Level.ToString())
                     .Replace("%badge%", badge.Text)
-                    .Replace("%oldbadge%", player.BadgeText),
+                    .Replace("%oldbadge%", player.BadgeText ?? string.Empty),
                 Color = color ?? "default"
             };
         }

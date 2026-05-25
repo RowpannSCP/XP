@@ -5,6 +5,7 @@ namespace XPSystem.API
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Text;
+    using MEC;
     using NorthwoodLib.Pools;
     using PlayerRoles;
     using XPSystem.API.DisplayProviders;
@@ -58,6 +59,7 @@ namespace XPSystem.API
         /// </summary>
         private static SerializerBuilder SerializerBuilder => new SerializerBuilder()
             .WithLoaderTypeConverters()
+            .WithTypeConverter(new StringYamlConverter())
             .WithTypeConverter(new XPECFileYamlConverter())
             .WithTypeInspector(inner => new CommentGatheringTypeInspector(inner))
             .WithEmissionPhaseObjectGraphVisitor(args => new CommentsObjectGraphVisitor(args.InnerVisitor))
@@ -265,19 +267,11 @@ namespace XPSystem.API
                 XPPlayer.TryGetXP(playerInfo.Player, out player);
 
             int prevLevel = playerInfo.Level;
-            float floatAmount = amount;
             bool connected = player != null;
 
-            if (amount > 0 || Config.XPMultiplierForXPLoss)
-            {
-                if (player?.XPMultiplier != null)
-                    floatAmount *= player.XPMultiplier;
-
-                if (connected || Config.GlobalXPMultiplierForNonOnline)
-                    floatAmount *= Config.GlobalXPMultiplier;
-            }
-
-            amount = (int)floatAmount;
+            amount = CalculateModifiedXPAmount(amount, player, connected);
+            if (amount == 0)
+                return false;
 
             playerInfo.PlayerInfo.XP += amount;
             StorageProvider!.SetPlayerInfo(playerInfo);
@@ -289,6 +283,22 @@ namespace XPSystem.API
                 HandleLevelUp(player!, playerInfo, prevLevel);
 
             return true;
+        }
+
+        private static int CalculateModifiedXPAmount(int amount, XPPlayer? player, bool connected)
+        {
+            float floatAmount = amount;
+
+            if (amount > 0 || Config.XPMultiplierForXPLoss)
+            {
+                if (player?.XPMultiplier != null)
+                    floatAmount *= player.XPMultiplier;
+
+                if (connected || Config.GlobalXPMultiplierForNonOnline)
+                    floatAmount *= Config.GlobalXPMultiplier;
+            }
+
+            return (int)floatAmount;
         }
 #endregion
 #region Translations
@@ -360,22 +370,47 @@ namespace XPSystem.API
         /// <returns>Whether or not XP was added.</returns>
         public static bool AddXPAndDisplayMessage(XPPlayer player, int amount, string? message, bool force = false)
         {
-            if (amount == 0 && !force || XPGainPaused)
+            if (amount == 0 && !force || XPGainPaused && !force)
                 return false;
 
             PlayerInfoWrapper playerInfo = GetPlayerInfo(player.PlayerId);
-            bool levelup = AddXP(player, amount, force: true, playerInfo: playerInfo);
+            int modifiedAmount = CalculateModifiedXPAmount(amount, player, true);
+            bool levelup = AddXPWithoutLevelMessage(player, amount, playerInfo);
 
-            if (levelup && !Config.ShowXPOnLevelUp)
-                return true;
+            List<string> messages = new();
 
-            if (!string.IsNullOrWhiteSpace(message))
+            if ((!levelup || Config.ShowXPOnLevelUp) && !string.IsNullOrWhiteSpace(message))
             {
                 if (Config.UseAddedXPTemplate)
-                    message = FormatMessage(message!, playerInfo);
-                DisplayMessage(player, message);
+                    message = FormatMessage(message!, playerInfo, modifiedAmount);
+
+                if (!string.IsNullOrWhiteSpace(message))
+                    messages.Add(message!);
             }
 
+            if (levelup && Config.ShowAddedLVL)
+                messages.Add(Config.AddedLVLMessage.Replace("%level%", playerInfo.Level.ToString()));
+
+            if (messages.Count > 0)
+                DisplayMessage(player, string.Join(Config.AddedXPLevelSeparator, messages));
+
+            return levelup || modifiedAmount != 0 || force;
+        }
+
+        private static bool AddXPWithoutLevelMessage(XPPlayer player, int amount, PlayerInfoWrapper playerInfo)
+        {
+            int prevLevel = playerInfo.Level;
+            amount = CalculateModifiedXPAmount(amount, player, true);
+            if (amount == 0)
+                return false;
+
+            playerInfo.PlayerInfo.XP += amount;
+            StorageProvider!.SetPlayerInfo(playerInfo);
+
+            if (playerInfo.Level == prevLevel)
+                return false;
+
+            HandleLevelUp(player, playerInfo, prevLevel, false);
             return true;
         }
 
@@ -385,10 +420,17 @@ namespace XPSystem.API
         /// <param name="message">The message to format.</param>
         /// <param name="playerInfo">The <see cref="PlayerInfoWrapper"/> of the player to format the message for.</param>
         /// <returns>The formatted message.</returns>
-        public static string FormatMessage(string message, PlayerInfoWrapper playerInfo)
+        public static string FormatMessage(string message, PlayerInfoWrapper playerInfo, int amount = 0)
         {
-            message = Config.AddedXPTemplate
+            string template = Config.AddedXPTemplate;
+            string xpChange = FormatXPChange(amount);
+            if (!template.Contains("%xpchange%") && !template.Contains("%xpamount%"))
+                message = $"{message} <color=yellow>{xpChange} XP</color>";
+
+            message = template
                     .Replace("%message%", message)
+                    .Replace("%xpamount%", Math.Abs(amount).ToString())
+                    .Replace("%xpchange%", xpChange)
                     .Replace("%currentlevel%", playerInfo.Level.ToString())
                     .Replace("%nextlevel%", (playerInfo.Level + 1).ToString());
 
@@ -418,8 +460,9 @@ namespace XPSystem.API
                 {
                     char filledChar = Config.AddedXPProgressBarChars[0];
                     char remainingChar = Config.AddedXPProgressBarChars[1];
-                    double fillPercentage = (double)(playerInfo.XP - playerInfo.NeededXPCurrent) /
-                                            (playerInfo.NeededXPNext - playerInfo.NeededXPCurrent);
+                    int neededDelta = Math.Max(1, playerInfo.NeededXPNext - playerInfo.NeededXPCurrent);
+                    double fillPercentage = Math.Max(0d, Math.Min(1d,
+                        (double)(playerInfo.XP - playerInfo.NeededXPCurrent) / neededDelta));
                     int fill = (int)(Config.AddedXPProgressBarLength * fillPercentage);
 
                     message = message
@@ -432,6 +475,8 @@ namespace XPSystem.API
 
             return message;
         }
+
+        private static string FormatXPChange(int amount) => amount > 0 ? "+" + amount : amount.ToString();
 #endregion
 #region Misc
         /// <summary>
@@ -440,17 +485,35 @@ namespace XPSystem.API
         /// <param name="player">The player that leveled up.</param>
         /// <param name="wrapper">The <see cref="PlayerInfoWrapper"/> belonging to the player.</param>
         /// <param name="prevLevel">The previous level the player had.</param>
-        public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper, int prevLevel)
+        public static void HandleLevelUp(XPPlayer player, PlayerInfoWrapper wrapper, int prevLevel, bool showMessage = true)
         {
-            DisplayProviders.RefreshOf(player);
+            RefreshDisplaysAfterXPChange(player, wrapper);
 
-            if (Config.ShowAddedLVL)
+            if (showMessage && Config.ShowAddedLVL)
             {
                 player.DisplayMessage(Config.AddedLVLMessage.Replace("%level%",
                     wrapper.Level.ToString()));
             }
 
             PlayerLevelUp.Invoke(player, wrapper.Level, prevLevel);
+        }
+
+        public static void RefreshDisplaysAfterXPChange(XPPlayer player, PlayerInfoWrapper? playerInfo = null)
+        {
+            playerInfo ??= GetPlayerInfo(player);
+            DisplayProviders.RefreshOf(player, playerInfo);
+
+            int retries = Math.Max(0, Config.DisplayRefreshRetryCount);
+            float delay = Math.Max(0f, Config.DisplayRefreshRetryDelay);
+            for (int i = 1; i <= retries; i++)
+            {
+                float refreshDelay = delay * i + Config.ExtraDelay;
+                Timing.CallDelayed(refreshDelay, () =>
+                {
+                    if (player.IsConnected)
+                        DisplayProviders.RefreshOf(player, playerInfo);
+                });
+            }
         }
 
         /// <summary>

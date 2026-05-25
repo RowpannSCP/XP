@@ -13,7 +13,15 @@
 
     public class RankSetXPDisplayProvider : XPDisplayProvider<RankSetXPDisplayProvider.RankConfig>
     {
-        public override void RefreshAll() {}
+        public override void RefreshAll()
+        {
+            if (!Config.Enabled)
+                return;
+
+            foreach (BaseXPPlayer player in XPPlayer.PlayersRealConnected)
+                Refresh(player, player is XPPlayer xpPlayer ? xpPlayer.GetPlayerInfo() : null);
+        }
+
         public override void RefreshTo(BaseXPPlayer player) {}
 
         private Badge? GetBadge(BaseXPPlayer player, PlayerInfoWrapper? playerInfo)
@@ -37,7 +45,9 @@
 
             Badge? badge = null;
             string format = !player.HasBadge || player.HasHiddenBadge
-                ? Config.BadgeStructureNoBadge
+                ? string.IsNullOrWhiteSpace(Config.BadgeStructureNoBadge)
+                    ? Config.BadgeStructure
+                    : Config.BadgeStructureNoBadge
                 : Config.BadgeStructure;
             string? color = null;
 
@@ -61,7 +71,7 @@
                 Text = format
                     .Replace("%lvl%", playerInfo.Level.ToString())
                     .Replace("%badge%", badge.Text)
-                    .Replace("%oldbadge%", player.BadgeText),
+                    .Replace("%oldbadge%", player.BadgeText ?? string.Empty),
                 Color = color ?? "default"
             };
         }
@@ -74,6 +84,14 @@
 
             player.Hub.serverRoles.Network_myText = badge.Text;
             player.Hub.serverRoles.Network_myColor = badge.Color;
+        }
+
+        public override void RefreshOf(BaseXPPlayer player, PlayerInfoWrapper? playerInfo = null)
+        {
+            if (!Config.Enabled)
+                return;
+
+            Refresh(player, playerInfo);
         }
 
         public override void Enable()

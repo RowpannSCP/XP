@@ -37,6 +37,7 @@
                 return false;
 
             playerInfo.XP += amount;
+            RefreshTargetDisplayIfOnline(playerId, playerInfo);
 
             response = $"Gave {amount} XP to {playerId.ToString()} ({playerInfo.Nickname}).";
             return true;

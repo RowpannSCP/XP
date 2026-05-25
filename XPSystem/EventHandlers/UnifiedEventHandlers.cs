@@ -93,7 +93,13 @@
         {
             if (player == null)
                 return;
+
             PlayerChangedRole.Invoke(player, oldRole, newRole);
+            Timing.CallDelayed(.25f + Config.ExtraDelay, () =>
+            {
+                if (player.IsConnected)
+                    RefreshDisplaysAfterXPChange(player);
+            });
         }
 
         protected void OnRoundEnded(RoundSummary.LeadingTeam leadingTeam)

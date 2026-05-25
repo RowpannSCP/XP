@@ -139,10 +139,24 @@
                 try
                 {
                     Config = Deserializer.Deserialize<T>(File.ReadAllText(file));
+                    if (Config == null)
+                        throw new InvalidDataException("Config file deserialized to null.");
                 }
                 catch (Exception e)
                 {
                     LogError($"Error loading display provider config for {name}: {e}");
+                    Config = new T();
+
+                    try
+                    {
+                        string defaultFile = Path.Combine(folder, name + ".default.yml");
+                        File.WriteAllText(defaultFile, Serializer.Serialize(Config));
+                        LogWarn($"Using default config for {name}. A fresh default was written to {defaultFile}");
+                    }
+                    catch (Exception writeException)
+                    {
+                        LogError($"Could not write default display provider config for {name}: {writeException}");
+                    }
                 }
             }
             else
