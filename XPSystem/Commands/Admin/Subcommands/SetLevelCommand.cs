@@ -39,6 +39,7 @@
                 return false;
 
             playerInfo.Level = level;
+            RefreshTargetDisplayIfOnline(playerId, playerInfo);
 
             response = $"Set {playerId.ToString()} ({playerInfo.Nickname})'s level to {level}.";
             return true;

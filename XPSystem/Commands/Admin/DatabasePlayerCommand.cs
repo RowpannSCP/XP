@@ -72,5 +72,11 @@
             return false;
 
         }
+
+        protected void RefreshTargetDisplayIfOnline(IPlayerId playerId, PlayerInfoWrapper playerInfo)
+        {
+            if (XPPlayer.TryGetXP(playerId, out XPPlayer? player))
+                XPAPI.RefreshDisplaysAfterXPChange(player, playerInfo);
+        }
     }
 }

@@ -62,9 +62,9 @@
         [Description("Whether or not to format a message according to a template when adding XP.")]
         public bool UseAddedXPTemplate { get; set; } = true;
 
-        [Description("When enabled, template used for messages that modify XP. Parameters: %message%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel%."
+        [Description("When enabled, template used for messages that modify XP. Parameters: %message%, %xpamount%, %xpchange%, %currentxp%, %currentlevel%, %neededxp%, %nextlevel%."
             + "Also: %progressbarfilled%, %progressbarremaining%. Using them requires the same extra calculations as UseTotalXP = false.")]
-        public string AddedXPTemplate { get; set; } = "%message%, (%currentxp% / %neededxp%)";
+        public string AddedXPTemplate { get; set; } = "%message% <color=yellow>%xpchange% XP</color> (%currentxp% / %neededxp%)";
 
         [Description("The characters to use for the progress bar, if present in the AddedXPTemplate.")]
         public string AddedXPProgressBarChars { get; set; } = "██";
@@ -84,11 +84,26 @@
         [Description("When enabled, what message to show if player advances a level.")]
         public string AddedLVLMessage { get; set; } = "NEW LEVEL: <color=red>%level%</color>";
 
+        [Description("Separator used when an XP gain and a level-up message are shown together.")]
+        public string AddedXPLevelSeparator { get; set; } = "\n";
+
         [Description("Decide how messages (ex. XP gain, level up) are displayed.")]
         public DisplayMode DisplayMode { get; set; } = DisplayMode.Hint;
 
         [Description("The duration of the message, if applicable.")]
         public float DisplayDuration { get; set; } = 5f;
+
+        [Description("Vertical TextMeshPro offset applied to hint messages. Positive values move hints toward the top of the screen. Empty disables repositioning.")]
+        public string HintVerticalOffset { get; set; } = "24em";
+
+        [Description("How long hint-mode messages for the same player are collected before being shown. Prevents rapid XP events from overwriting each other. Set to 0 to disable.")]
+        public float HintCoalesceWindow { get; set; } = 0.20f;
+
+        [Description("How many delayed display refreshes to run after XP/rank changes. Helps when the server or another plugin rewrites rank data shortly after the XPSystem update.")]
+        public int DisplayRefreshRetryCount { get; set; } = 2;
+
+        [Description("Delay between delayed display refreshes after XP/rank changes.")]
+        public float DisplayRefreshRetryDelay { get; set; } = 0.75f;
 
         [Description("Appended to all messages.")]
         public string TextPrefix { get; set; } = "";
